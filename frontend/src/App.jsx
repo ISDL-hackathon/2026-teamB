@@ -1,7 +1,50 @@
 import { useEffect, useState } from "react";
-//import PixelTown from "./components/PixelTown";
 import PixelRoom from "./components/PixelRoom";
 import "./App.css";
+
+const API_BASE_URL = "http://127.0.0.1:8000";
+
+const weatherBackgrounds = {
+  快晴: {
+    overlay: "linear-gradient(rgba(255, 188, 94, 0.18), rgba(41, 128, 185, 0.38))",
+    image: "linear-gradient(135deg, #78c8ff 0%, #f8d87a 100%)",
+  },
+  晴れ: {
+    overlay: "linear-gradient(rgba(255, 216, 119, 0.16), rgba(38, 98, 145, 0.42))",
+    image: "linear-gradient(135deg, #6fb8f7 0%, #bfe7ff 52%, #ffe08a 100%)",
+  },
+  曇り: {
+    overlay: "linear-gradient(rgba(35, 43, 56, 0.32), rgba(18, 22, 31, 0.58))",
+    image: "linear-gradient(135deg, #6f7f91 0%, #b9c0c8 48%, #526273 100%)",
+  },
+  雨: {
+    overlay: "linear-gradient(rgba(17, 19, 26, 0.5), rgba(17, 19, 26, 0.72))",
+    image: "url('/weather/rainy.gif')",
+  },
+  雷雨: {
+    overlay: "linear-gradient(rgba(17, 19, 26, 0.48), rgba(17, 19, 26, 0.68))",
+    image: "url('/weather/kaminari.gif')",
+  },
+};
+
+function getWeatherBackground(weather) {
+  const background = weatherBackgrounds[weather] || weatherBackgrounds.雷雨;
+
+  return {
+    backgroundImage: `${background.overlay}, ${background.image}`,
+  };
+}
+
+async function requestJson(path, options) {
+  const res = await fetch(`${API_BASE_URL}${path}`, options);
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.detail || "通信に失敗しました");
+  }
+
+  return data;
+}
 
 function App() {
   const [mode, setMode] = useState("login");
@@ -9,7 +52,6 @@ function App() {
 
   const [loginName, setLoginName] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
-
   const [registerName, setRegisterName] = useState("");
   const [registerGrade, setRegisterGrade] = useState("U4");
   const [registerPassword, setRegisterPassword] = useState("");
@@ -21,24 +63,21 @@ function App() {
   const [message, setMessage] = useState("");
 
   const fetchRanking = () => {
-    fetch("http://127.0.0.1:8000/ranking")
-      .then((res) => res.json())
-      .then((data) => setRanking(data))
-      .catch((err) => console.error(err));
+    requestJson("/ranking")
+      .then(setRanking)
+      .catch((err) => setMessage(err.message));
   };
 
   const fetchVillage = () => {
-    fetch("http://127.0.0.1:8000/village/status")
-      .then((res) => res.json())
-      .then((data) => setVillage(data))
-      .catch((err) => console.error(err));
+    requestJson("/village/status")
+      .then(setVillage)
+      .catch((err) => setMessage(err.message));
   };
 
   const fetchRoom = (userId) => {
-    fetch(`http://127.0.0.1:8000/room/status/${userId}`)
-      .then((res) => res.json())
-      .then((data) => setRoom(data))
-      .catch((err) => console.error(err));
+    requestJson(`/room/status/${userId}`)
+      .then(setRoom)
+      .catch((err) => setMessage(err.message));
   };
 
   const refreshAll = (userId = currentUser?.id) => {
@@ -56,24 +95,20 @@ function App() {
   }, []);
 
   const handleRegister = () => {
-    fetch("http://127.0.0.1:8000/register", {
+    if (!registerName.trim() || !registerPassword.trim()) {
+      setMessage("名前とパスワードを入力してください");
+      return;
+    }
+
+    requestJson("/register", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        name: registerName,
+        name: registerName.trim(),
         grade: registerGrade,
         password: registerPassword,
       }),
     })
-      .then(async (res) => {
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.detail);
-        }
-        return data;
-      })
       .then((data) => {
         setMessage(data.message);
         setMode("login");
@@ -85,36 +120,27 @@ function App() {
   };
 
   const handleLogin = () => {
-    fetch("http://127.0.0.1:8000/login", {
+    if (!loginName.trim() || !loginPassword.trim()) {
+      setMessage("名前とパスワードを入力してください");
+      return;
+    }
+
+    requestJson("/login", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        name: loginName,
+        name: loginName.trim(),
         password: loginPassword,
       }),
     })
-      .then(async (res) => {
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.detail);
-        }
-        return data;
-      })
       .then((data) => {
         setCurrentUser(data.user);
-
-        if (data.added_point > 0) {
-          setMessage(
-            `${data.user.name}でログインしました。本日初ログイン +${data.added_point}pt`
-          );
-        } else {
-          setMessage(`${data.user.name}でログインしました。本日はログイン済みです`);
-        }
-
+        setMessage(
+          data.added_point > 0
+            ? `${data.user.name}でログインしました。本日初ログイン +${data.added_point}pt`
+            : `${data.user.name}でログインしました。本日はログイン済みです`
+        );
         setPage("home");
-        fetchRoom(data.user.id);
         refreshAll(data.user.id);
       })
       .catch((err) => setMessage(err.message));
@@ -133,28 +159,23 @@ function App() {
       return;
     }
 
-    fetch("http://127.0.0.1:8000/activity/checkin", {
+    requestJson("/activity/checkin", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         user_id: currentUser.id,
         activity_type: "checkin",
       }),
     })
-      .then((res) => res.json())
       .then((data) => {
-        setMessage(data.message + ` +${data.added_point}pt`);
-
+        setMessage(`${data.message} +${data.added_point}pt`);
         setCurrentUser((prev) => ({
           ...prev,
           point: prev.point + data.added_point,
         }));
-
         refreshAll(currentUser.id);
       })
-      .catch((err) => console.error(err));
+      .catch((err) => setMessage(err.message));
   };
 
   const renderRanking = () => (
@@ -181,45 +202,39 @@ function App() {
   );
 
   const renderLoginArea = () => (
-    <div className="card">
+    <div className="card authCard">
       {mode === "login" ? (
         <>
           <h2>ログイン</h2>
-
           <input
             type="text"
             placeholder="名前"
             value={loginName}
             onChange={(e) => setLoginName(e.target.value)}
           />
-
           <input
             type="password"
             placeholder="パスワード"
             value={loginPassword}
             onChange={(e) => setLoginPassword(e.target.value)}
           />
-
           <button onClick={handleLogin}>ログイン</button>
-
           <p>
             アカウントがない場合は{" "}
             <button className="linkButton" onClick={() => setMode("register")}>
-              ユーザ登録
+              ユーザー登録
             </button>
           </p>
         </>
       ) : (
         <>
-          <h2>ユーザ登録</h2>
-
+          <h2>ユーザー登録</h2>
           <input
             type="text"
             placeholder="名前"
             value={registerName}
             onChange={(e) => setRegisterName(e.target.value)}
           />
-
           <select
             value={registerGrade}
             onChange={(e) => setRegisterGrade(e.target.value)}
@@ -229,16 +244,13 @@ function App() {
             <option value="M2">M2</option>
             <option value="教員">教員</option>
           </select>
-
           <input
             type="password"
             placeholder="パスワード"
             value={registerPassword}
             onChange={(e) => setRegisterPassword(e.target.value)}
           />
-
           <button onClick={handleRegister}>登録</button>
-
           <p>
             すでにアカウントがある場合は{" "}
             <button className="linkButton" onClick={() => setMode("login")}>
@@ -253,26 +265,22 @@ function App() {
   const renderHome = () => (
     <div
       className="homeWeather"
-      style={{
-        backgroundImage:
-          "linear-gradient(rgba(17, 19, 26, 0.65), rgba(17, 19, 26, 0.65)), url('/weather/rainy.gif')",
-      }}
+      style={getWeatherBackground(village?.weather)}
     >
       <div className="card homeUserCard">
         <div className="homeUserHeader">
           <div className="homeUserInfo">
+            <span className="eyebrow">ログイン中</span>
             <p>
-              ログイン中：{currentUser.name}（{currentUser.grade}）
+              {currentUser.name} / {currentUser.grade}
             </p>
-            <p>自分のポイント：{currentUser.point} pt</p>
+            <strong>{currentUser.point} pt</strong>
           </div>
-
-          <button className="logoutButtonCompact" onClick={handleLogout}>
+          <button className="secondaryButton compactButton" onClick={handleLogout}>
             ログアウト
           </button>
         </div>
-
-        <button onClick={handleCheckin}>ポイント増加ボタン</button>
+        <button onClick={handleCheckin}>活動ポイントを追加</button>
       </div>
 
       <div className="menuGrid">
@@ -281,42 +289,39 @@ function App() {
       </div>
 
       {village && (
-        <div className="card">
+        <div className="card villageSummary">
           <h2>今日のISDL</h2>
-          
-          <p>今日の活動人数：{village.active_users}人</p>
+          <p>今日の活動人数: {village.active_users}人</p>
+          <p>天気: {village.weather}</p>
           <p>
-            共用街 Lv.{village.level}：{village.title}
+            共用街 Lv.{village.level}: {village.title}
           </p>
         </div>
       )}
 
-      <h2>ランキング</h2>
-      {renderRanking()}
+      <section className="rankingSection">
+        <h2>ランキング</h2>
+        {renderRanking()}
+      </section>
     </div>
   );
 
   const renderVillage = () => (
     <>
       <div className="pageHeader">
-        <button className="backButton" onClick={() => setPage("home")}>
-          ← ホームへ
+        <button className="secondaryButton" onClick={() => setPage("home")}>
+          ホームへ戻る
         </button>
       </div>
 
       <div className="card villageCard">
         <h2>共用街</h2>
-
         {village ? (
           <>
-            
             <h3>
-              Lv.{village.level}：{village.title}
+              Lv.{village.level}: {village.title}
             </h3>
             <p>{village.description}</p>
-
-            
-
             <div className="statusGrid">
               <div>
                 <span>全体ポイント</span>
@@ -326,7 +331,10 @@ function App() {
                 <span>今日の活動人数</span>
                 <strong>{village.active_users} 人</strong>
               </div>
-              
+              <div>
+                <span>天気</span>
+                <strong>{village.weather}</strong>
+              </div>
             </div>
           </>
         ) : (
@@ -337,8 +345,8 @@ function App() {
       <div className="card">
         <h2>共用街の説明</h2>
         <p>
-          共用街は，全員の活動ポイントによって発展していく．
-          研究室に来る人が増えるほど街が発展し，今日の活動人数によって天気も変化する．
+          共用街は、研究室メンバーの活動ポイントによって発展します。
+          研究室に来る人が増えるほど街が育ち、今日の活動人数によって天気も変化します。
         </p>
       </div>
     </>
@@ -347,26 +355,23 @@ function App() {
   const renderRoom = () => (
     <>
       <div className="pageHeader">
-        <button className="backButton" onClick={() => setPage("home")}>
-          ← ホームへ
+        <button className="secondaryButton" onClick={() => setPage("home")}>
+          ホームへ戻る
         </button>
       </div>
 
       <div className="card roomCard">
         <h2>個人ルーム</h2>
-
         {room ? (
           <>
             <PixelRoom level={room.room_level} />
-
             <h3>
-              Lv.{room.room_level}：{room.room_name}
+              Lv.{room.room_level}: {room.room_name}
             </h3>
             <p>{room.room_description}</p>
-
             <div className="statusGrid">
               <div>
-                <span>ユーザ</span>
+                <span>ユーザー</span>
                 <strong>{room.user.name}</strong>
               </div>
               <div>
@@ -383,18 +388,17 @@ function App() {
           <p>読み込み中...</p>
         )}
       </div>
-
-    
     </>
   );
 
   return (
     <div className="app">
-      <h1>ISDLハッカソン</h1>
-      <h2>研究室ポイント</h2>
+      <header className="appHeader">
+        <h1>ISDL ハッカソン</h1>
+        <p>研究室活動ポイント</p>
+      </header>
 
       {!currentUser && renderLoginArea()}
-
       {currentUser && page === "home" && renderHome()}
       {currentUser && page === "village" && renderVillage()}
       {currentUser && page === "room" && renderRoom()}
