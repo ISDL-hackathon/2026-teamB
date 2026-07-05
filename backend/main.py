@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from typing import Literal
 
 from database import (
     init_db,
@@ -38,7 +39,7 @@ class LoginRequest(BaseModel):
 
 class ActivityRequest(BaseModel):
     user_id: int
-    activity_type: str
+    activity_type: Literal["checkin"]
 
 
 @app.on_event("startup")
