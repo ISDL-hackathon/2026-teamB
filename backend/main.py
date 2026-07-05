@@ -2,7 +2,6 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-
 from database import (
     init_db,
     create_user,
@@ -19,7 +18,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -57,17 +56,17 @@ def register(request: RegisterRequest):
     existing_user = get_user_by_name(request.name)
 
     if existing_user is not None:
-        raise HTTPException(status_code=400, detail="このユーザ名はすでに使われています")
+        raise HTTPException(status_code=400, detail="このユーザー名はすでに使われています")
 
     user = create_user(
         name=request.name,
         grade=request.grade,
-        password=request.password
+        password=request.password,
     )
 
     return {
-        "message": "ユーザ登録しました",
-        "user": user
+        "message": "ユーザー登録しました",
+        "user": user,
     }
 
 
@@ -76,7 +75,7 @@ def login(request: LoginRequest):
     user = get_user_by_name(request.name)
 
     if user is None:
-        raise HTTPException(status_code=401, detail="ユーザが存在しません")
+        raise HTTPException(status_code=401, detail="ユーザーが存在しません")
 
     if not verify_password(request.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="パスワードが違います")
@@ -90,8 +89,8 @@ def login(request: LoginRequest):
             "id": user["id"],
             "name": user["name"],
             "grade": user["grade"],
-            "point": user["point"] + added_point
-        }
+            "point": user["point"] + added_point,
+        },
     }
 
 
@@ -107,13 +106,14 @@ def checkin(request: ActivityRequest):
     add_activity(
         user_id=request.user_id,
         activity_type=request.activity_type,
-        point=point
+        point=point,
     )
 
     return {
         "message": "ポイントを加算しました",
-        "added_point": point
+        "added_point": point,
     }
+
 
 @app.get("/village/status")
 def village_status():
@@ -125,6 +125,6 @@ def room_status(user_id: int):
     room = get_room_status(user_id)
 
     if room is None:
-        raise HTTPException(status_code=404, detail="ユーザが存在しません")
+        raise HTTPException(status_code=404, detail="ユーザーが存在しません")
 
     return room
