@@ -340,6 +340,7 @@ tr:last-child td {
   image-rendering: pixelated;
 }
 
+/*
 .isoRoom {
   position: relative;
   width: min(560px, 100%);
@@ -426,6 +427,7 @@ tr:last-child td {
   top: auto;
   bottom: calc(100% - var(--grid-y));
 }
+*/
 
 @media (max-width: 680px) {
   .app {

@@ -1,0 +1,182 @@
+.isoRoom {
+  position: relative;
+  width: min(560px, 100%);
+  aspect-ratio: 14 / 9;
+  margin: 24px auto;
+  image-rendering: pixelated;
+  --room-wall-frame: #d6b48a;
+  --room-floor-frame: #7a5135;
+  --room-grid-line: rgba(255, 255, 255, 0.1);
+}
+
+.roomSurface {
+  position: absolute;
+  box-sizing: border-box;
+}
+
+.roomWallSurface {
+  left: 7%;
+  top: 4%;
+  width: 86%;
+  height: 30%;
+  border: 6px solid var(--room-wall-frame);
+  background: #c79a6b;
+  z-index: 1;
+  overflow: visible;
+}
+
+.roomFloorSurface {
+  left: calc(7% + 6px);
+  top: 34%;
+  width: calc(86% - 12px);
+  height: 61%;
+  background: #6f472f;
+  z-index: 2;
+  overflow: visible;
+}
+
+.roomTileLayer,
+.roomObjectLayer {
+  position: absolute;
+  inset: 0;
+  display: grid;
+}
+
+.roomTileLayer {
+  z-index: 1;
+  overflow: hidden;
+}
+
+.roomObjectLayer {
+  z-index: 5;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.roomObjectLayerEditing {
+  pointer-events: auto;
+}
+
+.roomFloorSurface::after {
+  content: "";
+  position: absolute;
+  inset: 0 -6px -6px;
+  box-shadow: inset 0 0 0 7px var(--room-floor-frame);
+  pointer-events: none;
+  z-index: 4;
+}
+
+.roomTile {
+  min-width: 0;
+  min-height: 0;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+.roomItem {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  align-self: end;
+  justify-self: center;
+  image-rendering: pixelated;
+}
+
+.roomItemEditable {
+  cursor: pointer;
+}
+
+.roomItemSelected {
+  outline: 2px solid #ffe16a;
+  outline-offset: 2px;
+}
+
+.roomChara {
+  min-width: 48px;
+  justify-self:start;
+  transform: translate(-12%, -8%);
+}
+
+.roomEditBar {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.roomMoveControls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  background: rgba(18, 22, 32, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+}
+
+.roomSelectedLabel {
+  min-width: 72px;
+  color: #f8fafc;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.roomMoveButton {
+  width: 28px;
+  min-height: 28px;
+  margin: 0;
+  padding: 0;
+  border-radius: 6px;
+}
+
+.roomWallTextureLayer {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 1fr;
+  z-index: 1;
+}
+
+.roomWallTexturePanel {
+  background-image: url("../assets/room/wall.png");
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: center;
+}
+
+.roomWallObjectLayer {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.roomGridOverlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  pointer-events: none;
+  z-index: 50;
+}
+
+.roomGridCell {
+  min-width: 0;
+  min-height: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.45);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.45);
+  box-sizing: border-box;
+}
+
+.roomGridCellTop {
+  border-top: 1px solid rgba(255, 255, 255, 0.45);
+}
+
+.roomGridCellLeft {
+  border-left: 1px solid rgba(255, 255, 255, 0.45);
+}

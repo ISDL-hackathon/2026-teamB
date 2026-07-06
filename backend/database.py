@@ -1,3 +1,4 @@
+import json
 import sqlite3
 from datetime import datetime
 
@@ -43,6 +44,15 @@ def init_db():
         activity_type TEXT NOT NULL,
         point INTEGER NOT NULL,
         created_at TEXT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+    """)
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS room_layouts (
+        user_id INTEGER PRIMARY KEY,
+        layout_json TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
         FOREIGN KEY (user_id) REFERENCES users(id)
     )
     """)
@@ -295,4 +305,49 @@ def get_room_status(user_id: int):
         "room_level": room_level,
         "room_name": room_name,
         "room_description": room_description,
+        "room_layout": get_room_layout(user_id),
     }
+
+
+def get_room_layout(user_id: int):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT layout_json
+        FROM room_layouts
+        WHERE user_id = ?
+        """,
+        (user_id,),
+    )
+
+    row = cur.fetchone()
+    conn.close()
+
+    if row is None:
+        return []
+
+    return json.loads(row["layout_json"])
+
+
+def save_room_layout(user_id: int, items):
+    conn = get_connection()
+    cur = conn.cursor()
+    updated_at = datetime.now().isoformat(timespec="seconds")
+    layout_json = json.dumps(items, ensure_ascii=False)
+
+    cur.execute(
+        """
+        INSERT INTO room_layouts (user_id, layout_json, updated_at)
+        VALUES (?, ?, ?)
+        ON CONFLICT(user_id) DO UPDATE SET
+            layout_json = excluded.layout_json,
+            updated_at = excluded.updated_at
+        """,
+        (user_id, layout_json, updated_at),
+    )
+
+    conn.commit()
+    conn.close()
+    return get_room_layout(user_id)
