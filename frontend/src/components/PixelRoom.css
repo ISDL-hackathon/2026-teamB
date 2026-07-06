@@ -20,6 +20,7 @@
   width: 86%;
   height: 30%;
   border: 6px solid var(--room-wall-frame);
+  border-bottom: 0;
   background: #c79a6b;
   z-index: 1;
   overflow: visible;
@@ -77,6 +78,7 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
+  object-position: center bottom;
   align-self: end;
   justify-self: center;
   image-rendering: pixelated;
@@ -100,7 +102,7 @@
 .roomEditBar {
   position: absolute;
   left: 8px;
-  top: 8px;
+  top: -36px;
   z-index: 80;
   display: flex;
   align-items: center;
@@ -155,6 +157,10 @@
   display: grid;
   z-index: 5;
   pointer-events: none;
+}
+
+.roomWallObjectLayer.roomObjectLayerEditing {
+  pointer-events: auto;
 }
 
 .roomGridOverlay {
