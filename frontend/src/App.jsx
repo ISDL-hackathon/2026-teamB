@@ -23,7 +23,7 @@ const weatherBackgrounds = {
   },
   雷雨: {
     overlay: "linear-gradient(rgba(17, 19, 26, 0.48), rgba(17, 19, 26, 0.68))",
-    image: "url('/weather/kaminari.gif')",
+    image: "url('/weather/kaminari_2.gif')",
   },
 };
 
@@ -174,6 +174,24 @@ function App() {
           point: prev.point + data.added_point,
         }));
         refreshAll(currentUser.id);
+      })
+      .catch((err) => setMessage(err.message));
+  };
+
+  const handleSaveRoomLayout = (layout) => {
+    if (!currentUser) {
+      return;
+    }
+
+    requestJson(`/room/layout/${currentUser.id}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items: layout }),
+    })
+      .then((data) => {
+        setRoom((prev) =>
+          prev ? { ...prev, room_layout: data.room_layout } : prev,
+        );
       })
       .catch((err) => setMessage(err.message));
   };
@@ -364,7 +382,11 @@ function App() {
         <h2>個人ルーム</h2>
         {room ? (
           <>
-            <PixelRoom level={room.room_level} />
+            <PixelRoom
+              level={room.room_level}
+              onSaveLayout={handleSaveRoomLayout}
+              savedLayout={room.room_layout}
+            />
             <h3>
               Lv.{room.room_level}: {room.room_name}
             </h3>

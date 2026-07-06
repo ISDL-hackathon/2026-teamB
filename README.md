@@ -1,5 +1,3 @@
-# teamB
-
 # ISDL Hackathon 2026 Team B
 
 研究室に来たくなることを目的とした，ポイント機能付きWebアプリです．

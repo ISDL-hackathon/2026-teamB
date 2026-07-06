@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from typing import List, Literal, Optional
 
 from database import (
     init_db,
@@ -11,6 +12,7 @@ from database import (
     add_activity,
     get_village_status,
     get_room_status,
+    save_room_layout,
     add_login_point_if_first_today,
 )
 
@@ -38,7 +40,22 @@ class LoginRequest(BaseModel):
 
 class ActivityRequest(BaseModel):
     user_id: int
-    activity_type: str
+    activity_type: Literal["checkin"]
+
+
+class RoomLayoutItem(BaseModel):
+    id: str
+    surface: str
+    col: float
+    row: float
+    colSpan: Optional[float] = None
+    rowSpan: Optional[float] = None
+    z: Optional[int] = None
+    anchor: Optional[str] = None
+
+
+class RoomLayoutRequest(BaseModel):
+    items: List[RoomLayoutItem]
 
 
 @app.on_event("startup")
@@ -128,3 +145,18 @@ def room_status(user_id: int):
         raise HTTPException(status_code=404, detail="ユーザーが存在しません")
 
     return room
+
+
+@app.post("/room/layout/{user_id}")
+def room_layout(user_id: int, request: RoomLayoutRequest):
+    room = get_room_status(user_id)
+
+    if room is None:
+        raise HTTPException(status_code=404, detail="繝ｦ繝ｼ繧ｶ繝ｼ縺悟ｭ伜惠縺励∪縺帙ｓ")
+
+    layout = save_room_layout(
+        user_id,
+        [item.dict(exclude_none=True) for item in request.items],
+    )
+
+    return {"room_layout": layout}
