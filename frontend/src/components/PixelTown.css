@@ -1,0 +1,88 @@
+.pixelTown {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(18, 50px);
+  grid-template-rows: repeat(11, 52px);
+  width: fit-content;
+  margin: 24px auto;
+  border: 6px solid #2f2a22;
+  background: #1f2937;
+  overflow: hidden;
+  image-rendering: pixelated;
+}
+
+.pixelTown::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.weatherSunny::after {
+  background: rgba(255, 230, 120, 0.06);
+}
+
+.weatherRainbow::after {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 0, 0, 0.08),
+    rgba(255, 255, 0, 0.08),
+    rgba(0, 255, 255, 0.08)
+  );
+}
+
+.weatherCloudy::after {
+  background: rgba(120, 130, 150, 0.18);
+}
+
+.weatherRainy::after {
+  background: rgba(40, 90, 150, 0.28);
+}
+
+.weatherStorm::after {
+  background: rgba(20, 20, 40, 0.45);
+}
+
+.grass {
+  background: #3d8f5b;
+}
+
+.path {
+  background: #b8905f;
+}
+
+.water {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.25) 4px, transparent 4px),
+    linear-gradient(#287fc8, #1f5f9d);
+  background-size: 16px 8px, 100% 100%;
+}
+
+.townChara {
+  width: 32px;
+  height: 42px;
+  object-fit: contain;
+  transform: translateY(-10px);
+  image-rendering: pixelated;
+}
+
+.townGridOverlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  pointer-events: none;
+  z-index: 50;
+}
+
+.townGridCell {
+  border-right: 1px dashed rgba(255, 255, 255, 0.35);
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.35);
+}
+
+.townGridCellTop {
+  border-top: 1px dashed rgba(255, 255, 255, 0.35);
+}
+
+.townGridCellLeft {
+  border-left: 1px dashed rgba(255, 255, 255, 0.35);
+}

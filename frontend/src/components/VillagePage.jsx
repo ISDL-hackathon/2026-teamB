@@ -1,3 +1,13 @@
+import PixelTown from "./PixelTown";
+
+const weatherClassNames = {
+  快晴: "weatherRainbow",
+  晴れ: "weatherSunny",
+  曇り: "weatherCloudy",
+  雨: "weatherRainy",
+  雷雨: "weatherStorm",
+};
+
 function VillagePage({ setPage, village }) {
   return (
     <>
@@ -11,6 +21,8 @@ function VillagePage({ setPage, village }) {
         <h2>共有街</h2>
         {village ? (
           <>
+            <PixelTown weather={weatherClassNames[village.weather] || "weatherStorm"} />
+
             <h3>
               Lv.{village.level}: {village.title}
             </h3>
