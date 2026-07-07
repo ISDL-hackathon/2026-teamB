@@ -236,6 +236,7 @@ tr:last-child td {
 
 .villageCard {
   border-color: #4ba7c8;
+  max-width: none;
 }
 
 .roomCard {
@@ -272,25 +273,7 @@ tr:last-child td {
   overflow-wrap: anywhere;
 }
 
-.pixelTown {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(12, 32px);
-  grid-template-rows: repeat(10, 32px);
-  width: fit-content;
-  margin: 24px auto;
-  border: 6px solid #2f2a22;
-  background: #1f2937;
-  overflow: hidden;
-  image-rendering: pixelated;
-}
 
-.pixelTown::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
 
 .weatherSunny::after {
   background: rgba(255, 230, 120, 0.06);
