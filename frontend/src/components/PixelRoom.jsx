@@ -4,7 +4,10 @@ import wallImg from "../assets/room/wall.png";
 import floorImg from "../assets/room/floor.png";
 import bedImg from "../assets/furniture/bed_pink.png";
 import bookshelfImg from "../assets/furniture/bookshelf.png";
+import clockImg from "../assets/furniture/clock.png";
 import shelfImg from "../assets/furniture/shelf.png";
+import stoveImg from "../assets/furniture/suto-bu.png";
+import windowImg from "../assets/furniture/window.png";
 import "./PixelRoom.css";
 
 const SHOW_GRID = false;
@@ -26,6 +29,45 @@ const tileTextures = {
 };
 
 const roomItems = [
+  {
+    id: "window",
+    surface: "wall",
+    minLevel: 1,
+    src: windowImg,
+    alt: "window",
+    col: 8,
+    row: 2,
+    colSpan: 2,
+    rowSpan: 2,
+    z: 6,
+    anchor: "bottomLeft",
+  },
+  {
+    id: "clock",
+    surface: "wall",
+    minLevel: 1,
+    src: clockImg,
+    alt: "clock",
+    col: 11,
+    row: 1,
+    colSpan: 1,
+    rowSpan: 1,
+    z: 7,
+    anchor: "bottomLeft",
+  },
+  {
+    id: "stove",
+    surface: "wall",
+    minLevel: 1,
+    src: stoveImg,
+    alt: "stove",
+    col: 5,
+    row: 3,
+    colSpan: 2,
+    rowSpan: 3,
+    z: 7,
+    anchor: "bottomLeft",
+  },
   {
     id: "bookshelf",
     surface: "floor",
