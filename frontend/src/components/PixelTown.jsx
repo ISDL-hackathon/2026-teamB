@@ -1,9 +1,7 @@
 import charaImg from "../assets/chara.png";
 import floorGreyImg from "../assets/town/floor_grey.png";
 import ventImg from "../assets/town/vent.png";
-import deskTopImg from "../assets/town/desk_top.png";
-import deskSideImg from "../assets/town/desk_side.png";
-import wallBeigeImg from "../assets/town/wall_beige.png";
+import { townItems } from "./PixeltownItems";
 import "./PixelTown.css";
 
 const SHOW_GRID = true;
@@ -12,45 +10,8 @@ const TOWN_COLS = 21;
 const TOWN_ROWS = 13;
 
 // 換気扇を何マスおきに置くか
-const VENT_INTERVAL_COL = 4;
-const VENT_INTERVAL_ROW = 3;
-
-// 家具の配置リスト
-const townItems = [
-  // 壁(row=1, col=1〜9)
-  { id: "wall-1-1", src: wallBeigeImg, alt: "壁", minLevel: 1, col: 1, row: 1, z: 1 },
-  { id: "wall-2-1", src: wallBeigeImg, alt: "壁", minLevel: 1, col: 2, row: 1, z: 1 },
-  { id: "wall-3-1", src: wallBeigeImg, alt: "壁", minLevel: 1, col: 3, row: 1, z: 1 },
-  { id: "wall-4-1", src: wallBeigeImg, alt: "壁", minLevel: 1, col: 4, row: 1, z: 1 },
-  { id: "wall-5-1", src: wallBeigeImg, alt: "壁", minLevel: 1, col: 5, row: 1, z: 1 },
-  { id: "wall-6-1", src: wallBeigeImg, alt: "壁", minLevel: 1, col: 6, row: 1, z: 1 },
-  { id: "wall-7-1", src: wallBeigeImg, alt: "壁", minLevel: 1, col: 7, row: 1, z: 1 },
-  { id: "wall-8-1", src: wallBeigeImg, alt: "壁", minLevel: 1, col: 8, row: 1, z: 1 },
-  { id: "wall-9-1", src: wallBeigeImg, alt: "壁", minLevel: 1, col: 9, row: 1, z: 1 },
-
-  // 壁(row=1, col=13〜21)
-  { id: "wall-13-1", src: wallBeigeImg, alt: "壁", minLevel: 1, col: 13, row: 1, z: 1 },
-  { id: "wall-14-1", src: wallBeigeImg, alt: "壁", minLevel: 1, col: 14, row: 1, z: 1 },
-  { id: "wall-15-1", src: wallBeigeImg, alt: "壁", minLevel: 1, col: 15, row: 1, z: 1 },
-  { id: "wall-16-1", src: wallBeigeImg, alt: "壁", minLevel: 1, col: 16, row: 1, z: 1 },
-  { id: "wall-17-1", src: wallBeigeImg, alt: "壁", minLevel: 1, col: 17, row: 1, z: 1 },
-  { id: "wall-18-1", src: wallBeigeImg, alt: "壁", minLevel: 1, col: 18, row: 1, z: 1 },
-  { id: "wall-19-1", src: wallBeigeImg, alt: "壁", minLevel: 1, col: 19, row: 1, z: 1 },
-  { id: "wall-20-1", src: wallBeigeImg, alt: "壁", minLevel: 1, col: 20, row: 1, z: 1 },
-  { id: "wall-21-1", src: wallBeigeImg, alt: "壁", minLevel: 1, col: 21, row: 1, z: 1 },
-
-  // 机1(col=1, row=3〜5)
-  { id: "desk1-top-3", src: deskTopImg, alt: "机", minLevel: 1, col: 1, row: 3, z: 5 },
-  { id: "desk1-top-4", src: deskTopImg, alt: "机", minLevel: 1, col: 1, row: 4, z: 5 },
-  { id: "desk1-side-5", src: deskSideImg, alt: "机の脚", minLevel: 1, col: 1, row: 5, z: 5 },
-
-  // 机2(col=1, row=7〜11)
-  { id: "desk2-top-7", src: deskTopImg, alt: "机", minLevel: 1, col: 1, row: 7, z: 5 },
-  { id: "desk2-top-8", src: deskTopImg, alt: "机", minLevel: 1, col: 1, row: 8, z: 5 },
-  { id: "desk2-top-9", src: deskTopImg, alt: "机", minLevel: 1, col: 1, row: 9, z: 5 },
-  { id: "desk2-top-10", src: deskTopImg, alt: "机", minLevel: 1, col: 1, row: 10, z: 5 },
-  { id: "desk2-side-11", src: deskSideImg, alt: "机の脚", minLevel: 1, col: 1, row: 11, z: 5 },
-];
+const VENT_INTERVAL_COL = 2.5;
+const VENT_INTERVAL_ROW = 2.5;
 
 // 換気扇を等間隔で自動生成する
 function createVents() {
@@ -133,7 +94,7 @@ function PixelTown({ weather = "weatherRainy", level = 1 }) {
         />
       ))}
 
-      {/* 家具レイヤー(壁・机など、レベルで絞り込み) */}
+      {/* 家具レイヤー(壁・机・ロッカーなど、レベルで絞り込み) */}
       {visibleItems.map((item) => (
         <img
           key={item.id}
