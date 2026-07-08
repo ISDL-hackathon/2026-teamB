@@ -43,8 +43,9 @@ function applySavedItem(item, savedItem) {
   };
 }
 
-function createInitialPlacedItems(itemDefinitions, savedLayout = []) {
+function createInitialPlacedItems(itemDefinitions, savedLayout = [], ownedItemIds = []) {
   const savedItemsById = new Map(savedLayout.map((item) => [item.id, item]));
+  const ownedItemIdSet = new Set(ownedItemIds);
 
   return itemDefinitions.flatMap((item) => {
     const savedItem = savedItemsById.get(item.id);
@@ -53,7 +54,9 @@ function createInitialPlacedItems(itemDefinitions, savedLayout = []) {
       return savedItem ? applySavedItem(item, savedItem) : item;
     }
 
-    return savedItem ? applySavedItem(item, savedItem) : [];
+    return savedItem && ownedItemIdSet.has(item.id)
+      ? applySavedItem(item, savedItem)
+      : [];
   });
 }
 
@@ -276,21 +279,22 @@ function RoomSurface({
   );
 }
 
-function PixelRoom({ level, savedLayout = [], onSaveLayout }) {
+function PixelRoom({ level, ownedItemIds = [], savedLayout = [], onSaveLayout }) {
   const [items, setItems] = useState(() =>
-    createInitialPlacedItems(roomItems, savedLayout),
+    createInitialPlacedItems(roomItems, savedLayout, ownedItemIds),
   );
   const [isEditing, setIsEditing] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState(null);
 
   useEffect(() => {
-    setItems(createInitialPlacedItems(roomItems, savedLayout));
-  }, [savedLayout]);
+    setItems(createInitialPlacedItems(roomItems, savedLayout, ownedItemIds));
+  }, [ownedItemIds, savedLayout]);
 
   const placedItemIds = new Set(items.map((item) => item.id));
+  const ownedItemIdSet = new Set(ownedItemIds);
   const bagItems = roomItems.filter(
     (item) =>
-      !item.isFixed && level >= item.minLevel && !placedItemIds.has(item.id),
+      !item.isFixed && ownedItemIdSet.has(item.id) && !placedItemIds.has(item.id),
   );
   const wallItems = items.filter((item) => item.surface === "wall");
   const floorItems = items.filter((item) => item.surface === "floor");
@@ -323,7 +327,7 @@ function PixelRoom({ level, savedLayout = [], onSaveLayout }) {
   const handleAddItem = (itemId) => {
     const itemToAdd = roomItems.find((item) => item.id === itemId);
 
-    if (!itemToAdd || itemToAdd.isFixed || level < itemToAdd.minLevel) {
+    if (!itemToAdd || itemToAdd.isFixed || !ownedItemIdSet.has(itemToAdd.id)) {
       return;
     }
 

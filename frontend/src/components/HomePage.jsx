@@ -77,6 +77,7 @@ function HomePage({
       <div className="menuGrid">
         <button onClick={() => setPage("village")}>共有街へ</button>
         <button onClick={() => setPage("room")}>個人ルームへ</button>
+        <button onClick={() => setPage("shop")}>Shop</button>
       </div>
 
       {village && (

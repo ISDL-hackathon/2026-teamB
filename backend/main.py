@@ -14,6 +14,7 @@ from database import (
     get_room_status,
     save_room_layout,
     add_login_point_if_first_today,
+    purchase_furniture,
 )
 
 app = FastAPI()
@@ -56,6 +57,11 @@ class RoomLayoutItem(BaseModel):
 
 class RoomLayoutRequest(BaseModel):
     items: List[RoomLayoutItem]
+
+
+class FurniturePurchaseRequest(BaseModel):
+    user_id: int
+    furniture_id: str
 
 
 @app.on_event("startup")
@@ -107,6 +113,7 @@ def login(request: LoginRequest):
             "name": user["name"],
             "grade": user["grade"],
             "point": user["point"] + added_point,
+            "total_point": user["total_point"] + added_point,
         },
     }
 
@@ -130,6 +137,34 @@ def checkin(request: ActivityRequest):
         "message": "ポイントを加算しました",
         "added_point": point,
     }
+
+
+@app.post("/shop/furniture/purchase")
+def furniture_purchase(request: FurniturePurchaseRequest):
+    result = purchase_furniture(
+        user_id=request.user_id,
+        furniture_id=request.furniture_id,
+    )
+
+    if result["ok"]:
+        return result
+
+    if result["reason"] == "user_not_found":
+        raise HTTPException(status_code=404, detail="繝ｦ繝ｼ繧ｶ繝ｼ縺悟ｭ伜惠縺励∪縺帙ｓ")
+
+    if result["reason"] == "not_found":
+        raise HTTPException(status_code=404, detail="家具が見つかりません")
+
+    if result["reason"] == "already_owned":
+        raise HTTPException(status_code=400, detail="この家具は購入済みです")
+
+    if result["reason"] == "not_enough_point":
+        raise HTTPException(status_code=400, detail="ポイントが足りません")
+
+    if result["reason"] == "locked":
+        raise HTTPException(status_code=400, detail="まだ購入できない家具です")
+
+    raise HTTPException(status_code=400, detail="購入できません")
 
 
 @app.get("/village/status")

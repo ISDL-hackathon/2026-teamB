@@ -30,6 +30,7 @@ export const roomItems = [
   {
     id: "window",
     name: "Window",
+    price: 30,
     surface: "wall",
     minLevel: 1,
     src: windowImg,
@@ -44,6 +45,7 @@ export const roomItems = [
   {
     id: "clock",
     name: "Clock",
+    price: 30,
     surface: "wall",
     minLevel: 1,
     src: clockImg,
@@ -58,6 +60,7 @@ export const roomItems = [
   {
     id: "stove",
     name: "Stove",
+    price: 50,
     surface: "wall",
     minLevel: 1,
     src: stoveImg,
@@ -72,6 +75,7 @@ export const roomItems = [
   {
     id: "bookshelf",
     name: "Bookshelf",
+    price: 80,
     surface: "floor",
     minLevel: 3,
     src: bookshelfImg,
@@ -86,6 +90,7 @@ export const roomItems = [
   {
     id: "shelf",
     name: "Shelf",
+    price: 100,
     surface: "floor",
     minLevel: 4,
     src: shelfImg,
@@ -100,6 +105,7 @@ export const roomItems = [
   {
     id: "bed",
     name: "Bed",
+    price: 150,
     surface: "floor",
     minLevel: 5,
     src: bedImg,
