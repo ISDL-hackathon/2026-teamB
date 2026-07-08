@@ -1,11 +1,48 @@
 import charaImg from "../assets/chara.png";
-import floor1Img from "../assets/room/floor1.png";
+import floorGreyImg from "../assets/town/floor_grey.png";
+import ventImg from "../assets/town/vent.png";
+import { townItems } from "./PixeltownItems";
 import "./PixelTown.css";
 
 const SHOW_GRID = true;
 
-const TOWN_COLS = 24;
-const TOWN_ROWS = 16;
+const TOWN_COLS = 21;
+const TOWN_ROWS = 13;
+
+// 換気扇を何マスおきに置くか
+const VENT_INTERVAL_COL = 2.5;
+const VENT_INTERVAL_ROW = 2.5;
+
+// 換気扇を等間隔で自動生成する
+function createVents() {
+  const vents = [];
+  for (let row = 1; row <= TOWN_ROWS; row += VENT_INTERVAL_ROW) {
+    for (let col = 1; col <= TOWN_COLS; col += VENT_INTERVAL_COL) {
+      vents.push({
+        col,
+        row,
+        colSpan: 0.66,
+        rowSpan: 0.66,
+        key: `vent-${col}-${row}`,
+      });
+    }
+  }
+  return vents;
+}
+
+// マス目の位置を、画面上の%位置に変換する
+function getItemStyle(item) {
+  const colSpan = item.colSpan ?? 1;
+  const rowSpan = item.rowSpan ?? 1;
+  return {
+    position: "absolute",
+    left: `${((item.col - 1) / TOWN_COLS) * 100}%`,
+    top: `${((item.row - 1) / TOWN_ROWS) * 100}%`,
+    width: `${(colSpan / TOWN_COLS) * 100}%`,
+    height: `${(rowSpan / TOWN_ROWS) * 100}%`,
+    zIndex: item.z ?? 1,
+  };
+}
 
 function TownGridOverlay() {
   return (
@@ -19,7 +56,6 @@ function TownGridOverlay() {
       {Array.from({ length: TOWN_COLS * TOWN_ROWS }, (_, index) => {
         const isTopRow = index < TOWN_COLS;
         const isLeftColumn = index % TOWN_COLS === 0;
-
         return (
           <div
             className={`townGridCell ${isTopRow ? "townGridCellTop" : ""} ${
@@ -33,24 +69,49 @@ function TownGridOverlay() {
   );
 }
 
-function PixelTown({ weather = "weatherRainy" }) {
+function PixelTown({ weather = "weatherRainy", level = 1 }) {
+  const vents = createVents();
+  const visibleItems = townItems.filter((item) => level >= item.minLevel);
+
   return (
     <div
       className={`pixelTown ${weather}`}
       aria-label="共用街"
       style={{
-        backgroundImage: `url(${floor1Img})`,
+        backgroundImage: `url(${floorGreyImg})`,
         backgroundRepeat: "repeat",
         backgroundSize: "32px 32px",
       }}
     >
-      {Array.from({ length: TOWN_COLS * TOWN_ROWS }, (_, index) => (
-        <div key={index}>
-          {index === 65 && (
-            <img src={charaImg} className="townChara" alt="街のキャラクター" />
-          )}
-        </div>
+      {/* 換気扇レイヤー(等間隔で自動配置) */}
+      {vents.map((vent) => (
+        <img
+          key={vent.key}
+          src={ventImg}
+          className="townVent"
+          alt="換気扇"
+          style={getItemStyle(vent)}
+        />
       ))}
+
+      {/* 家具レイヤー(壁・机・ロッカーなど、レベルで絞り込み) */}
+      {visibleItems.map((item) => (
+        <img
+          key={item.id}
+          src={item.src}
+          className="townItem"
+          alt={item.alt}
+          style={getItemStyle(item)}
+        />
+      ))}
+
+      {/* キャラクター */}
+      <img
+        src={charaImg}
+        className="townChara"
+        alt="街のキャラクター"
+        style={getItemStyle({ col: 11, row: 7 })}
+      />
 
       {SHOW_GRID && <TownGridOverlay />}
     </div>
