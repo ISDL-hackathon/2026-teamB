@@ -1,3 +1,5 @@
+import charaIcon from "../assets/chara.png";
+import iconBase from "../assets/icons/maru.png";
 import RankingTable from "./RankingTable";
 
 const weatherBackgrounds = {
@@ -31,6 +33,15 @@ function getWeatherBackground(weather) {
   };
 }
 
+function UserIcon({ icon = charaIcon }) {
+  return (
+    <div className="userIcon" aria-hidden="true">
+      <img alt="" className="userIconBase" src={iconBase} />
+      <img alt="" className="userIconImage" src={icon} />
+    </div>
+  );
+}
+
 function HomePage({
   currentUser,
   onCheckin,
@@ -46,12 +57,15 @@ function HomePage({
     >
       <div className="card homeUserCard">
         <div className="homeUserHeader">
-          <div className="homeUserInfo">
+          <div className="homeUserProfile">
+            <UserIcon />
+            <div className="homeUserInfo">
             <span className="eyebrow">ログイン中</span>
             <p>
               {currentUser.name} / {currentUser.grade}
             </p>
-            <strong>{currentUser.point} pt</strong>
+              <strong>{currentUser.point} pt</strong>
+            </div>
           </div>
           <button className="secondaryButton compactButton" onClick={onLogout}>
             ログアウト
@@ -63,6 +77,7 @@ function HomePage({
       <div className="menuGrid">
         <button onClick={() => setPage("village")}>共有街へ</button>
         <button onClick={() => setPage("room")}>個人ルームへ</button>
+        <button onClick={() => setPage("shop")}>Shop</button>
       </div>
 
       {village && (

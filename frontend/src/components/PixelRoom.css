@@ -1,8 +1,17 @@
+.roomEditorShell {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  margin: 52px auto 24px;
+}
+
 .isoRoom {
   position: relative;
   width: min(560px, 100%);
   aspect-ratio: 14 / 9;
-  margin: 24px auto;
+  margin: 0;
   image-rendering: pixelated;
   --room-wall-frame: #d6b48a;
   --room-floor-frame: #7a5135;
@@ -128,11 +137,108 @@
 }
 
 .roomMoveButton {
-  width: 28px;
+  min-width: 28px;
   min-height: 28px;
   margin: 0;
   padding: 0;
   border-radius: 6px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.roomArrowButton {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+  background: #050505;
+}
+
+.roomArrowIcon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.roomArrowButton:disabled .roomArrowIcon {
+  opacity: 0.35;
+}
+
+.roomRemoveButton {
+  min-width: 58px;
+}
+
+.roomBag {
+  flex: 0 0 128px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  max-height: 420px;
+  padding: 6px 8px;
+  background: rgba(18, 22, 32, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+.roomBagLabel,
+.roomBagEmpty {
+  color: #f8fafc;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.roomBagEmpty {
+  opacity: 0.72;
+}
+
+.roomBagItems {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  min-width: 0;
+  overflow-y: auto;
+}
+
+.roomBagItem {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
+  min-height: 30px;
+  margin: 0;
+  padding: 3px 7px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.roomBagItemImage {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+@media (max-width: 760px) {
+  .roomEditorShell {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .roomBag {
+    width: min(560px, 100%);
+    flex: none;
+  }
+
+  .roomBagItems {
+    flex-direction: row;
+    overflow-x: auto;
+  }
 }
 
 .roomWallTextureLayer {

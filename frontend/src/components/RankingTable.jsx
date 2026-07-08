@@ -3,10 +3,10 @@ function RankingTable({ ranking }) {
     <table>
       <thead>
         <tr>
-          <th>順位</th>
-          <th>名前</th>
-          <th>学年</th>
-          <th>ポイント</th>
+          <th>Rank</th>
+          <th>Name</th>
+          <th>Grade</th>
+          <th>Total Points</th>
         </tr>
       </thead>
       <tbody>
@@ -15,7 +15,7 @@ function RankingTable({ ranking }) {
             <td>{index + 1}</td>
             <td>{user.name}</td>
             <td>{user.grade}</td>
-            <td>{user.point} pt</td>
+            <td>{user.total_point ?? user.point} pt</td>
           </tr>
         ))}
       </tbody>

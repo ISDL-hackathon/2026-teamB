@@ -3,6 +3,7 @@ import { requestJson } from "./api";
 import HomePage from "./components/HomePage";
 import LoginArea from "./components/LoginArea";
 import RoomPage from "./components/RoomPage";
+import ShopPage from "./components/ShopPage";
 import VillagePage from "./components/VillagePage";
 import "./App.css";
 
@@ -132,8 +133,32 @@ function App() {
         setCurrentUser((prev) => ({
           ...prev,
           point: prev.point + data.added_point,
+          total_point: (prev.total_point ?? prev.point) + data.added_point,
         }));
         refreshAll(currentUser.id);
+      })
+      .catch((err) => setMessage(err.message));
+  };
+
+  const handlePurchaseFurniture = (furnitureId) => {
+    if (!currentUser) {
+      return;
+    }
+
+    requestJson("/shop/furniture/purchase", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: currentUser.id,
+        furniture_id: furnitureId,
+      }),
+    })
+      .then((data) => {
+        setCurrentUser(data.user);
+        fetchRanking();
+        fetchVillage();
+        fetchRoom(currentUser.id);
+        setMessage(`${data.item.name} を購入しました -${data.item.price}pt`);
       })
       .catch((err) => setMessage(err.message));
   };
@@ -200,6 +225,14 @@ function App() {
       {currentUser && page === "room" && (
         <RoomPage
           onSaveRoomLayout={handleSaveRoomLayout}
+          room={room}
+          setPage={setPage}
+        />
+      )}
+
+      {currentUser && page === "shop" && (
+        <ShopPage
+          onPurchaseFurniture={handlePurchaseFurniture}
           room={room}
           setPage={setPage}
         />
