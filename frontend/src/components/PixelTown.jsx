@@ -6,8 +6,8 @@ import "./PixelTown.css";
 
 const SHOW_GRID = true;
 
-const TOWN_COLS = 21;
-const TOWN_ROWS = 13;
+const TOWN_COLS = 20;
+const TOWN_ROWS = 16;
 
 // 換気扇を何マスおきに置くか
 const VENT_INTERVAL_COL = 2.5;
