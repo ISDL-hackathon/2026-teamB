@@ -1,4 +1,4 @@
-from typing import List, Literal, Optional
+from typing import Dict, List, Literal, Optional
 
 from pydantic import BaseModel
 
@@ -32,6 +32,7 @@ class RoomLayoutItem(BaseModel):
 
 class RoomLayoutRequest(BaseModel):
     items: List[RoomLayoutItem]
+    theme: Optional[Dict[str, str]] = None
 
 
 class FurniturePurchaseRequest(BaseModel):
