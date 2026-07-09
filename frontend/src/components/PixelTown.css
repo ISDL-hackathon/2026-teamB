@@ -2,7 +2,7 @@
   position: relative;
   display: grid;
   grid-template-columns: repeat(20, 32px);
-  grid-template-rows: repeat(16, 32px);
+  grid-template-rows: repeat(24, 32px);
   width: fit-content;
   margin: 24px auto;
   border: 6px solid #2f2a22;
