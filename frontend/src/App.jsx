@@ -5,6 +5,7 @@ import LoginArea from "./components/LoginArea";
 import RoomPage from "./components/RoomPage";
 import ShopPage from "./components/ShopPage";
 import VillagePage from "./components/VillagePage";
+import VillageSlotSelectPage from "./components/VillageSlotSelectPage";
 import "./App.css";
 
 function App() {
@@ -16,6 +17,9 @@ function App() {
   const [registerName, setRegisterName] = useState("");
   const [registerGrade, setRegisterGrade] = useState("U4");
   const [registerPassword, setRegisterPassword] = useState("");
+
+  const [villageSlots, setVillageSlots] = useState([]);
+  const [viewingRoomUserId, setViewingRoomUserId] = useState(null);
 
   const [currentUser, setCurrentUser] = useState(null);
   const [ranking, setRanking] = useState([]);
@@ -44,6 +48,7 @@ function App() {
   const refreshAll = (userId = currentUser?.id) => {
     fetchRanking();
     fetchVillage();
+    fetchVillageSlots();
 
     if (userId) {
       fetchRoom(userId);
@@ -101,7 +106,11 @@ function App() {
             ? `${data.user.name}でログインしました。本日初ログイン +${data.added_point}pt`
             : `${data.user.name}でログインしました。本日はログイン済みです`,
         );
-        setPage("home");
+        if (data.user.village_slot_id) {
+          setPage("home");
+        } else {
+          setPage("selectVillageSlot");
+        }
         refreshAll(data.user.id);
       })
       .catch((err) => setMessage(err.message));
@@ -110,10 +119,55 @@ function App() {
   const handleLogout = () => {
     setCurrentUser(null);
     setRoom(null);
+    setViewingRoomUserId(null);
     setPage("home");
     setMessage("ログアウトしました");
   };
 
+  const fetchVillageSlots = () => {
+    requestJson("/village/slots")
+      .then(setVillageSlots)
+      .catch((err) => setMessage(err.message));
+  };
+
+  const handleSelectVillageSlot = (slotId) => {
+    if (!currentUser) return;
+
+    requestJson("/village/position", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: currentUser.id,
+        slot_id: slotId,
+      }),
+    })
+      .then((data) => {
+        setCurrentUser((prev) => ({
+          ...prev,
+          village_slot_id: data.slot_id,
+        }));
+        fetchVillageSlots();
+        setPage("home");
+      })
+      .catch((err) => setMessage(err.message));
+  };
+
+  const handleOpenReadonlyRoom = (userId) => {
+    if (!currentUser) return;
+
+    setViewingRoomUserId(userId);
+    fetchRoom(userId);
+    setPage("room");
+  };
+
+  const handleOpenMyRoom = () => {
+    if (!currentUser) return;
+
+    setViewingRoomUserId(null);
+    fetchRoom(currentUser.id);
+    setPage("room");
+  };
+  
   const handleCheckin = () => {
     if (!currentUser) {
       setMessage("ログインしてください");
@@ -212,19 +266,36 @@ function App() {
           currentUser={currentUser}
           onCheckin={handleCheckin}
           onLogout={handleLogout}
+          onOpenMyRoom={handleOpenMyRoom}
           ranking={ranking}
           setPage={setPage}
           village={village}
         />
       )}
 
+      {currentUser && page === "selectVillageSlot" && (
+        <VillageSlotSelectPage
+          currentUser={currentUser}
+          onSelectSlot={handleSelectVillageSlot}
+          setPage={setPage}
+          village={village}
+          villageSlots={villageSlots}
+        />
+      )}
+
       {currentUser && page === "village" && (
-        <VillagePage setPage={setPage} village={village} />
+        <VillagePage
+          onPcClick={handleOpenReadonlyRoom}
+          setPage={setPage}
+          village={village}
+          villageSlots={villageSlots}
+        />
       )}
 
       {currentUser && page === "room" && (
         <RoomPage
           onSaveRoomLayout={handleSaveRoomLayout}
+          readonly={viewingRoomUserId !== null}
           room={room}
           setPage={setPage}
         />

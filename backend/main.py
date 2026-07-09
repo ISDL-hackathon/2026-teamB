@@ -8,6 +8,9 @@ from database import (
     create_user,
     get_user_by_name,
     verify_password,
+    get_village_slots,
+    get_user_village_slot_id,
+    save_user_village_position,
     get_ranking,
     add_activity,
     get_village_status,
@@ -64,6 +67,11 @@ class FurniturePurchaseRequest(BaseModel):
     furniture_id: str
 
 
+class VillagePositionRequest(BaseModel):
+    user_id: int
+    slot_id: str
+
+
 @app.on_event("startup")
 def startup():
     init_db()
@@ -114,6 +122,7 @@ def login(request: LoginRequest):
             "grade": user["grade"],
             "point": user["point"] + added_point,
             "total_point": user["total_point"] + added_point,
+            "village_slot_id": get_user_village_slot_id(user["id"]),
         },
     }
 
@@ -170,6 +179,24 @@ def furniture_purchase(request: FurniturePurchaseRequest):
 @app.get("/village/status")
 def village_status():
     return get_village_status()
+
+
+@app.get("/village/slots")
+def village_slots():
+    return get_village_slots()
+
+
+@app.post("/village/position")
+def village_position(request: VillagePositionRequest):
+    result = save_user_village_position(
+        request.user_id,
+        request.slot_id,
+    )
+
+    if not result["ok"]:
+        raise HTTPException(status_code=400, detail=result["reason"])
+
+    return result
 
 
 @app.get("/room/status/{user_id}")

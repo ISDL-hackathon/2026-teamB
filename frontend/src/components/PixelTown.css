@@ -18,6 +18,42 @@
   pointer-events: none;
 }
 
+.townSlot {
+  border: 2px solid transparent;
+  background: transparent;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 0;
+  position: absolute;
+  text-align: center;
+  z-index: 30;
+}
+
+.townSlotEmpty {
+  border-color: rgba(80, 180, 255, 0.85);
+  background: rgba(80, 180, 255, 0.18);
+}
+
+.townSlotEmpty:hover {
+  background: rgba(80, 180, 255, 0.34);
+}
+
+.townSlotOccupied {
+  border-color: rgba(255, 255, 255, 0.85);
+  background: rgba(30, 40, 50, 0.78);
+}
+
+.townSlotOccupied:hover {
+  transform: translateY(-2px);
+}
+
+.townSlot:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .weatherSunny::after {
   background: rgba(255, 230, 120, 0.06);
 }

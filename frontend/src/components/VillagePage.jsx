@@ -8,7 +8,7 @@ const weatherClassNames = {
   雷雨: "weatherStorm",
 };
 
-function VillagePage({ setPage, village }) {
+function VillagePage({ setPage, village, villageSlots, onPcClick }) {
   return (
     <>
       <div className="pageHeader">
@@ -21,7 +21,13 @@ function VillagePage({ setPage, village }) {
         <h2>共有街</h2>
         {village ? (
           <>
-            <PixelTown weather={weatherClassNames[village.weather] || "weatherStorm"} />
+            <PixelTown
+              weather={weatherClassNames[village.weather] || "weatherStorm"}
+              level={village.level}
+              mode="view"
+              slots={villageSlots}
+              onPcClick={onPcClick}
+            />
 
             <h3>
               Lv.{village.level}: {village.title}
