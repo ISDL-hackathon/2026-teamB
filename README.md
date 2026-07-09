@@ -1,23 +1,25 @@
 # ISDL Hackathon 2026 Team B
 
-研究室に来たくなることを目的とした，ポイント機能付きWebアプリです．
-フロントエンドは React + Vite，バックエンドは Python + FastAPI，データベースは SQLite を使用しています．
+研究室に来たくなることを目指した、ログイン機能付きのWebアプリです。
+フロントエンドは React + Vite、バックエンドは Python + FastAPI、データベースは SQLite を使っています。
 
 ## ディレクトリ構成
 
 ```text
-isdl_hackathon/
-├── backend/
-│   ├── main.py
-│   └── database.py
-├── frontend/
-│   ├── package.json
-│   ├── index.html
-│   └── src/
-└── README.md
+2026-teamB/
+├─ backend/
+│  ├─ main.py        # FastAPI のエンドポイント
+│  ├─ schemas.py     # API リクエストの型定義
+│  ├─ messages.py    # API のメッセージ定義
+│  └─ database.py    # SQLite 操作
+├─ frontend/
+│  ├─ package.json
+│  ├─ index.html
+│  └─ src/
+└─ README.md
 ```
 
-## 実行方法
+## ローカル起動
 
 ### 1. リポジトリを取得
 
@@ -26,7 +28,7 @@ git clone https://github.com/ISDL-hackathon/2026-teamB.git
 cd 2026-teamB
 ```
 
-### 2. バックエンドの起動
+### 2. バックエンドを起動
 
 ```bash
 cd backend
@@ -34,15 +36,15 @@ pip install fastapi uvicorn passlib bcrypt
 uvicorn main:app --reload
 ```
 
-バックエンドは以下のURLで起動します．
+バックエンドは以下のURLで起動します。
 
 ```text
 http://127.0.0.1:8000
 ```
 
-### 3. フロントエンドの起動
+### 3. フロントエンドを起動
 
-別のターミナルを開き，プロジェクト直下から以下を実行します．
+別のターミナルで実行します。
 
 ```bash
 cd frontend
@@ -50,47 +52,77 @@ npm install
 npm run dev
 ```
 
-フロントエンドは以下のURLで起動します．
+フロントエンドは以下のURLで起動します。
 
 ```text
 http://localhost:5173
 ```
 
-## GitHubへの反映方法
+## Cloudflare Tunnel で動かす
 
-変更したファイルを確認します．
+Cloudflare Tunnel で公開するときは、フロントエンド用とバックエンド用の2つの tunnel を用意します。
+
+### 1. バックエンド用 tunnel
+
+ターミナル1でバックエンドを起動します。
+
+```bash
+cd backend
+uvicorn main:app --reload
+```
+
+ターミナル2でバックエンドを tunnel に公開します。
+
+```bash
+cloudflared tunnel --url http://127.0.0.1:8000
+```
+
+表示された `https://xxxxx.trycloudflare.com` を、フロントエンドの API URL として使います。
+
+### 2. フロントエンドの API URL を設定
+
+`frontend/.env.tunnel` を作成して、バックエンド用 tunnel のURLを書きます。
+
+```env
+VITE_API_BASE_URL=https://xxxxx.trycloudflare.com
+```
+
+### 3. フロントエンド用 tunnel
+
+ターミナル3でフロントエンドを起動します。
+
+```bash
+cd frontend
+npm install
+npm run dev:tunnel
+```
+
+ターミナル4でフロントエンドを tunnel に公開します。
+
+```bash
+cloudflared tunnel --url http://127.0.0.1:5173
+```
+
+フロントエンド用 tunnel のURLからアプリにアクセスできます。
+
+## GitHub への反映
 
 ```bash
 git status
-```
-
-変更を追加します．
-
-```bash
 git add .
-```
-
-コミットします．
-
-```bash
 git commit -m "変更内容"
-```
-
-GitHubへpushします．
-
-```bash
 git push
 ```
 
-## 注意事項
+## GitHub に上げないもの
 
-以下のファイルやフォルダはGitHubに上げません．
+以下のファイルやフォルダは GitHub に上げません。
 
 ```text
 node_modules/
 __pycache__/
 *.db
 .env
+.env.local
+.env.tunnel
 ```
-
-これらは `.gitignore` に追加しています．

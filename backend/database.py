@@ -4,7 +4,10 @@ from datetime import datetime
 
 from passlib.context import CryptContext
 
+
 DB_NAME = "isdl.db"
+LOGIN_POINT = 10
+CHECKIN_POINT = 20
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
@@ -17,11 +20,43 @@ FURNITURE_CATALOG = [
     {"id": "bed", "name": "Bed", "price": 150, "min_level": 5},
 ]
 
+VILLAGE_LEVELS = [
+    (1000, 5, "ISDL都市", "研究室が完全に活性化しています。みんなの活動で街が大きく発展しました。"),
+    (600, 4, "にぎやかな研究室", "人が集まり、研究や交流も活発になってきました。"),
+    (300, 3, "活動中の研究室", "研究室に人が集まり始め、設備も少しずつ充実してきました。"),
+    (100, 2, "少し明るい研究室", "少しずつ人が来るようになり、研究室に活気が出てきました。"),
+    (0, 1, "静かな研究室", "まだ人が少なく、研究室は少し寂しい状態です。"),
+]
+
+WEATHER_BY_ACTIVE_USERS = [
+    (8, "快晴"),
+    (6, "晴れ"),
+    (4, "曇り"),
+    (2, "雨"),
+    (0, "雷雨"),
+]
+
+ROOM_LEVELS = [
+    (600, 5, "研究室の主ルーム", "研究も交流も楽しめる、かなり豪華な個人ルームです。"),
+    (300, 4, "快適作業ルーム", "作業環境が整い、集中しやすい部屋になってきました。"),
+    (150, 3, "研究セット部屋", "本とPCが増えて、研究できる雰囲気が出てきました。"),
+    (50, 2, "机と椅子の部屋", "最低限の作業スペースができました。"),
+    (0, 1, "何もない部屋", "まだ何もない部屋です。研究室に来てポイントを集めましょう。"),
+]
+
 
 def get_connection():
     conn = sqlite3.connect(DB_NAME)
     conn.row_factory = sqlite3.Row
     return conn
+
+
+def get_now():
+    return datetime.now().isoformat(timespec="seconds")
+
+
+def get_today_prefix():
+    return f"{datetime.now().date().isoformat()}%"
 
 
 def hash_password(password: str):
@@ -90,14 +125,13 @@ def init_db():
 def create_user(name: str, grade: str, password: str):
     conn = get_connection()
     cur = conn.cursor()
-    password_hash = hash_password(password)
 
     cur.execute(
         """
         INSERT INTO users (name, grade, password_hash, point, total_point)
         VALUES (?, ?, ?, 0, 0)
         """,
-        (name, grade, password_hash),
+        (name, grade, hash_password(password)),
     )
 
     conn.commit()
@@ -128,11 +162,25 @@ def get_user_by_name(name: str):
 
     row = cur.fetchone()
     conn.close()
+    return dict(row) if row is not None else None
 
-    if row is None:
-        return None
 
-    return dict(row)
+def get_user_by_id(user_id: int):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT id, name, grade, point, total_point
+        FROM users
+        WHERE id = ?
+        """,
+        (user_id,),
+    )
+
+    row = cur.fetchone()
+    conn.close()
+    return dict(row) if row is not None else None
 
 
 def get_ranking():
@@ -153,14 +201,13 @@ def get_ranking():
 def add_activity(user_id: int, activity_type: str, point: int):
     conn = get_connection()
     cur = conn.cursor()
-    created_at = datetime.now().isoformat(timespec="seconds")
 
     cur.execute(
         """
         INSERT INTO activities (user_id, activity_type, point, created_at)
         VALUES (?, ?, ?, ?)
         """,
-        (user_id, activity_type, point, created_at),
+        (user_id, activity_type, point, get_now()),
     )
 
     cur.execute(
@@ -180,7 +227,6 @@ def add_activity(user_id: int, activity_type: str, point: int):
 def add_login_point_if_first_today(user_id: int):
     conn = get_connection()
     cur = conn.cursor()
-    today = datetime.now().date().isoformat()
 
     cur.execute(
         """
@@ -190,24 +236,19 @@ def add_login_point_if_first_today(user_id: int):
           AND activity_type = 'login'
           AND created_at LIKE ?
         """,
-        (user_id, today + "%"),
+        (user_id, get_today_prefix()),
     )
 
-    already_logged_in = cur.fetchone()["count"] > 0
-
-    if already_logged_in:
+    if cur.fetchone()["count"] > 0:
         conn.close()
         return 0
-
-    point = 10
-    created_at = datetime.now().isoformat(timespec="seconds")
 
     cur.execute(
         """
         INSERT INTO activities (user_id, activity_type, point, created_at)
         VALUES (?, ?, ?, ?)
         """,
-        (user_id, "login", point, created_at),
+        (user_id, "login", LOGIN_POINT, get_now()),
     )
 
     cur.execute(
@@ -217,24 +258,16 @@ def add_login_point_if_first_today(user_id: int):
             total_point = total_point + ?
         WHERE id = ?
         """,
-        (point, point, user_id),
+        (LOGIN_POINT, LOGIN_POINT, user_id),
     )
 
     conn.commit()
     conn.close()
-    return point
+    return LOGIN_POINT
 
 
 def get_room_level_from_point(point: int):
-    if point >= 600:
-        return 5
-    if point >= 300:
-        return 4
-    if point >= 150:
-        return 3
-    if point >= 50:
-        return 2
-    return 1
+    return next(level for threshold, level, _, _ in ROOM_LEVELS if point >= threshold)
 
 
 def get_village_status():
@@ -243,7 +276,6 @@ def get_village_status():
 
     cur.execute("SELECT COALESCE(SUM(total_point), 0) AS total_point FROM users")
     total_point = cur.fetchone()["total_point"]
-    today = datetime.now().date().isoformat()
 
     cur.execute(
         """
@@ -251,42 +283,17 @@ def get_village_status():
         FROM activities
         WHERE created_at LIKE ?
         """,
-        (today + "%",),
+        (get_today_prefix(),),
     )
     active_users = cur.fetchone()["active_users"]
     conn.close()
 
-    if total_point >= 1000:
-        level = 5
-        title = "ISDL都市"
-        description = "研究室が完全に活性化しています。みんなの活動で街が大きく発展しました。"
-    elif total_point >= 600:
-        level = 4
-        title = "にぎやかな研究室"
-        description = "人が集まり、研究も交流も活発になってきました。"
-    elif total_point >= 300:
-        level = 3
-        title = "活動中の研究室"
-        description = "研究室に人が集まり始め、設備も少しずつ充実してきました。"
-    elif total_point >= 100:
-        level = 2
-        title = "少し明るい研究室"
-        description = "少しずつ人が来るようになり、研究室に活気が出てきました。"
-    else:
-        level = 1
-        title = "静かな研究室"
-        description = "まだ人が少なく、研究室は少し寂しい状態です。"
-
-    if active_users >= 8:
-        weather = "快晴"
-    elif active_users >= 6:
-        weather = "晴れ"
-    elif active_users >= 4:
-        weather = "曇り"
-    elif active_users >= 2:
-        weather = "雨"
-    else:
-        weather = "雷雨"
+    _, level, title, description = next(
+        status for status in VILLAGE_LEVELS if total_point >= status[0]
+    )
+    weather = next(
+        weather for threshold, weather in WEATHER_BY_ACTIVE_USERS if active_users >= threshold
+    )
 
     return {
         "total_point": total_point,
@@ -299,47 +306,15 @@ def get_village_status():
 
 
 def get_room_status(user_id: int):
-    conn = get_connection()
-    cur = conn.cursor()
+    user = get_user_by_id(user_id)
 
-    cur.execute(
-        """
-        SELECT id, name, grade, point, total_point
-        FROM users
-        WHERE id = ?
-        """,
-        (user_id,),
-    )
-
-    row = cur.fetchone()
-    conn.close()
-
-    if row is None:
+    if user is None:
         return None
 
-    user = dict(row)
     point = user["total_point"]
-
-    if point >= 600:
-        room_level = 5
-        room_name = "研究室の主ルーム"
-        room_description = "研究も交流も楽しめる、かなり豪華な個人ルームです。"
-    elif point >= 300:
-        room_level = 4
-        room_name = "快適作業ルーム"
-        room_description = "作業環境が整い、集中しやすい部屋になってきました。"
-    elif point >= 150:
-        room_level = 3
-        room_name = "研究セット部屋"
-        room_description = "本とPCが増えて、研究できる雰囲気が出てきました。"
-    elif point >= 50:
-        room_level = 2
-        room_name = "机と椅子の部屋"
-        room_description = "最低限の作業スペースができました。"
-    else:
-        room_level = 1
-        room_name = "何もない部屋"
-        room_description = "まだ何もない部屋です。研究室に来てポイントを集めましょう。"
+    _, room_level, room_name, room_description = next(
+        status for status in ROOM_LEVELS if point >= status[0]
+    )
 
     return {
         "user": user,
@@ -411,28 +386,6 @@ def get_furniture_shop_items(user_id: int, room_level: int):
     ]
 
 
-def get_user_by_id(user_id: int):
-    conn = get_connection()
-    cur = conn.cursor()
-
-    cur.execute(
-        """
-        SELECT id, name, grade, point, total_point
-        FROM users
-        WHERE id = ?
-        """,
-        (user_id,),
-    )
-
-    row = cur.fetchone()
-    conn.close()
-
-    if row is None:
-        return None
-
-    return dict(row)
-
-
 def purchase_furniture(user_id: int, furniture_id: str):
     item = next(
         (catalog_item for catalog_item in FURNITURE_CATALOG if catalog_item["id"] == furniture_id),
@@ -480,8 +433,6 @@ def purchase_furniture(user_id: int, furniture_id: str):
         conn.close()
         return {"ok": False, "reason": "locked"}
 
-    purchased_at = datetime.now().isoformat(timespec="seconds")
-
     cur.execute(
         """
         UPDATE users
@@ -496,7 +447,7 @@ def purchase_furniture(user_id: int, furniture_id: str):
         INSERT INTO user_furniture (user_id, furniture_id, purchased_at)
         VALUES (?, ?, ?)
         """,
-        (user_id, furniture_id, purchased_at),
+        (user_id, furniture_id, get_now()),
     )
 
     conn.commit()
@@ -513,7 +464,6 @@ def purchase_furniture(user_id: int, furniture_id: str):
 def save_room_layout(user_id: int, items):
     conn = get_connection()
     cur = conn.cursor()
-    updated_at = datetime.now().isoformat(timespec="seconds")
     layout_json = json.dumps(items, ensure_ascii=False)
 
     cur.execute(
@@ -524,7 +474,7 @@ def save_room_layout(user_id: int, items):
             layout_json = excluded.layout_json,
             updated_at = excluded.updated_at
         """,
-        (user_id, layout_json, updated_at),
+        (user_id, layout_json, get_now()),
     )
 
     conn.commit()
