@@ -61,10 +61,10 @@ function HomePage({
           <div className="homeUserProfile">
             <UserIcon />
             <div className="homeUserInfo">
-            <span className="eyebrow">ログイン中</span>
-            <p>
-              {currentUser.name} / {currentUser.grade}
-            </p>
+              <span className="eyebrow">ログイン中</span>
+              <p>
+                {currentUser.name} / {currentUser.grade}
+              </p>
               <strong>{currentUser.point} pt</strong>
             </div>
           </div>

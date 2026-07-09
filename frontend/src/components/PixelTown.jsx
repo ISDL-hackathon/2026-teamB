@@ -4,10 +4,10 @@ import ventImg from "../assets/town/vent.png";
 import { townItems } from "./PixeltownItems";
 import "./PixelTown.css";
 
-const SHOW_GRID = true;
+const SHOW_GRID = false;
 
 const TOWN_COLS = 20;
-const TOWN_ROWS = 16;
+const TOWN_ROWS = 24;
 
 // 換気扇を何マスおきに置くか
 const VENT_INTERVAL_COL = 2.5;

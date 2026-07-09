@@ -1,75 +1,54 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import List, Literal, Optional
 
 from database import (
-    init_db,
-    create_user,
-    get_user_by_name,
-    verify_password,
-    get_village_slots,
-    get_user_village_slot_id,
-    save_user_village_position,
-    get_ranking,
     add_activity,
-    get_village_status,
-    get_room_status,
-    save_room_layout,
     add_login_point_if_first_today,
+    create_user,
+    get_ranking,
+    get_room_status,
+    get_user_by_name,
+    get_user_village_slot_id,
+    get_village_slots,
+    get_village_status,
+    init_db,
     purchase_furniture,
+    save_room_layout,
+    save_user_village_position,
+    verify_password,
 )
+from messages import (
+    FURNITURE_ALREADY_OWNED,
+    FURNITURE_LOCKED,
+    FURNITURE_NOT_FOUND,
+    LOGIN_SUCCESS,
+    NOT_ENOUGH_POINT,
+    POINT_ADDED,
+    PURCHASE_FAILED,
+    REGISTERED,
+    USER_ALREADY_EXISTS,
+    USER_NOT_FOUND,
+    WRONG_PASSWORD,
+)
+from schemas import (
+    ActivityRequest,
+    FurniturePurchaseRequest,
+    LoginRequest,
+    RegisterRequest,
+    RoomLayoutRequest,
+    VillagePositionRequest,
+)
+
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-class RegisterRequest(BaseModel):
-    name: str
-    grade: str
-    password: str
-
-
-class LoginRequest(BaseModel):
-    name: str
-    password: str
-
-
-class ActivityRequest(BaseModel):
-    user_id: int
-    activity_type: Literal["checkin"]
-
-
-class RoomLayoutItem(BaseModel):
-    id: str
-    surface: str
-    col: float
-    row: float
-    colSpan: Optional[float] = None
-    rowSpan: Optional[float] = None
-    z: Optional[int] = None
-    anchor: Optional[str] = None
-
-
-class RoomLayoutRequest(BaseModel):
-    items: List[RoomLayoutItem]
-
-
-class FurniturePurchaseRequest(BaseModel):
-    user_id: int
-    furniture_id: str
-
-
-class VillagePositionRequest(BaseModel):
-    user_id: int
-    slot_id: str
 
 
 @app.on_event("startup")
@@ -84,10 +63,8 @@ def root():
 
 @app.post("/register")
 def register(request: RegisterRequest):
-    existing_user = get_user_by_name(request.name)
-
-    if existing_user is not None:
-        raise HTTPException(status_code=400, detail="このユーザー名はすでに使われています")
+    if get_user_by_name(request.name) is not None:
+        raise HTTPException(status_code=400, detail=USER_ALREADY_EXISTS)
 
     user = create_user(
         name=request.name,
@@ -96,7 +73,7 @@ def register(request: RegisterRequest):
     )
 
     return {
-        "message": "ユーザー登録しました",
+        "message": REGISTERED,
         "user": user,
     }
 
@@ -106,15 +83,15 @@ def login(request: LoginRequest):
     user = get_user_by_name(request.name)
 
     if user is None:
-        raise HTTPException(status_code=401, detail="ユーザーが存在しません")
+        raise HTTPException(status_code=401, detail=USER_NOT_FOUND)
 
     if not verify_password(request.password, user["password_hash"]):
-        raise HTTPException(status_code=401, detail="パスワードが違います")
+        raise HTTPException(status_code=401, detail=WRONG_PASSWORD)
 
     added_point = add_login_point_if_first_today(user["id"])
 
     return {
-        "message": "ログイン成功",
+        "message": LOGIN_SUCCESS,
         "added_point": added_point,
         "user": {
             "id": user["id"],
@@ -143,7 +120,7 @@ def checkin(request: ActivityRequest):
     )
 
     return {
-        "message": "ポイントを加算しました",
+        "message": POINT_ADDED,
         "added_point": point,
     }
 
@@ -158,22 +135,15 @@ def furniture_purchase(request: FurniturePurchaseRequest):
     if result["ok"]:
         return result
 
-    if result["reason"] == "user_not_found":
-        raise HTTPException(status_code=404, detail="繝ｦ繝ｼ繧ｶ繝ｼ縺悟ｭ伜惠縺励∪縺帙ｓ")
-
-    if result["reason"] == "not_found":
-        raise HTTPException(status_code=404, detail="家具が見つかりません")
-
-    if result["reason"] == "already_owned":
-        raise HTTPException(status_code=400, detail="この家具は購入済みです")
-
-    if result["reason"] == "not_enough_point":
-        raise HTTPException(status_code=400, detail="ポイントが足りません")
-
-    if result["reason"] == "locked":
-        raise HTTPException(status_code=400, detail="まだ購入できない家具です")
-
-    raise HTTPException(status_code=400, detail="購入できません")
+    errors = {
+        "user_not_found": (404, USER_NOT_FOUND),
+        "not_found": (404, FURNITURE_NOT_FOUND),
+        "already_owned": (400, FURNITURE_ALREADY_OWNED),
+        "not_enough_point": (400, NOT_ENOUGH_POINT),
+        "locked": (400, FURNITURE_LOCKED),
+    }
+    status_code, detail = errors.get(result["reason"], (400, PURCHASE_FAILED))
+    raise HTTPException(status_code=status_code, detail=detail)
 
 
 @app.get("/village/status")
@@ -204,17 +174,15 @@ def room_status(user_id: int):
     room = get_room_status(user_id)
 
     if room is None:
-        raise HTTPException(status_code=404, detail="ユーザーが存在しません")
+        raise HTTPException(status_code=404, detail=USER_NOT_FOUND)
 
     return room
 
 
 @app.post("/room/layout/{user_id}")
 def room_layout(user_id: int, request: RoomLayoutRequest):
-    room = get_room_status(user_id)
-
-    if room is None:
-        raise HTTPException(status_code=404, detail="繝ｦ繝ｼ繧ｶ繝ｼ縺悟ｭ伜惠縺励∪縺帙ｓ")
+    if get_room_status(user_id) is None:
+        raise HTTPException(status_code=404, detail=USER_NOT_FOUND)
 
     layout = save_room_layout(
         user_id,
