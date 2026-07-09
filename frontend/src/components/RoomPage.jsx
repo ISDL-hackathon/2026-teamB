@@ -1,10 +1,13 @@
 import PixelRoom from "./PixelRoom";
-function RoomPage({ onSaveRoomLayout, room, setPage }) {
+function RoomPage({ onSaveRoomLayout, readonly = false, room, setPage }) {
   return (
     <>
       <div className="pageHeader">
-        <button className="secondaryButton" onClick={() => setPage("home")}>
-          Home
+        <button
+          className="secondaryButton"
+          onClick={() => setPage(readonly ? "village" : "home")}
+        >
+          {readonly ? "共有街へ" : "Home"}
         </button>
       </div>
 
@@ -16,11 +19,14 @@ function RoomPage({ onSaveRoomLayout, room, setPage }) {
               level={room.room_level}
               onSaveLayout={onSaveRoomLayout}
               ownedItemIds={room.owned_furniture}
+              readonly={readonly}
               savedLayout={room.room_layout}
             />
-            <button onClick={() => setPage("shop")} type="button">
-              Shop
-            </button>
+            {!readonly && (
+              <button onClick={() => setPage("shop")} type="button">
+                Shop
+              </button>
+            )}
             <h3>
               Lv.{room.room_level}: {room.room_name}
             </h3>

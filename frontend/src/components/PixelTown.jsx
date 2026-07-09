@@ -69,7 +69,14 @@ function TownGridOverlay() {
   );
 }
 
-function PixelTown({ weather = "weatherRainy", level = 1 }) {
+function PixelTown({ 
+  weather = "weatherRainy", 
+  level = 1, 
+  mode = "view",
+  slots = [],
+  onSlotSelect,
+  onPcClick,
+  }) {
   const vents = createVents();
   const visibleItems = townItems.filter((item) => level >= item.minLevel);
 
@@ -104,6 +111,44 @@ function PixelTown({ weather = "weatherRainy", level = 1 }) {
           style={getItemStyle(item)}
         />
       ))}
+
+      {slots.map((slot) => {
+        const occupied = Boolean(slot.user);
+        const isSelectMode = mode === "select";
+
+        return (
+          <button
+            key={slot.id}
+            className={`townSlot ${
+              occupied ? "townSlotOccupied" : "townSlotEmpty"
+            }`}
+            style={getItemStyle({
+              col: slot.col,
+              row: slot.row,
+              colSpan: slot.col_span,
+              rowSpan: slot.row_span,
+              z: 30,
+            })}
+            disabled={isSelectMode && occupied}
+            onClick={() => {
+              if (isSelectMode) {
+                if (!occupied) {
+                  onSlotSelect?.(slot.id);
+                }
+                return;
+              }
+
+              if (occupied) {
+                onPcClick?.(slot.user.id);
+              }
+            }}
+            type="button"
+            title={occupied ? `${slot.user.name} のPC` : slot.label}
+          >
+            {occupied ? "PC" : ""}
+          </button>
+        );
+      })}
 
       {/* キャラクター */}
       <img

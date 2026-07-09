@@ -37,3 +37,8 @@ class RoomLayoutRequest(BaseModel):
 class FurniturePurchaseRequest(BaseModel):
     user_id: int
     furniture_id: str
+
+
+class VillagePositionRequest(BaseModel):
+    user_id: int
+    slot_id: str

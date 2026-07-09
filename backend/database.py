@@ -66,6 +66,25 @@ def hash_password(password: str):
 def verify_password(plain_password: str, password_hash: str):
     return pwd_context.verify(plain_password, password_hash)
 
+def seed_village_slots(cur):
+    slots = [
+        ("desk-left-1", 1, 2, "左の机1", 1),
+        ("desk-left-2", 1, 8, "左の机2", 2),
+        ("center-desk-1", 5, 8, "中央机1", 3),
+        ("center-desk-2", 9, 10, "中央机2", 4),
+        ("right-desk-1", 18, 6, "右の机1", 5),
+    ]
+
+    for slot in slots:
+        cur.execute(
+            """
+            INSERT OR IGNORE INTO village_slots
+                (id, col, row, label, sort_order)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            slot,
+        )
+
 
 def init_db():
     conn = get_connection()
@@ -118,8 +137,33 @@ def init_db():
     )
     """)
 
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS village_slots (
+    id TEXT PRIMARY KEY,
+    col INTEGER NOT NULL,
+    row INTEGER NOT NULL,
+    col_span REAL NOT NULL DEFAULT 1,
+    row_span REAL NOT NULL DEFAULT 1,
+    label TEXT,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    sort_order INTEGER NOT NULL DEFAULT 0
+    )
+    """)
+    
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS user_village_positions (
+    user_id INTEGER PRIMARY KEY,
+    slot_id TEXT NOT NULL UNIQUE,
+    selected_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (slot_id) REFERENCES village_slots(id)
+    )
+    """)
+
+    seed_village_slots(cur)
     conn.commit()
-    conn.close()
+    conn.close()    
 
 
 def create_user(name: str, grade: str, password: str):
@@ -233,8 +277,8 @@ def add_login_point_if_first_today(user_id: int):
         SELECT COUNT(*) AS count
         FROM activities
         WHERE user_id = ?
-          AND activity_type = 'login'
-          AND created_at LIKE ?
+        AND activity_type = 'login'
+        AND created_at LIKE ?
         """,
         (user_id, get_today_prefix()),
     )
@@ -480,3 +524,156 @@ def save_room_layout(user_id: int, items):
     conn.commit()
     conn.close()
     return get_room_layout(user_id)
+
+def get_village_slots():
+    # スロット一覧とそこを使っているユーザ情報を返す
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT
+            vs.id,
+            vs.col,
+            vs.row,
+            vs.col_span,
+            vs.row_span,
+            vs.label,
+            vs.is_active,
+            vs.sort_order,
+            u.id AS user_id,
+            u.name AS user_name,
+            u.grade AS user_grade
+        FROM village_slots AS vs
+        LEFT JOIN user_village_positions AS uvp
+            ON uvp.slot_id = vs.id
+        LEFT JOIN users AS u
+            ON u.id = uvp.user_id
+        WHERE vs.is_active = 1
+        ORDER BY vs.sort_order, vs.id
+        """
+    )
+
+    slots = []
+    for row in cur.fetchall():
+        user = None
+        if row["user_id"] is not None:
+            user = {
+                "id": row["user_id"],
+                "name": row["user_name"],
+                "grade": row["user_grade"],
+            }
+
+        slots.append(
+            {
+                "id": row["id"],
+                "col": row["col"],
+                "row": row["row"],
+                "col_span": row["col_span"],
+                "row_span": row["row_span"],
+                "label": row["label"],
+                "occupied": user is not None,
+                "user": user,
+            }
+        )
+
+    conn.close()
+    return slots
+
+def get_user_village_slot_id(user_id: int):
+    # ログイン時にそのユーザが場所を選択済みかどうか確認する
+    
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT slot_id
+        FROM user_village_positions
+        WHERE user_id = ?
+        """,
+        (user_id,),
+    )
+
+    row = cur.fetchone()
+    conn.close()
+
+    if row is None:
+        return None
+
+    return row["slot_id"]
+
+def save_user_village_position(user_id: int, slot_id: str):
+    # ユーザの選択した場所を保存する
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT id
+        FROM users
+        WHERE id = ?
+        """,
+        (user_id,),
+    )
+    if cur.fetchone() is None:
+        conn.close()
+        return {"ok": False, "reason": "user_not_found"}
+
+    cur.execute(
+        """
+        SELECT id
+        FROM village_slots
+        WHERE id = ?
+        AND is_active = 1
+        """,
+        (slot_id,),
+    )
+    if cur.fetchone() is None:
+        conn.close()
+        return {"ok": False, "reason": "slot_not_found"}
+
+    cur.execute(
+        """
+        SELECT user_id
+        FROM user_village_positions
+        WHERE slot_id = ?
+        """,
+        (slot_id,),
+    )
+    occupied = cur.fetchone()
+    if occupied is not None and occupied["user_id"] != user_id:
+        conn.close()
+        return {"ok": False, "reason": "slot_taken"}
+
+    now = datetime.now().isoformat(timespec="seconds")
+
+    try:
+        cur.execute(
+            """
+            INSERT INTO user_village_positions (
+                user_id,
+                slot_id,
+                selected_at,
+                updated_at
+            )
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET
+                slot_id = excluded.slot_id,
+                updated_at = excluded.updated_at
+            """,
+            (user_id, slot_id, now, now),
+        )
+        conn.commit()
+    except sqlite3.IntegrityError:
+        conn.rollback()
+        conn.close()
+        return {"ok": False, "reason": "slot_taken"}
+
+    conn.close()
+    return {
+        "ok": True,
+        "user_id": user_id,
+        "slot_id": slot_id,
+    }
