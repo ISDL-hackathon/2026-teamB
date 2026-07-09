@@ -13,7 +13,7 @@ function VillagePage({ setPage, village, villageSlots, onPcClick }) {
     <>
       <div className="pageHeader">
         <button className="secondaryButton" onClick={() => setPage("home")}>
-          ホームへ戻る
+          Home
         </button>
       </div>
 
