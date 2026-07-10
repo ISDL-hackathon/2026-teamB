@@ -7,12 +7,12 @@ function RoomPage({ onSaveRoomLayout, readonly = false, room, setPage }) {
           className="secondaryButton"
           onClick={() => setPage(readonly ? "village" : "home")}
         >
-          {readonly ? "共有街へ" : "Home"}
+          {readonly ? "共有街へ" : "ホームへ"}
         </button>
       </div>
 
       <div className="card roomCard">
-        <h2>Personal Room</h2>
+        <h2>個人ルーム</h2>
         {room ? (
           <>
             <PixelRoom
@@ -21,10 +21,11 @@ function RoomPage({ onSaveRoomLayout, readonly = false, room, setPage }) {
               ownedItemIds={room.owned_furniture}
               readonly={readonly}
               savedLayout={room.room_layout}
+              savedTheme={room.room_theme}
             />
             {!readonly && (
               <button onClick={() => setPage("shop")} type="button">
-                Shop
+                ショップへ
               </button>
             )}
             <h3>
@@ -33,25 +34,25 @@ function RoomPage({ onSaveRoomLayout, readonly = false, room, setPage }) {
             <p>{room.room_description}</p>
             <div className="statusGrid">
               <div>
-                <span>User</span>
+                <span>ユーザー</span>
                 <strong>{room.user.name}</strong>
               </div>
               <div>
-                <span>Grade</span>
+                <span>学年</span>
                 <strong>{room.user.grade}</strong>
               </div>
               <div>
-                <span>Current Points</span>
+                <span>所持ポイント</span>
                 <strong>{room.user.point} pt</strong>
               </div>
               <div>
-                <span>Total Points</span>
+                <span>累計ポイント</span>
                 <strong>{room.user.total_point} pt</strong>
               </div>
             </div>
           </>
         ) : (
-          <p>Loading...</p>
+          <p>読み込み中...</p>
         )}
       </div>
     </>

@@ -12,16 +12,18 @@ CHECKIN_POINT = 20
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 FURNITURE_CATALOG = [
-    {"id": "window", "name": "Window", "price": 30, "min_level": 1},
-    {"id": "clock", "name": "Clock", "price": 30, "min_level": 1},
-    {"id": "stove", "name": "Stove", "price": 50, "min_level": 1},
-    {"id": "bookshelf", "name": "Bookshelf", "price": 80, "min_level": 3},
-    {"id": "shelf", "name": "Shelf", "price": 100, "min_level": 4},
-    {"id": "bed", "name": "Bed", "price": 150, "min_level": 5},
+    {"id": "round_table", "name": "Round Table", "price": 50, "min_level": 1, "category": "lab", "surface": "floor"},
+    {"id": "office_chair", "name": "Office Chair", "price": 35, "min_level": 1, "category": "lab", "surface": "floor"},
+    {"id": "window", "name": "Window", "price": 30, "min_level": 2, "category": "western", "surface": "wall"},
+    {"id": "clock", "name": "Clock", "price": 30, "min_level": 2, "category": "western", "surface": "wall"},
+    {"id": "stove", "name": "Stove", "price": 50, "min_level": 2, "category": "western", "surface": "wall"},
+    {"id": "bookshelf", "name": "Bookshelf", "price": 80, "min_level": 3, "category": "western", "surface": "floor"},
+    {"id": "shelf", "name": "Shelf", "price": 100, "min_level": 4, "category": "western", "surface": "floor"},
+    {"id": "bed", "name": "Bed", "price": 150, "min_level": 5, "category": "western", "surface": "floor"},
 ]
 
 VILLAGE_LEVELS = [
-    (1000, 5, "ISDL都市", "研究室が完全に活性化しています。みんなの活動で街が大きく発展しました。"),
+    (1000, 5, "ISDL研究都市", "研究室全体が活発に動いています。みんなの活動で街が大きく発展しました。"),
     (600, 4, "にぎやかな研究室", "人が集まり、研究や交流も活発になってきました。"),
     (300, 3, "活動中の研究室", "研究室に人が集まり始め、設備も少しずつ充実してきました。"),
     (100, 2, "少し明るい研究室", "少しずつ人が来るようになり、研究室に活気が出てきました。"),
@@ -122,10 +124,16 @@ def init_db():
     CREATE TABLE IF NOT EXISTS room_layouts (
         user_id INTEGER PRIMARY KEY,
         layout_json TEXT NOT NULL,
+        theme_json TEXT NOT NULL DEFAULT '{}',
         updated_at TEXT NOT NULL,
         FOREIGN KEY (user_id) REFERENCES users(id)
     )
     """)
+
+    cur.execute("PRAGMA table_info(room_layouts)")
+    room_layout_columns = {row["name"] for row in cur.fetchall()}
+    if "theme_json" not in room_layout_columns:
+        cur.execute("ALTER TABLE room_layouts ADD COLUMN theme_json TEXT NOT NULL DEFAULT '{}'")
 
     cur.execute("""
     CREATE TABLE IF NOT EXISTS user_furniture (
@@ -366,6 +374,7 @@ def get_room_status(user_id: int):
         "room_name": room_name,
         "room_description": room_description,
         "room_layout": get_room_layout(user_id),
+        "room_theme": get_room_theme(user_id),
         "owned_furniture": get_owned_furniture_ids(user_id),
         "shop_items": get_furniture_shop_items(user_id, room_level),
     }
@@ -391,6 +400,28 @@ def get_room_layout(user_id: int):
         return []
 
     return json.loads(row["layout_json"])
+
+
+def get_room_theme(user_id: int):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT theme_json
+        FROM room_layouts
+        WHERE user_id = ?
+        """,
+        (user_id,),
+    )
+
+    row = cur.fetchone()
+    conn.close()
+
+    if row is None:
+        return {}
+
+    return json.loads(row["theme_json"])
 
 
 def get_owned_furniture_ids(user_id: int):
@@ -505,25 +536,30 @@ def purchase_furniture(user_id: int, furniture_id: str):
     }
 
 
-def save_room_layout(user_id: int, items):
+def save_room_layout(user_id: int, items, theme=None):
     conn = get_connection()
     cur = conn.cursor()
     layout_json = json.dumps(items, ensure_ascii=False)
+    theme_json = json.dumps(theme or {}, ensure_ascii=False)
 
     cur.execute(
         """
-        INSERT INTO room_layouts (user_id, layout_json, updated_at)
-        VALUES (?, ?, ?)
+        INSERT INTO room_layouts (user_id, layout_json, theme_json, updated_at)
+        VALUES (?, ?, ?, ?)
         ON CONFLICT(user_id) DO UPDATE SET
             layout_json = excluded.layout_json,
+            theme_json = excluded.theme_json,
             updated_at = excluded.updated_at
         """,
-        (user_id, layout_json, get_now()),
+        (user_id, layout_json, theme_json, get_now()),
     )
 
     conn.commit()
     conn.close()
-    return get_room_layout(user_id)
+    return {
+        "room_layout": get_room_layout(user_id),
+        "room_theme": get_room_theme(user_id),
+    }
 
 def get_village_slots():
     # スロット一覧とそこを使っているユーザ情報を返す
@@ -677,3 +713,4 @@ def save_user_village_position(user_id: int, slot_id: str):
         "user_id": user_id,
         "slot_id": slot_id,
     }
+

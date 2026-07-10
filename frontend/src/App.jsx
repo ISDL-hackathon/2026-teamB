@@ -217,19 +217,28 @@ function App() {
       .catch((err) => setMessage(err.message));
   };
 
-  const handleSaveRoomLayout = (layout) => {
+  const handleSaveRoomLayout = (roomState) => {
     if (!currentUser) {
       return;
     }
 
+    const items = Array.isArray(roomState) ? roomState : roomState.items;
+    const theme = Array.isArray(roomState) ? room?.room_theme : roomState.theme;
+
     requestJson(`/room/layout/${currentUser.id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ items: layout }),
+      body: JSON.stringify({ items, theme }),
     })
       .then((data) => {
         setRoom((prev) =>
-          prev ? { ...prev, room_layout: data.room_layout } : prev,
+          prev
+            ? {
+                ...prev,
+                room_layout: data.room_layout,
+                room_theme: data.room_theme,
+              }
+            : prev,
         );
       })
       .catch((err) => setMessage(err.message));

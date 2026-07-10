@@ -1,9 +1,14 @@
 import charaImg from "../assets/chara.png";
 import wallImg from "../assets/room/wall.png";
+import wallLv1Img from "../assets/room/wall_lv1.png";
 import floorImg from "../assets/room/floor.png";
+import floorTileImg from "../assets/room/floor1.png";
+import floorLv1Img from "../assets/room/floor_lv1.png";
 import bedImg from "../assets/furniture/bed_pink.png";
 import bookshelfImg from "../assets/furniture/bookshelf.png";
 import clockImg from "../assets/furniture/clock.png";
+import officeChairImg from "../assets/furniture/office_chair.png";
+import roundTableImg from "../assets/furniture/round_table.png";
 import shelfImg from "../assets/furniture/shelf.png";
 import stoveImg from "../assets/furniture/suto-bu.png";
 import windowImg from "../assets/furniture/window.png";
@@ -13,26 +18,78 @@ export const SHOW_GRID = false;
 export const roomGrids = {
   wall: {
     cols: 12,
-    rows: 3,
+    rows: 4,
   },
   floor: {
     cols: 12,
-    rows: 7,
+    rows: 8,
   },
 };
 
 export const tileTextures = {
-  wall: wallImg,
-  floor: floorImg,
+  labWall: wallLv1Img,
+  westernWall: wallImg,
+  labFloor: floorLv1Img,
+  westernFloor: floorImg,
+  tileFloor: floorTileImg,
 };
 
+export const defaultRoomTheme = {
+  wall: "labWall",
+  floor: "labFloor",
+};
+
+export const wallTextureOptions = [
+  { id: "labWall", name: "研究室", minLevel: 1 },
+  { id: "westernWall", name: "洋風", minLevel: 2 },
+];
+
+export const floorTextureOptions = [
+  { id: "labFloor", name: "研究室", minLevel: 1 },
+  { id: "westernFloor", name: "洋風", minLevel: 2 },
+  { id: "tileFloor", name: "タイル", minLevel: 2 },
+];
+
 export const roomItems = [
+  {
+    id: "round_table",
+    name: "Round Table",
+    price: 50,
+    category: "lab",
+    surface: "floor",
+    minLevel: 1,
+    src: roundTableImg,
+    alt: "round table",
+    col: 5,
+    row: 5,
+    colSpan: 3,
+    rowSpan: 2,
+    z: 7,
+    anchor: "bottomLeft",
+  },
+  {
+    id: "office_chair",
+    name: "Office Chair",
+    price: 35,
+    category: "lab",
+    surface: "floor",
+    minLevel: 1,
+    src: officeChairImg,
+    alt: "office chair",
+    col: 4,
+    row: 4,
+    colSpan: 1.5,
+    rowSpan: 2.5,
+    z: 6,
+    anchor: "bottomLeft",
+  },
   {
     id: "window",
     name: "Window",
     price: 30,
+    category: "western",
     surface: "wall",
-    minLevel: 1,
+    minLevel: 2,
     src: windowImg,
     alt: "window",
     col: 8,
@@ -46,8 +103,9 @@ export const roomItems = [
     id: "clock",
     name: "Clock",
     price: 30,
+    category: "western",
     surface: "wall",
-    minLevel: 1,
+    minLevel: 2,
     src: clockImg,
     alt: "clock",
     col: 11,
@@ -61,8 +119,9 @@ export const roomItems = [
     id: "stove",
     name: "Stove",
     price: 50,
+    category: "western",
     surface: "wall",
-    minLevel: 1,
+    minLevel: 2,
     src: stoveImg,
     alt: "stove",
     col: 5,
@@ -76,6 +135,7 @@ export const roomItems = [
     id: "bookshelf",
     name: "Bookshelf",
     price: 80,
+    category: "western",
     surface: "floor",
     minLevel: 3,
     src: bookshelfImg,
@@ -85,12 +145,14 @@ export const roomItems = [
     colSpan: 2,
     rowSpan: 3,
     z: 8,
+    className: "roomBookshelf",
     anchor: "bottomLeft",
   },
   {
     id: "shelf",
     name: "Shelf",
     price: 100,
+    category: "western",
     surface: "floor",
     minLevel: 4,
     src: shelfImg,
@@ -106,6 +168,7 @@ export const roomItems = [
     id: "bed",
     name: "Bed",
     price: 150,
+    category: "western",
     surface: "floor",
     minLevel: 5,
     src: bedImg,
@@ -125,7 +188,7 @@ export const roomItems = [
     src: charaImg,
     alt: "character",
     col: 6,
-    row: 5,
+    row: 6,
     colSpan: 1.5,
     rowSpan: 1.5,
     z: 10,
@@ -135,16 +198,3 @@ export const roomItems = [
   },
 ];
 
-function createTiles(surface, texture) {
-  const grid = roomGrids[surface];
-
-  return Array.from({ length: grid.cols * grid.rows }, (_, index) => ({
-    id: `${surface}-${index}`,
-    texture,
-  }));
-}
-
-export const roomTiles = {
-  wall: createTiles("wall", "wall"),
-  floor: createTiles("floor", "floor"),
-};

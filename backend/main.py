@@ -187,6 +187,7 @@ def room_layout(user_id: int, request: RoomLayoutRequest):
     layout = save_room_layout(
         user_id,
         [item.dict(exclude_none=True) for item in request.items],
+        request.theme,
     )
 
-    return {"room_layout": layout}
+    return layout
