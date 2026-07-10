@@ -58,52 +58,7 @@ npm run dev
 http://localhost:5173
 ```
 
-## Cloudflare Tunnel で動かす
 
-Cloudflare Tunnel で公開するときは、フロントエンド用とバックエンド用の2つの tunnel を用意します。
-
-### 1. バックエンド用 tunnel
-
-ターミナル1でバックエンドを起動します。
-
-```bash
-cd backend
-uvicorn main:app --reload
-```
-
-ターミナル2でバックエンドを tunnel に公開します。
-
-```bash
-cloudflared tunnel --url http://127.0.0.1:8000
-```
-
-表示された `https://xxxxx.trycloudflare.com` を、フロントエンドの API URL として使います。
-
-### 2. フロントエンドの API URL を設定
-
-`frontend/.env.tunnel` を作成して、バックエンド用 tunnel のURLを書きます。
-
-```env
-VITE_API_BASE_URL=https://xxxxx.trycloudflare.com
-```
-
-### 3. フロントエンド用 tunnel
-
-ターミナル3でフロントエンドを起動します。
-
-```bash
-cd frontend
-npm install
-npm run dev:tunnel
-```
-
-ターミナル4でフロントエンドを tunnel に公開します。
-
-```bash
-cloudflared tunnel --url http://127.0.0.1:5173
-```
-
-フロントエンド用 tunnel のURLからアプリにアクセスできます。
 
 ## GitHub への反映
 
