@@ -1,7 +1,16 @@
 # ISDL Hackathon 2026 Team B
 
-研究室に来たくなることを目指した、ログイン機能付きのWebアプリです。
-フロントエンドは React + Vite、バックエンドは Python + FastAPI、データベースは SQLite を使っています。
+研究室に来たくなることを目指した，ログイン機能付きのWebアプリです。
+フロントエンドは React + Vite，バックエンドは Python + FastAPI，データベースは SQLite を使っています。
+
+## 公開URL
+
+本アプリは Cloudflare Workers にデプロイしています。
+以下のURLからアクセスできます。
+
+```text
+https://mute-flower-b496.sn-1180-mairu.workers.dev/
+```
 
 ## ディレクトリ構成
 
@@ -57,8 +66,6 @@ npm run dev
 ```text
 http://localhost:5173
 ```
-
-
 
 ## GitHub への反映
 
