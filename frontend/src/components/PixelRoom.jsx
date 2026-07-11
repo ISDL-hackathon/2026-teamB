@@ -143,14 +143,20 @@ function getItemStyle(item) {
   };
 }
 
-function RoomItem({ item, isEditing, isSelected, onSelect }) {
+function RoomItem({ item, isEditing, isSelected, onActivate, onSelect }) {
   return (
     <img
       alt={item.alt}
       className={`roomItem ${item.className ?? ""} ${
         isEditing ? "roomItemEditable" : ""
       } ${isSelected ? "roomItemSelected" : ""}`}
-      onClick={isEditing ? () => onSelect(item.id) : undefined}
+      onClick={
+        isEditing
+          ? () => onSelect(item.id)
+          : item.id === "bulletin_board"
+            ? onActivate
+            : undefined
+      }
       src={item.src}
       style={getItemStyle(item)}
     />
@@ -238,6 +244,7 @@ function MaterialSelect({ label, options, value, level, onChange }) {
 function WallSurface({
   items,
   isEditing,
+  onActivateItem,
   selectedItemId,
   onSelectItem,
   wallTexture,
@@ -260,6 +267,7 @@ function WallSurface({
             isEditing={isEditing}
             isSelected={selectedItemId === item.id}
             key={item.id}
+            onActivate={onActivateItem}
             onSelect={onSelectItem}
           />
         ))}
@@ -320,6 +328,7 @@ function PixelRoom({
   savedLayout = [],
   savedTheme = {},
   onSaveLayout,
+  onOpenBulletinBoard,
   readonly = false,
 }) {
   const [items, setItems] = useState(() =>
@@ -527,6 +536,7 @@ function PixelRoom({
       <WallSurface
         items={wallItems}
         isEditing={isEditing}
+        onActivateItem={onOpenBulletinBoard}
         onSelectItem={setSelectedItemId}
         selectedItemId={selectedItemId}
         wallTexture={roomTheme.wall}

@@ -5,6 +5,10 @@ from database import (
     add_activity,
     add_login_point_if_first_today,
     create_user,
+    create_bulletin_post,
+    get_bulletin_posts,
+    toggle_bulletin_follow,
+    toggle_bulletin_like,
     get_ranking,
     get_room_status,
     get_user_by_name,
@@ -32,6 +36,9 @@ from messages import (
 )
 from schemas import (
     ActivityRequest,
+    BulletinPostRequest,
+    BulletinFollowRequest,
+    BulletinLikeRequest,
     FurniturePurchaseRequest,
     LoginRequest,
     RegisterRequest,
@@ -107,6 +114,49 @@ def login(request: LoginRequest):
 @app.get("/ranking")
 def ranking():
     return get_ranking()
+
+
+@app.get("/bulletin/posts")
+def bulletin_posts(viewer_id: int = 0):
+    return get_bulletin_posts(viewer_id=viewer_id)
+
+
+@app.post("/bulletin/posts")
+def bulletin_post_create(request: BulletinPostRequest):
+    content = request.content.strip()
+    image_data = request.image_data
+    if (not content and not image_data) or len(content) > 500:
+        raise HTTPException(status_code=400, detail="本文または画像を入力してください")
+    if image_data:
+        allowed_prefixes = (
+            "data:image/png;base64,",
+            "data:image/jpeg;base64,",
+            "data:image/gif;base64,",
+            "data:image/webp;base64,",
+        )
+        if not image_data.startswith(allowed_prefixes) or len(image_data) > 2_800_000:
+            raise HTTPException(status_code=400, detail="画像はPNG・JPEG・GIF・WebPの2MB以下にしてください")
+
+    post = create_bulletin_post(request.user_id, content, image_data)
+    if post is None:
+        raise HTTPException(status_code=404, detail=USER_NOT_FOUND)
+    return post
+
+
+@app.post("/bulletin/follow")
+def bulletin_follow(request: BulletinFollowRequest):
+    result = toggle_bulletin_follow(request.follower_id, request.followed_id)
+    if result is None:
+        raise HTTPException(status_code=400, detail="フォロー対象を確認してください")
+    return result
+
+
+@app.post("/bulletin/like")
+def bulletin_like(request: BulletinLikeRequest):
+    result = toggle_bulletin_like(request.user_id, request.post_id)
+    if result is None:
+        raise HTTPException(status_code=400, detail="自分の投稿にはいいねできません")
+    return result
 
 
 @app.post("/activity/checkin")

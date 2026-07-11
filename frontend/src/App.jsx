@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { requestJson } from "./api";
 import HomePage from "./components/HomePage";
+import BulletinBoardPage from "./components/BulletinBoardPage";
 import LoginArea from "./components/LoginArea";
 import RoomPage from "./components/RoomPage";
 import ShopPage from "./components/ShopPage";
@@ -303,11 +304,16 @@ function App() {
 
       {currentUser && page === "room" && (
         <RoomPage
+          onOpenBulletinBoard={() => setPage("bulletin")}
           onSaveRoomLayout={handleSaveRoomLayout}
           readonly={viewingRoomUserId !== null}
           room={room}
           setPage={setPage}
         />
+      )}
+
+      {currentUser && page === "bulletin" && (
+        <BulletinBoardPage currentUser={currentUser} setPage={setPage} />
       )}
 
       {currentUser && page === "shop" && (

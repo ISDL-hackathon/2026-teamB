@@ -7,6 +7,7 @@ import floorGreyImg from "../assets/room/floor_grey_2.png";
 import bedImg from "../assets/furniture/bed_pink.png";
 import bookshelfImg from "../assets/furniture/bookshelf.png";
 import clockImg from "../assets/furniture/clock.png";
+import bulletinBoardImg from "../assets/furniture/keijibann.png";
 import officeChairImg from "../assets/furniture/office_chair.png";
 import roundTableImg from "../assets/furniture/round_table.png";
 import shelfImg from "../assets/furniture/shelf.png";
@@ -81,6 +82,22 @@ export const roomItems = [
     colSpan: 1.5,
     rowSpan: 2.5,
     z: 6,
+    anchor: "bottomLeft",
+  },
+  {
+    id: "bulletin_board",
+    name: "Bulletin Board",
+    price: 50,
+    category: "lab",
+    surface: "wall",
+    minLevel: 1,
+    src: bulletinBoardImg,
+    alt: "bulletin board",
+    col: 2,
+    row: 1,
+    colSpan: 3,
+    rowSpan: 3,
+    z: 7,
     anchor: "bottomLeft",
   },
   {
