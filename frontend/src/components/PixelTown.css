@@ -98,7 +98,8 @@
   width: 32px;
   height: 42px;
   object-fit: contain;
-  transform: translateY(-10px);
+  transform: translateY(-10px) scale(2.5);
+  transform-origin: center bottom;
   image-rendering: pixelated;
 }
 

@@ -110,8 +110,9 @@
 
 .roomChara {
   min-width: 48px;
-  justify-self:start;
-  transform: translate(-12%, -8%);
+  justify-self: start;
+  transform: translate(-12%, -8%) scale(2.5);
+  transform-origin: center bottom;
 }
 
 .roomEditBar {

@@ -1,9 +1,9 @@
-import charaImg from "../assets/chara.png";
+import charaImg from "../assets/izumi.gif";
 import wallImg from "../assets/room/wall.png";
 import wallLv1Img from "../assets/room/wall_lv1.png";
 import floorImg from "../assets/room/floor.png";
 import floorTileImg from "../assets/room/floor1.png";
-import floorLv1Img from "../assets/room/floor_lv1.png";
+import floorGreyImg from "../assets/room/floor_grey_2.png";
 import bedImg from "../assets/furniture/bed_pink.png";
 import bookshelfImg from "../assets/furniture/bookshelf.png";
 import clockImg from "../assets/furniture/clock.png";
@@ -29,7 +29,7 @@ export const roomGrids = {
 export const tileTextures = {
   labWall: wallLv1Img,
   westernWall: wallImg,
-  labFloor: floorLv1Img,
+  labFloor: floorGreyImg,
   westernFloor: floorImg,
   tileFloor: floorTileImg,
 };
