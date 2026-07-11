@@ -40,6 +40,22 @@ class FurniturePurchaseRequest(BaseModel):
     furniture_id: str
 
 
+class BulletinPostRequest(BaseModel):
+    user_id: int
+    content: str
+    image_data: Optional[str] = None
+
+
+class BulletinFollowRequest(BaseModel):
+    follower_id: int
+    followed_id: int
+
+
+class BulletinLikeRequest(BaseModel):
+    user_id: int
+    post_id: int
+
+
 class VillagePositionRequest(BaseModel):
     user_id: int
     slot_id: str

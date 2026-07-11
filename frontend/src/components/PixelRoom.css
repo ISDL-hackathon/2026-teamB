@@ -99,6 +99,11 @@
   cursor: pointer;
 }
 
+.roomItem[alt="bulletin board"]:not(.roomItemEditable) {
+  cursor: pointer;
+  pointer-events: auto;
+}
+
 .roomItemSelected {
   outline: 2px solid #ffe16a;
   outline-offset: 2px;

@@ -14,6 +14,7 @@ pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 FURNITURE_CATALOG = [
     {"id": "round_table", "name": "Round Table", "price": 50, "min_level": 1, "category": "lab", "surface": "floor"},
     {"id": "office_chair", "name": "Office Chair", "price": 35, "min_level": 1, "category": "lab", "surface": "floor"},
+    {"id": "bulletin_board", "name": "Bulletin Board", "price": 50, "min_level": 1, "category": "lab", "surface": "wall"},
     {"id": "window", "name": "Window", "price": 30, "min_level": 2, "category": "western", "surface": "wall"},
     {"id": "clock", "name": "Clock", "price": 30, "min_level": 2, "category": "western", "surface": "wall"},
     {"id": "stove", "name": "Stove", "price": 50, "min_level": 2, "category": "western", "surface": "wall"},
@@ -146,6 +147,44 @@ def init_db():
     """)
 
     cur.execute("""
+    CREATE TABLE IF NOT EXISTS bulletin_posts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        content TEXT NOT NULL,
+        image_data TEXT,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+    """)
+
+    cur.execute("PRAGMA table_info(bulletin_posts)")
+    bulletin_post_columns = {row["name"] for row in cur.fetchall()}
+    if "image_data" not in bulletin_post_columns:
+        cur.execute("ALTER TABLE bulletin_posts ADD COLUMN image_data TEXT")
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS bulletin_follows (
+        follower_id INTEGER NOT NULL,
+        followed_id INTEGER NOT NULL,
+        created_at TEXT NOT NULL,
+        PRIMARY KEY (follower_id, followed_id),
+        FOREIGN KEY (follower_id) REFERENCES users(id),
+        FOREIGN KEY (followed_id) REFERENCES users(id)
+    )
+    """)
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS bulletin_likes (
+        user_id INTEGER NOT NULL,
+        post_id INTEGER NOT NULL,
+        created_at TEXT NOT NULL,
+        PRIMARY KEY (user_id, post_id),
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (post_id) REFERENCES bulletin_posts(id)
+    )
+    """)
+
+    cur.execute("""
     CREATE TABLE IF NOT EXISTS village_slots (
     id TEXT PRIMARY KEY,
     col INTEGER NOT NULL,
@@ -172,6 +211,118 @@ def init_db():
     seed_village_slots(cur)
     conn.commit()
     conn.close()    
+
+
+def get_bulletin_posts(limit: int = 100, viewer_id: int = 0):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT bulletin_posts.id, bulletin_posts.content, bulletin_posts.image_data,
+               bulletin_posts.created_at, users.id AS user_id,
+               users.name AS user_name, users.grade AS user_grade,
+               EXISTS(
+                   SELECT 1 FROM bulletin_follows
+                   WHERE follower_id = ? AND followed_id = bulletin_posts.user_id
+               ) AS is_following,
+               EXISTS(
+                   SELECT 1 FROM bulletin_likes
+                   WHERE user_id = ? AND post_id = bulletin_posts.id
+               ) AS is_liked,
+               (SELECT COUNT(*) FROM bulletin_likes WHERE post_id = bulletin_posts.id) AS like_count
+        FROM bulletin_posts
+        JOIN users ON users.id = bulletin_posts.user_id
+        ORDER BY bulletin_posts.id DESC
+        LIMIT ?
+        """,
+        (viewer_id, viewer_id, limit),
+    )
+    posts = [dict(row) for row in cur.fetchall()]
+    conn.close()
+    return posts
+
+
+def create_bulletin_post(user_id: int, content: str, image_data=None):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM users WHERE id = ?", (user_id,))
+    if cur.fetchone() is None:
+        conn.close()
+        return None
+
+    created_at = get_now()
+    cur.execute(
+        "INSERT INTO bulletin_posts (user_id, content, image_data, created_at) VALUES (?, ?, ?, ?)",
+        (user_id, content, image_data, created_at),
+    )
+    conn.commit()
+    post_id = cur.lastrowid
+    conn.close()
+    return next((post for post in get_bulletin_posts(viewer_id=user_id) if post["id"] == post_id), None)
+
+
+def toggle_bulletin_follow(follower_id: int, followed_id: int):
+    if follower_id == followed_id:
+        return None
+
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM users WHERE id IN (?, ?)", (follower_id, followed_id))
+    if len(cur.fetchall()) != 2:
+        conn.close()
+        return None
+
+    cur.execute(
+        "SELECT 1 FROM bulletin_follows WHERE follower_id = ? AND followed_id = ?",
+        (follower_id, followed_id),
+    )
+    following = cur.fetchone() is None
+    if following:
+        cur.execute(
+            "INSERT INTO bulletin_follows (follower_id, followed_id, created_at) VALUES (?, ?, ?)",
+            (follower_id, followed_id, get_now()),
+        )
+    else:
+        cur.execute(
+            "DELETE FROM bulletin_follows WHERE follower_id = ? AND followed_id = ?",
+            (follower_id, followed_id),
+        )
+    conn.commit()
+    conn.close()
+    return {"following": following}
+
+
+def toggle_bulletin_like(user_id: int, post_id: int):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM users WHERE id = ?", (user_id,))
+    user_exists = cur.fetchone() is not None
+    cur.execute("SELECT user_id FROM bulletin_posts WHERE id = ?", (post_id,))
+    post = cur.fetchone()
+    if not user_exists or post is None or post["user_id"] == user_id:
+        conn.close()
+        return None
+
+    cur.execute(
+        "SELECT 1 FROM bulletin_likes WHERE user_id = ? AND post_id = ?",
+        (user_id, post_id),
+    )
+    liked = cur.fetchone() is None
+    if liked:
+        cur.execute(
+            "INSERT INTO bulletin_likes (user_id, post_id, created_at) VALUES (?, ?, ?)",
+            (user_id, post_id, get_now()),
+        )
+    else:
+        cur.execute(
+            "DELETE FROM bulletin_likes WHERE user_id = ? AND post_id = ?",
+            (user_id, post_id),
+        )
+    cur.execute("SELECT COUNT(*) AS count FROM bulletin_likes WHERE post_id = ?", (post_id,))
+    like_count = cur.fetchone()["count"]
+    conn.commit()
+    conn.close()
+    return {"liked": liked, "like_count": like_count}
 
 
 def create_user(name: str, grade: str, password: str):
