@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import magicStreetImg from "../assets/shop/magic-street.png";
-import robotImg from "../assets/shop/dopamine-robot.png";
+import robotImg from "../assets/shop/dopamine-robot.gif";
 import { roomItems } from "./pixelRoomConfig";
 
 const furnitureById = new Map(roomItems.map((item) => [item.id, item]));
