@@ -139,4 +139,20 @@
   object-fit: cover;
   image-rendering: pixelated;
   pointer-events: none;
-}s
+}
+
+.townPersonalPc,
+.townPersonalSeat,
+.townPersonalChara {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+.townSlot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

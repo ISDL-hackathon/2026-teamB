@@ -68,19 +68,27 @@ def verify_password(plain_password: str, password_hash: str):
 
 def seed_village_slots(cur):
     slots = [
-        ("desk-left-1", 1, 2, "左の机1", 1),
-        ("desk-left-2", 1, 8, "左の机2", 2),
-        ("center-desk-1", 5, 8, "中央机1", 3),
-        ("center-desk-2", 9, 10, "中央机2", 4),
-        ("right-desk-1", 18, 6, "右の机1", 5),
+        ("pc1", 1, 2, "left", "chair", "机1奥", 1),
+        ("pc2", 1, 7, "left", "chair", "机1手前", 2),
+        ("pc3", 3, 6, "right", "chair", "机2左奥", 3),
+        ("pc4", 6, 7, "left", "chair", "机2右手前", 4),
+        ("pc5", 2, 18, "down", "fl_chair", "机3手前右", 5),
+        ("pc6", 10, 5, "up", "chair", "机6奥左", 6),
     ]
 
     for slot in slots:
         cur.execute(
             """
-            INSERT OR IGNORE INTO village_slots
-                (id, col, row, label, sort_order)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO village_slots
+                (id, col, row, desk_direction, seat_type, label, sort_order)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+                col = excluded.col,
+                row = excluded.row,
+                desk_direction = excluded.desk_direction,
+                seat_type = excluded.seat_type,
+                label = excluded.label,
+                sort_order = excluded.sort_order
             """,
             slot,
         )
@@ -142,13 +150,26 @@ def init_db():
     id TEXT PRIMARY KEY,
     col INTEGER NOT NULL,
     row INTEGER NOT NULL,
-    col_span REAL NOT NULL DEFAULT 1,
-    row_span REAL NOT NULL DEFAULT 1,
+    desk_direction TEXT NOT NULL DEFAULT 'down',
+    seat_type TEXT NOT NULL DEFAULT 'chair',
     label TEXT,
     is_active INTEGER NOT NULL DEFAULT 1,
     sort_order INTEGER NOT NULL DEFAULT 0
     )
     """)
+
+    cur.execute("PRAGMA table_info(village_slots)")
+    slot_columns = {row["name"] for row in cur.fetchall()}
+
+    if "desk_direction" not in slot_columns:
+        cur.execute(
+            "ALTER TABLE village_slots ADD COLUMN desk_direction TEXT NOT NULL DEFAULT 'down'"
+        )
+
+    if "seat_type" not in slot_columns:
+        cur.execute(
+            "ALTER TABLE village_slots ADD COLUMN seat_type TEXT NOT NULL DEFAULT 'chair'"
+        )
     
     cur.execute("""
     CREATE TABLE IF NOT EXISTS user_village_positions (
@@ -536,8 +557,8 @@ def get_village_slots():
             vs.id,
             vs.col,
             vs.row,
-            vs.col_span,
-            vs.row_span,
+            vs.desk_direction,
+            vs.seat_type,
             vs.label,
             vs.is_active,
             vs.sort_order,
@@ -569,8 +590,8 @@ def get_village_slots():
                 "id": row["id"],
                 "col": row["col"],
                 "row": row["row"],
-                "col_span": row["col_span"],
-                "row_span": row["row_span"],
+                "desk_direction": row["desk_direction"],
+                "seat_type": row["seat_type"],
                 "label": row["label"],
                 "occupied": user is not None,
                 "user": user,

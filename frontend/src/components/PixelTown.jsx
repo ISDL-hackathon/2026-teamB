@@ -1,8 +1,10 @@
 import charaImg from "../assets/chara.png";
+import { Fragment } from "react";
 import floorGreyImg from "../assets/town/floor_grey.png";
 import ventImg from "../assets/town/vent.png";
 import { townItems } from "./PixeltownItems";
 import "./PixelTown.css";
+import { pcImages, seatImages, charaImages } from "./villageSlotAssets";
 
 const SHOW_GRID = false;
 
@@ -69,6 +71,31 @@ function TownGridOverlay() {
   );
 }
 
+// 座席向き毎に座標計算
+const SEAT_OFFSETS_BY_DESK_DIRECTION = {
+  left: { col: 1, row: 0 },
+  right: { col: -1, row: 0 },
+  up: { col: 0, row: 1 },
+  down: { col: 0, row: -1 },
+};
+
+function getSeatPosition(slot) {
+  const direction = slot.desk_direction ?? "down";
+  const offset = SEAT_OFFSETS_BY_DESK_DIRECTION[direction] ??
+    SEAT_OFFSETS_BY_DESK_DIRECTION.down;
+
+  return {
+    col: slot.col + offset.col,
+    row: slot.row + offset.row,
+  };
+}
+
+// 画像方向を決める
+function getDirection(slot) {
+  return slot.desk_direction ?? "down";
+}
+
+
 function PixelTown({ 
   weather = "weatherRainy", 
   level = 1, 
@@ -115,8 +142,21 @@ function PixelTown({
       {slots.map((slot) => {
         const occupied = Boolean(slot.user);
         const isSelectMode = mode === "select";
+        const direction = getDirection(slot);
+        const seatType = slot.seat_type ?? "chair";
+        const seatPosition = getSeatPosition(slot);
 
+        const pcImg = pcImages[direction] ?? pcImages.down;
+        const seatImg =
+          seatImages[seatType]?.[direction] ?? seatImages.chair.down;
+        
+        const charaImgForSeat =
+          charaImages[seatType]?.[direction] ??
+          charaImages.chair?.[direction] ??
+          charaImg;
+        
         return (
+          <Fragment key={slot.id}>
           <button
             key={slot.id}
             className={`townSlot ${
@@ -125,9 +165,7 @@ function PixelTown({
             style={getItemStyle({
               col: slot.col,
               row: slot.row,
-              colSpan: slot.col_span,
-              rowSpan: slot.row_span,
-              z: 30,
+              z: 40,
             })}
             disabled={isSelectMode && occupied}
             onClick={() => {
@@ -145,8 +183,39 @@ function PixelTown({
             type="button"
             title={occupied ? `${slot.user.name} のPC` : slot.label}
           >
-            {occupied ? "PC" : ""}
+            {occupied && (
+              <img src={pcImg} alt="" className="townPersonalPc" />
+            )}
           </button>
+
+          {occupied && (
+            <>
+              <img
+                src={seatImg}
+                alt=""
+                className="townPersonalSeat"
+                style={getItemStyle({
+                  col: slot.col,
+                  row: slot.row,
+                  colSpan: 1,
+                  rowSpan: 1,
+                  z: 40,
+                })}
+              />
+
+              <img
+                src={charaImgForSeat}
+                alt=""
+                className={`townPersonalChara townPersonalChara-${direction}`}
+                style={getItemStyle({
+                  col: seatPosition.col,
+                  row: seatPosition.row,
+                  z: 45,
+                })}
+              />
+            </>
+          )}
+          </Fragment>
         );
       })}
 

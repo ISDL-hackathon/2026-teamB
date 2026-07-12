@@ -279,13 +279,7 @@ function RoomSurface({
   );
 }
 
-function PixelRoom({
-  level,
-  ownedItemIds = [],
-  savedLayout = [],
-  onSaveLayout,
-  readonly = false,
-}) {
+function PixelRoom({ level, ownedItemIds = [], savedLayout = [], onSaveLayout, readonly = false }) {
   const [items, setItems] = useState(() =>
     createInitialPlacedItems(roomItems, savedLayout, ownedItemIds),
   );
@@ -295,13 +289,6 @@ function PixelRoom({
   useEffect(() => {
     setItems(createInitialPlacedItems(roomItems, savedLayout, ownedItemIds));
   }, [ownedItemIds, savedLayout]);
-
-  useEffect(() => {
-    if (readonly) {
-      setIsEditing(false);
-      setSelectedItemId(null);
-    }
-  }, [readonly]);
 
   const placedItemIds = new Set(items.map((item) => item.id));
   const ownedItemIdSet = new Set(ownedItemIds);
@@ -314,27 +301,15 @@ function PixelRoom({
   const selectedItem = items.find((item) => item.id === selectedItemId);
 
   const saveItems = (nextItems) => {
-    if (readonly) {
-      return;
-    }
-
     onSaveLayout?.(createSavedLayout(nextItems));
   };
 
   const handleToggleEditing = () => {
-    if (readonly) {
-      return;
-    }
-
     setIsEditing((current) => !current);
     setSelectedItemId(null);
   };
 
   const handleMoveSelectedItem = (deltaCol, deltaRow) => {
-    if (readonly) {
-      return;
-    }
-
     if (!selectedItemId) {
       return;
     }
@@ -350,10 +325,6 @@ function PixelRoom({
   };
 
   const handleAddItem = (itemId) => {
-    if (readonly) {
-      return;
-    }
-
     const itemToAdd = roomItems.find((item) => item.id === itemId);
 
     if (!itemToAdd || itemToAdd.isFixed || !ownedItemIdSet.has(itemToAdd.id)) {
@@ -373,10 +344,6 @@ function PixelRoom({
   };
 
   const handleRemoveSelectedItem = () => {
-    if (readonly) {
-      return;
-    }
-
     if (!selectedItem || selectedItem.isFixed) {
       return;
     }
@@ -394,62 +361,58 @@ function PixelRoom({
 
   return (
     <div className={`roomEditorShell ${isEditing ? "roomEditorShellEditing" : ""}`}>
-      {!readonly && isEditing && (
-        <RoomBag items={bagItems} onAddItem={handleAddItem} />
-      )}
+      {isEditing && <RoomBag items={bagItems} onAddItem={handleAddItem} />}
 
       <div className="isoRoom" aria-label={`room level ${level}`}>
-      {!readonly && (
-        <div className="roomEditBar">
-          <button
-            className="compactButton secondaryButton"
-            onClick={handleToggleEditing}
-            type="button"
-          >
-            {isEditing ? "Done" : "Edit"}
-          </button>
+      <div className="roomEditBar">
+        <button
+          className="compactButton secondaryButton"
+          onClick={handleToggleEditing}
+          type="button"
+        >
+          {isEditing ? "Done" : "Edit"}
+        </button>
 
-          {isEditing && (
-            <div className="roomMoveControls">
-              <span className="roomSelectedLabel">
-                {selectedItem ? selectedItem.name ?? selectedItem.id : "Select item"}
-              </span>
-              <ArrowButton
-                alt="Move up"
-                disabled={!selectedItem}
-                icon={arrowUpImg}
-                onClick={() => handleMoveSelectedItem(0, -1)}
-              />
-              <ArrowButton
-                alt="Move left"
-                disabled={!selectedItem}
-                icon={arrowLeftImg}
-                onClick={() => handleMoveSelectedItem(-1, 0)}
-              />
-              <ArrowButton
-                alt="Move right"
-                disabled={!selectedItem}
-                icon={arrowRightImg}
-                onClick={() => handleMoveSelectedItem(1, 0)}
-              />
-              <ArrowButton
-                alt="Move down"
-                disabled={!selectedItem}
-                icon={arrowDownImg}
-                onClick={() => handleMoveSelectedItem(0, 1)}
-              />
-              <button
-                className="roomMoveButton roomRemoveButton"
-                disabled={!selectedItem || selectedItem.isFixed}
-                onClick={handleRemoveSelectedItem}
-                type="button"
-              >
-                Remove
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+        {isEditing && (
+          <div className="roomMoveControls">
+            <span className="roomSelectedLabel">
+              {selectedItem ? selectedItem.name ?? selectedItem.id : "Select item"}
+            </span>
+            <ArrowButton
+              alt="Move up"
+              disabled={!selectedItem}
+              icon={arrowUpImg}
+              onClick={() => handleMoveSelectedItem(0, -1)}
+            />
+            <ArrowButton
+              alt="Move left"
+              disabled={!selectedItem}
+              icon={arrowLeftImg}
+              onClick={() => handleMoveSelectedItem(-1, 0)}
+            />
+            <ArrowButton
+              alt="Move right"
+              disabled={!selectedItem}
+              icon={arrowRightImg}
+              onClick={() => handleMoveSelectedItem(1, 0)}
+            />
+            <ArrowButton
+              alt="Move down"
+              disabled={!selectedItem}
+              icon={arrowDownImg}
+              onClick={() => handleMoveSelectedItem(0, 1)}
+            />
+            <button
+              className="roomMoveButton roomRemoveButton"
+              disabled={!selectedItem || selectedItem.isFixed}
+              onClick={handleRemoveSelectedItem}
+              type="button"
+            >
+              Remove
+            </button>
+          </div>
+        )}
+      </div>
 
       <WallSurface
         items={wallItems}
