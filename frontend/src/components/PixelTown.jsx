@@ -145,6 +145,7 @@ function PixelTown({
         const direction = getDirection(slot);
         const seatType = slot.seat_type ?? "chair";
         const seatPosition = getSeatPosition(slot);
+        const shouldShowPc = occupied || isSelectMode;
 
         const pcImg = pcImages[direction] ?? pcImages.down;
         const seatImg =
@@ -161,7 +162,7 @@ function PixelTown({
             key={slot.id}
             className={`townSlot ${
               occupied ? "townSlotOccupied" : "townSlotEmpty"
-            }`}
+            } ${isSelectMode && !occupied ? "townSlotPcPreview" : ""}`}
             style={getItemStyle({
               col: slot.col,
               row: slot.row,
@@ -183,8 +184,14 @@ function PixelTown({
             type="button"
             title={occupied ? `${slot.user.name} のPC` : slot.label}
           >
-            {occupied && (
-              <img src={pcImg} alt="" className="townPersonalPc" />
+            {shouldShowPc && (
+              <img
+                src={pcImg}
+                alt=""
+                className={`townPersonalPc ${
+                  occupied ? "townPersonalPcOccupied" : "townPersonalPcPreview"
+                }`}
+              />
             )}
           </button>
 
@@ -195,8 +202,8 @@ function PixelTown({
                 alt=""
                 className="townPersonalSeat"
                 style={getItemStyle({
-                  col: slot.col,
-                  row: slot.row,
+                  col: seatPosition.col,
+                  row: seatPosition.row,
                   colSpan: 1,
                   rowSpan: 1,
                   z: 40,

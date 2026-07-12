@@ -70,10 +70,10 @@ def seed_village_slots(cur):
     slots = [
         ("pc1", 1, 2, "left", "chair", "机1奥", 1),
         ("pc2", 1, 7, "left", "chair", "机1手前", 2),
-        ("pc3", 3, 6, "right", "chair", "机2左奥", 3),
-        ("pc4", 6, 7, "left", "chair", "机2右手前", 4),
-        ("pc5", 2, 18, "down", "fl_chair", "机3手前右", 5),
-        ("pc6", 10, 5, "up", "chair", "机6奥左", 6),
+        ("pc3", 6, 3, "right", "chair", "机2左奥", 3),
+        ("pc4", 7, 6, "left", "chair", "机2右手前", 4),
+        ("pc5", 18, 3, "up", "fl_chair", "机3手前右", 5),
+        ("pc6", 5, 11, "down", "chair", "机6奥左", 6),
     ]
 
     for slot in slots:
