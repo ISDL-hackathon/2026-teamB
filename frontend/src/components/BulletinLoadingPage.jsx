@@ -4,7 +4,7 @@ import loadProgress from "../assets/bulletin-load-progress.gif";
 import guideCharacter from "../assets/izumi.gif";
 import "./BulletinLoadingPage.css";
 
-const LOADING_DURATION_MS = 3000;
+const LOADING_DURATION_MS = 5000;
 
 function BulletinLoadingPage({ onComplete }) {
   useEffect(() => {
