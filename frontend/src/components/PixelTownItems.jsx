@@ -20,6 +20,13 @@ import deskBrownLeftImg from "../assets/town/desk_brown_left.png";
 import deskBrownMidImg from "../assets/town/desk_brown_mid.png";
 import deskBrownRightImg from "../assets/town/desk_brown_right.png";
 import navyTileImg from "../assets/town/navy_tile.png";
+import plant_lv1Img from "../assets/town/plant_lv1.png";
+import plant_lv2Img from "../assets/town/plant_lv2.png";
+import dopaImg from "../assets/town/dopakun.png";
+import deskLowWhitebrownImg from "../assets/town/desk_low_whitebrown.png";
+import microwaveImg from "../assets/town/microwave.png";
+import fridgeImg from "../assets/town/fridge.png";
+import fridgeBrownImg from "../assets/town/fridge_brown.png";
 
 export const townItems = [
   // === Lv.1(初期段階)===
@@ -308,8 +315,30 @@ export const townItems = [
   { id: "navy-19-24", src: navyTileImg, alt: "紺マス", minLevel: 1, col: 19, row: 24, z: 1 },
   { id: "navy-20-24", src: navyTileImg, alt: "紺マス", minLevel: 1, col: 20, row: 24, z: 1 },
 
+  // 観葉植物lv1(空の鉢)
+  { id: "plant-4-22-lv1", src: plant_lv1Img, alt: "観葉植物", minLevel: 1, col: 4, row: 22, z: 2 },
+  { id: "plant-16-13-lv1", src: plant_lv1Img, alt: "観葉植物", minLevel: 1, col: 16, row: 13, z: 2 },
+  { id: "plant-16-15-lv1", src: plant_lv1Img, alt: "観葉植物", minLevel: 1, col: 16, row: 15, z: 2 },
+
+  // 土台
+  { id: "desk-low-10-1", src: deskLowWhitebrownImg, alt: "机", minLevel: 1, col: 10, row: 1, z: 5 },
+  { id: "fridge-12-1", src: fridgeImg, alt: "冷蔵庫", minLevel: 1, col: 12, row: 1, z: 5 },
+
 
   // === Lv.2 で追加する家具は、ここに minLevel: 2 で書いていく ===
+  // 観葉植物lv2(芽が出た鉢。lv1の上に重ねる)
+  { id: "plant-4-22-lv2", src: plant_lv2Img, alt: "観葉植物", minLevel: 2, col: 4, row: 22, z: 3 },
+  { id: "plant-16-13-lv2", src: plant_lv2Img, alt: "観葉植物", minLevel: 2, col: 16, row: 13, z: 3 },
+  { id: "plant-16-15-lv2", src: plant_lv2Img, alt: "観葉植物", minLevel: 2, col: 16, row: 15, z: 3 },
+
+  // 電子レンジ(机の上に重ねる)
+  { id: "microwave-10-1", src: microwaveImg, alt: "電子レンジ", minLevel: 2, col: 10, row: 1, z: 6 },
+
+  // 茶色の冷蔵庫
+  { id: "fridge-brown-11-1", src: fridgeBrownImg, alt: "冷蔵庫", minLevel: 2, col: 11, row: 1, z: 5 },
+
+  // ロボット(2×2エリアの中央に約8割サイズ)
+  { id: "dopa-10-20", src: dopaImg, alt: "ロボット", minLevel: 2, col: 10.1, row: 20.1, colSpan: 1.8, rowSpan: 1.8, z: 5 },
 
   // === Lv.3 で追加する家具は、ここに minLevel: 3 で書いていく ===
 
