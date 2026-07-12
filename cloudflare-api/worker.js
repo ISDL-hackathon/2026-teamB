@@ -47,6 +47,14 @@ const FURNITURE_CATALOG = [
     surface: "wall",
   },
   {
+    id: "game_cabinet",
+    name: "Game Cabinet",
+    price: 100,
+    min_level: 2,
+    category: "lab",
+    surface: "floor",
+  },
+  {
     id: "window",
     name: "Window",
     price: 30,

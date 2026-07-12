@@ -21,7 +21,7 @@
 .bulletinHeader {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   padding: 10px 14px;
   border-bottom: 2px solid #ff91a8;
   color: #ff557a;
@@ -56,4 +56,20 @@
 .bulletinNav { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 2px solid #ff91a8; background: #fff8d7; }
 .bulletinNav button { display: grid; gap: 2px; justify-items: center; border: 0; border-radius: 0; background: transparent; color: #7f5961; font-size: 20px; }
 .bulletinNav button span { font-size: 11px; }
-.bulletinNav .bulletinNavActive { color: #ff557a; }
+.bulletinNavIcon { width: 30px; height: 30px; object-fit: contain; image-rendering: pixelated; }
+.bulletinNav button:hover,
+.bulletinNav .bulletinNavActive {
+  background: #ffe0dc;
+  color: #ff557a;
+}
+
+.bulletinComposerActions > button:hover,
+.bulletinPostHeader button:hover,
+.bulletinFollowMenu:hover {
+  background: #ff8aa3;
+  color: #ffffff;
+}
+
+.bulletinAvatar:hover {
+  background: #fff3f1;
+}

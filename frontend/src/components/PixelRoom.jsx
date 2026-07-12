@@ -153,8 +153,8 @@ function RoomItem({ item, isEditing, isSelected, onActivate, onSelect }) {
       onClick={
         isEditing
           ? () => onSelect(item.id)
-          : item.id === "bulletin_board"
-            ? onActivate
+          : ["bulletin_board", "game_cabinet"].includes(item.id)
+            ? () => onActivate?.(item.id)
             : undefined
       }
       src={item.src}
@@ -284,6 +284,7 @@ function RoomSurface({
   isEditing,
   selectedItemId,
   onSelectItem,
+  onActivateItem,
   textureId,
 }) {
   const gridStyle = getGridStyle(surface);
@@ -312,6 +313,7 @@ function RoomSurface({
             isEditing={isEditing}
             isSelected={selectedItemId === item.id}
             key={item.id}
+            onActivate={onActivateItem}
             onSelect={onSelectItem}
           />
         ))}
@@ -329,6 +331,7 @@ function PixelRoom({
   savedTheme = {},
   onSaveLayout,
   onOpenBulletinBoard,
+  onOpenGameSelect,
   readonly = false,
 }) {
   const [items, setItems] = useState(() =>
@@ -361,6 +364,11 @@ function PixelRoom({
   const wallItems = items.filter((item) => item.surface === "wall");
   const floorItems = items.filter((item) => item.surface === "floor");
   const selectedItem = items.find((item) => item.id === selectedItemId);
+
+  const handleActivateItem = (itemId) => {
+    if (itemId === "bulletin_board") onOpenBulletinBoard?.();
+    if (itemId === "game_cabinet") onOpenGameSelect?.();
+  };
 
   const saveRoomState = (nextItems, nextTheme = roomTheme) => {
     if (readonly) {
@@ -528,7 +536,7 @@ function PixelRoom({
         <WallSurface
           items={wallItems}
           isEditing={isEditing}
-          onActivateItem={onOpenBulletinBoard}
+        onActivateItem={handleActivateItem}
           onSelectItem={setSelectedItemId}
           selectedItemId={selectedItemId}
           wallTexture={roomTheme.wall}
@@ -536,7 +544,8 @@ function PixelRoom({
         <RoomSurface
           surface="floor"
           items={floorItems}
-          isEditing={isEditing}
+        isEditing={isEditing}
+        onActivateItem={handleActivateItem}
           onSelectItem={setSelectedItemId}
           selectedItemId={selectedItemId}
           textureId={roomTheme.floor}

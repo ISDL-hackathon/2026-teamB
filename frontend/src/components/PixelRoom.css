@@ -99,7 +99,8 @@
   cursor: pointer;
 }
 
-.roomItem[alt="bulletin board"]:not(.roomItemEditable) {
+.roomItem[alt="bulletin board"]:not(.roomItemEditable),
+.roomItem[alt="game cabinet"]:not(.roomItemEditable) {
   cursor: pointer;
   pointer-events: auto;
 }

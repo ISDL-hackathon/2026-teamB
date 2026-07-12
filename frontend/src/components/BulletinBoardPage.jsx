@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { requestBulletinJson } from "../api";
 import bulletinLogo from "../assets/bulletin-logo.png";
 import userIcon from "../assets/chara.png";
+import homeNavIcon from "../assets/nav-home.png";
+import roomNavIcon from "../assets/nav-room.png";
+import followNavIcon from "../assets/nav-follow.png";
 import "./BulletinBoardPage.css";
 
 function BulletinBoardPage({ currentUser, setPage }) {
@@ -93,9 +96,7 @@ function BulletinBoardPage({ currentUser, setPage }) {
     <main className="bulletinPage">
       <section className="bulletinPhone" aria-label="研究室掲示板">
         <header className="bulletinHeader">
-          <span aria-hidden="true">▣</span>
           <img alt="Isdlgram" className="bulletinLogo" src={bulletinLogo} />
-          <span aria-hidden="true">♡</span>
         </header>
 
         <form className="bulletinComposer" onSubmit={handleSubmit}>
@@ -168,14 +169,21 @@ function BulletinBoardPage({ currentUser, setPage }) {
         </div>
 
         <nav className="bulletinNav" aria-label="掲示板メニュー">
-          <button onClick={() => setPage("home")} type="button">⌂<span>ホーム</span></button>
-          <button onClick={() => setPage("room")} type="button">▣<span>個人ルーム</span></button>
+          <button onClick={() => setPage("home")} type="button">
+            <img alt="" className="bulletinNavIcon" src={homeNavIcon} />
+            <span>ホーム</span>
+          </button>
+          <button onClick={() => setPage("room")} type="button">
+            <img alt="" className="bulletinNavIcon" src={roomNavIcon} />
+            <span>個人ルーム</span>
+          </button>
           <button
             className={feedMode === "following" ? "bulletinNavActive" : ""}
             onClick={() => setFeedMode((mode) => mode === "following" ? "all" : "following")}
             type="button"
           >
-            ♡<span>フォロー投稿</span>
+            <img alt="" className="bulletinNavIcon" src={followNavIcon} />
+            <span>フォロー投稿</span>
           </button>
         </nav>
       </section>

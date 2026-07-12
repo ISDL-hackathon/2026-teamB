@@ -15,6 +15,7 @@ FURNITURE_CATALOG = [
     {"id": "round_table", "name": "Round Table", "price": 50, "min_level": 1, "category": "lab", "surface": "floor"},
     {"id": "office_chair", "name": "Office Chair", "price": 35, "min_level": 1, "category": "lab", "surface": "floor"},
     {"id": "bulletin_board", "name": "Bulletin Board", "price": 50, "min_level": 1, "category": "lab", "surface": "wall"},
+    {"id": "game_cabinet", "name": "Game Cabinet", "price": 100, "min_level": 2, "category": "lab", "surface": "floor"},
     {"id": "window", "name": "Window", "price": 30, "min_level": 2, "category": "western", "surface": "wall"},
     {"id": "clock", "name": "Clock", "price": 30, "min_level": 2, "category": "western", "surface": "wall"},
     {"id": "stove", "name": "Stove", "price": 50, "min_level": 2, "category": "western", "surface": "wall"},
