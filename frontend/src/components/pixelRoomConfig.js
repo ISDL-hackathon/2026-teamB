@@ -8,6 +8,7 @@ import bedImg from "../assets/furniture/bed_pink.png";
 import bookshelfImg from "../assets/furniture/bookshelf.png";
 import clockImg from "../assets/furniture/clock.png";
 import bulletinBoardImg from "../assets/furniture/keijibann.png";
+import gameCabinetImg from "../assets/furniture/game-cabinet.png";
 import officeChairImg from "../assets/furniture/office_chair.png";
 import roundTableImg from "../assets/furniture/round_table.png";
 import shelfImg from "../assets/furniture/shelf.png";
@@ -195,6 +196,22 @@ export const roomItems = [
     colSpan: 2,
     rowSpan: 2,
     z: 7,
+    anchor: "bottomLeft",
+  },
+  {
+    id: "game_cabinet",
+    name: "Game Cabinet",
+    price: 100,
+    category: "lab",
+    surface: "floor",
+    minLevel: 2,
+    src: gameCabinetImg,
+    alt: "game cabinet",
+    col: 9,
+    row: 4,
+    colSpan: 2,
+    rowSpan: 3,
+    z: 9,
     anchor: "bottomLeft",
   },
   {

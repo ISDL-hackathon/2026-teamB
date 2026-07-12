@@ -3,6 +3,8 @@ import { requestJson } from "./api";
 import HomePage from "./components/HomePage";
 import BulletinBoardPage from "./components/BulletinBoardPage";
 import BulletinLoadingPage from "./components/BulletinLoadingPage";
+import GameLoadingPage from "./components/GameLoadingPage";
+import GameSelectPage from "./components/GameSelectPage";
 import LoginArea from "./components/LoginArea";
 import RoomPage from "./components/RoomPage";
 import ShopPage from "./components/ShopPage";
@@ -316,11 +318,20 @@ function App() {
       {currentUser && page === "room" && (
         <RoomPage
           onOpenBulletinBoard={() => setPage("bulletinLoading")}
+          onOpenGameSelect={() => setPage("gameLoading")}
           onSaveRoomLayout={handleSaveRoomLayout}
           readonly={viewingRoomUserId !== null}
           room={room}
           setPage={setPage}
         />
+      )}
+
+      {currentUser && page === "gameLoading" && (
+        <GameLoadingPage onComplete={() => setPage("gameSelect")} />
+      )}
+
+      {currentUser && page === "gameSelect" && (
+        <GameSelectPage setPage={setPage} />
       )}
 
       {currentUser && page === "bulletinLoading" && (

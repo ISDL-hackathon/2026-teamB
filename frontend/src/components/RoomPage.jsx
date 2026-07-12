@@ -1,5 +1,5 @@
 import PixelRoom from "./PixelRoom";
-function RoomPage({ onOpenBulletinBoard, onSaveRoomLayout, readonly = false, room, setPage }) {
+function RoomPage({ onOpenBulletinBoard, onOpenGameSelect, onSaveRoomLayout, readonly = false, room, setPage }) {
   return (
     <>
       <div className="pageHeader">
@@ -18,6 +18,7 @@ function RoomPage({ onOpenBulletinBoard, onSaveRoomLayout, readonly = false, roo
             <PixelRoom
               level={room.room_level}
               onOpenBulletinBoard={onOpenBulletinBoard}
+              onOpenGameSelect={onOpenGameSelect}
               onSaveLayout={onSaveRoomLayout}
               ownedItemIds={room.owned_furniture}
               readonly={readonly}
