@@ -141,6 +141,7 @@ function PixelTown({
 
       {slots.map((slot) => {
         const occupied = Boolean(slot.user);
+        const isOnline = Boolean(slot.user?.is_online);
         const isSelectMode = mode === "select";
         const direction = getDirection(slot);
         const seatType = slot.seat_type ?? "chair";
@@ -195,8 +196,7 @@ function PixelTown({
             )}
           </button>
 
-          {occupied && (
-            <>
+          {occupied && !isOnline && (
               <img
                 src={seatImg}
                 alt=""
@@ -209,7 +209,10 @@ function PixelTown({
                   z: 40,
                 })}
               />
+          )}
 
+          {occupied && isOnline && (
+            <>
               <img
                 src={charaImgForSeat}
                 alt=""
@@ -220,6 +223,17 @@ function PixelTown({
                   z: 45,
                 })}
               />
+
+              <span
+                className="townUserName"
+                style={getItemStyle({
+                  col: seatPosition.col,
+                  row: seatPosition.row,
+                  z: 60,
+                })}
+              >
+                {slot.user.name}
+              </span>
             </>
           )}
           </Fragment>

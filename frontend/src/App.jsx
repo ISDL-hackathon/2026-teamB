@@ -119,11 +119,21 @@ function App() {
   };
 
   const handleLogout = () => {
-    setCurrentUser(null);
-    setRoom(null);
-    setViewingRoomUserId(null);
-    setPage("home");
-    setMessage("ログアウトしました");
+    if (!currentUser) return;
+
+    requestJson("/logout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: currentUser.id,
+      }),
+    }).finally(() => {
+      setCurrentUser(null);
+      setRoom(null);
+      setViewingRoomUserId(null);
+      setPage("home");
+      setMessage("ログアウトしました");
+    });
   };
 
   const fetchVillageSlots = () => {

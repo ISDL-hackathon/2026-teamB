@@ -36,13 +36,25 @@
   z-index: 30;
 }
 
+/*
 .townSlotEmpty {
+  
   border-color: rgba(80, 180, 255, 0.85);
   background: rgba(80, 180, 255, 0.18);
 }
 
 .townSlotEmpty:hover {
   background: rgba(80, 180, 255, 0.34);
+}
+*/
+.townSlotEmpty {
+  
+  border-color: transparent;
+  background: transparent;
+}
+
+.townSlotEmpty:hover {
+  background: transparent;
 }
 
 .townSlotOccupied {
@@ -175,4 +187,29 @@
 .townPersonalPcPreview {
   opacity: 0.72;
   filter: drop-shadow(0 0 3px rgba(80, 180, 255, 0.9));
+}
+
+.townUserName {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: auto;
+  min-width: 48px;
+  max-width: 80px;
+  color: #172033;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.1;
+  overflow: hidden;
+  pointer-events: none;
+  text-overflow: ellipsis;
+  /*
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9),
+    1px 0 0 rgba(255, 255, 255, 0.9),
+    -1px 0 0 rgba(255, 255, 255, 0.9);
+  */
+  transform: translate(-8px, -18px);
+  white-space: nowrap;
+  z-index: 60;
 }
