@@ -30,6 +30,30 @@ import fridgeBrownImg from "../assets/town/fridge_brown.png";
 import plant_lv3Img from "../assets/town/plant_lv3.png";
 import plant_lv4Gif from "../assets/town/plant_lv4.gif";
 import plant_lv5Gif from "../assets/town/plant_lv5.gif";
+import deskFutureImg from "../assets/town/desk_future.png";
+import deskFutureLongImg from "../assets/town/desk_future_long.png";
+import deskTopFutureImg from "../assets/town/desk_top_future.png";
+import deskSideFutureImg from "../assets/town/desk_side_future.png";
+import glassPaneBlueImg from "../assets/town/glass_pane_blue.png";
+
+
+// 白い縦長机(各机の col と、天面の行リスト・側面の行)
+const WHITE_DESKS = [
+  { key: "a", col: 1,  top: [2, 3, 4, 5, 6, 7, 8],                 side: 9  },
+  { key: "b", col: 1,  top: [12, 13, 14, 15, 16, 17, 18],          side: 19 },
+  { key: "c", col: 6,  top: [3, 4, 5, 6, 7],                       side: 8  },
+  { key: "d", col: 7,  top: [3, 4, 5, 6, 7],                       side: 8  },
+  { key: "e", col: 20, top: [10, 11, 12, 13, 14, 15, 16, 17, 18],  side: 19 },
+];
+
+const whiteDeskItems = WHITE_DESKS.flatMap(({ key, col, top, side }) => [
+  // Lv1〜4:従来の白机
+  ...top.map((row) => ({ id: `wdesk-${key}-top-${row}`, src: deskTopImg, alt: "机", minLevel: 1, maxLevel: 4, col, row, z: 5 })),
+  { id: `wdesk-${key}-side-${side}`, src: deskSideImg, alt: "机の脚", minLevel: 1, maxLevel: 4, col, row: side, z: 5 },
+  // Lv5:近未来版(タイル差し替え)
+  ...top.map((row) => ({ id: `wdesk-${key}-top-${row}-f`, src: deskTopFutureImg, alt: "机", minLevel: 5, col, row, z: 5 })),
+  { id: `wdesk-${key}-side-${side}-f`, src: deskSideFutureImg, alt: "机の脚", minLevel: 5, col, row: side, z: 5 },
+]);
 
 export const townItems = [
   // === Lv.1(初期段階)===
@@ -89,122 +113,76 @@ export const townItems = [
   { id: "tatami-side-19-5", src: tatamiSideImg, alt: "畳の側面", minLevel: 1, col: 19, row: 5, z: 3 },
   { id: "tatami-side-20-5", src: tatamiSideImg, alt: "畳の側面", minLevel: 1, col: 20, row: 5, z: 3 },
 
-  // 白い長机A(col=1, row=2〜8天面 / row=9脚)
-  { id: "wdesk-a-top-2", src: deskTopImg, alt: "机", minLevel: 1, col: 1, row: 2, z: 5 },
-  { id: "wdesk-a-top-3", src: deskTopImg, alt: "机", minLevel: 1, col: 1, row: 3, z: 5 },
-  { id: "wdesk-a-top-4", src: deskTopImg, alt: "机", minLevel: 1, col: 1, row: 4, z: 5 },
-  { id: "wdesk-a-top-5", src: deskTopImg, alt: "机", minLevel: 1, col: 1, row: 5, z: 5 },
-  { id: "wdesk-a-top-6", src: deskTopImg, alt: "机", minLevel: 1, col: 1, row: 6, z: 5 },
-  { id: "wdesk-a-top-7", src: deskTopImg, alt: "机", minLevel: 1, col: 1, row: 7, z: 5 },
-  { id: "wdesk-a-top-8", src: deskTopImg, alt: "机", minLevel: 1, col: 1, row: 8, z: 5 },
-  { id: "wdesk-a-side-9", src: deskSideImg, alt: "机の脚", minLevel: 1, col: 1, row: 9, z: 5 },
-
-  // 白い長机B(col=1, row=12〜18天面 / row=19脚)
-  { id: "wdesk-b-top-12", src: deskTopImg, alt: "机", minLevel: 1, col: 1, row: 12, z: 5 },
-  { id: "wdesk-b-top-13", src: deskTopImg, alt: "机", minLevel: 1, col: 1, row: 13, z: 5 },
-  { id: "wdesk-b-top-14", src: deskTopImg, alt: "机", minLevel: 1, col: 1, row: 14, z: 5 },
-  { id: "wdesk-b-top-15", src: deskTopImg, alt: "机", minLevel: 1, col: 1, row: 15, z: 5 },
-  { id: "wdesk-b-top-16", src: deskTopImg, alt: "机", minLevel: 1, col: 1, row: 16, z: 5 },
-  { id: "wdesk-b-top-17", src: deskTopImg, alt: "机", minLevel: 1, col: 1, row: 17, z: 5 },
-  { id: "wdesk-b-top-18", src: deskTopImg, alt: "机", minLevel: 1, col: 1, row: 18, z: 5 },
-  { id: "wdesk-b-side-19", src: deskSideImg, alt: "机の脚", minLevel: 1, col: 1, row: 19, z: 5 },
-
-  // 白い長机C(col=6, row=3〜7天面 / row=8脚)
-  { id: "wdesk-c-top-3", src: deskTopImg, alt: "机", minLevel: 1, col: 6, row: 3, z: 5 },
-  { id: "wdesk-c-top-4", src: deskTopImg, alt: "机", minLevel: 1, col: 6, row: 4, z: 5 },
-  { id: "wdesk-c-top-5", src: deskTopImg, alt: "机", minLevel: 1, col: 6, row: 5, z: 5 },
-  { id: "wdesk-c-top-6", src: deskTopImg, alt: "机", minLevel: 1, col: 6, row: 6, z: 5 },
-  { id: "wdesk-c-top-7", src: deskTopImg, alt: "机", minLevel: 1, col: 6, row: 7, z: 5 },
-  { id: "wdesk-c-side-8", src: deskSideImg, alt: "机の脚", minLevel: 1, col: 6, row: 8, z: 5 },
-
-  // 白い長机D(col=7, row=3〜7天面 / row=8脚)
-  { id: "wdesk-d-top-3", src: deskTopImg, alt: "机", minLevel: 1, col: 7, row: 3, z: 5 },
-  { id: "wdesk-d-top-4", src: deskTopImg, alt: "机", minLevel: 1, col: 7, row: 4, z: 5 },
-  { id: "wdesk-d-top-5", src: deskTopImg, alt: "机", minLevel: 1, col: 7, row: 5, z: 5 },
-  { id: "wdesk-d-top-6", src: deskTopImg, alt: "机", minLevel: 1, col: 7, row: 6, z: 5 },
-  { id: "wdesk-d-top-7", src: deskTopImg, alt: "机", minLevel: 1, col: 7, row: 7, z: 5 },
-  { id: "wdesk-d-side-8", src: deskSideImg, alt: "机の脚", minLevel: 1, col: 7, row: 8, z: 5 },
-
-  // 白い長机E(col=20, row=10〜17天面 / row=18脚)
-  { id: "wdesk-e-top-10", src: deskTopImg, alt: "机", minLevel: 1, col: 20, row: 10, z: 8 },
-  { id: "wdesk-e-top-11", src: deskTopImg, alt: "机", minLevel: 1, col: 20, row: 11, z: 5 },
-  { id: "wdesk-e-top-12", src: deskTopImg, alt: "机", minLevel: 1, col: 20, row: 12, z: 5 },
-  { id: "wdesk-e-top-13", src: deskTopImg, alt: "机", minLevel: 1, col: 20, row: 13, z: 5 },
-  { id: "wdesk-e-top-14", src: deskTopImg, alt: "机", minLevel: 1, col: 20, row: 14, z: 5 },
-  { id: "wdesk-e-top-15", src: deskTopImg, alt: "机", minLevel: 1, col: 20, row: 15, z: 5 },
-  { id: "wdesk-e-top-16", src: deskTopImg, alt: "机", minLevel: 1, col: 20, row: 16, z: 5 },
-  { id: "wdesk-e-top-17", src: deskTopImg, alt: "机", minLevel: 1, col: 20, row: 17, z: 5 },
-    { id: "wdesk-e-top-17", src: deskTopImg, alt: "机", minLevel: 1, col: 20, row: 18, z: 5 },
-  { id: "wdesk-e-side-18", src: deskSideImg, alt: "机の脚", minLevel: 1, col: 20, row: 19, z: 5 },
+  ...whiteDeskItems,
 
   // 9マス机1(左上 col=5, row=11)
-  { id: "sqdesk1-tl", src: deskSqTlImg, alt: "机", minLevel: 1, col: 5, row: 11, z: 6 },
-  { id: "sqdesk1-tm", src: deskSqTmImg, alt: "机", minLevel: 1, col: 6, row: 11, z: 6 },
-  { id: "sqdesk1-tr", src: deskSqTrImg, alt: "机", minLevel: 1, col: 7, row: 11, z: 6 },
-  { id: "sqdesk1-bl", src: deskSqBlImg, alt: "机", minLevel: 1, col: 5, row: 12, z: 6 },
-  { id: "sqdesk1-bm", src: deskSqBmImg, alt: "机", minLevel: 1, col: 6, row: 12, z: 6 },
-  { id: "sqdesk1-br", src: deskSqBrImg, alt: "机", minLevel: 1, col: 7, row: 12, z: 6 },
-  { id: "sqdesk1-sl", src: deskSqSideLeftImg, alt: "机の脚", minLevel: 1, col: 5, row: 13, z: 6 },
-  { id: "sqdesk1-sm", src: deskSqSideMidImg, alt: "机の脚", minLevel: 1, col: 6, row: 13, z: 6 },
-  { id: "sqdesk1-sr", src: deskSqSideRightImg, alt: "机の脚", minLevel: 1, col: 7, row: 13, z: 6 },
+  { id: "sqdesk1-tl", src: deskSqTlImg, alt: "机", minLevel: 1, maxLevel: 3, col: 5, row: 11, z: 6 },
+  { id: "sqdesk1-tm", src: deskSqTmImg, alt: "机", minLevel: 1, maxLevel: 3, col: 6, row: 11, z: 6 },
+  { id: "sqdesk1-tr", src: deskSqTrImg, alt: "机", minLevel: 1, maxLevel: 3, col: 7, row: 11, z: 6 },
+  { id: "sqdesk1-bl", src: deskSqBlImg, alt: "机", minLevel: 1, maxLevel: 3, col: 5, row: 12, z: 6 },
+  { id: "sqdesk1-bm", src: deskSqBmImg, alt: "机", minLevel: 1, maxLevel: 3, col: 6, row: 12, z: 6 },
+  { id: "sqdesk1-br", src: deskSqBrImg, alt: "机", minLevel: 1, maxLevel: 3, col: 7, row: 12, z: 6 },
+  { id: "sqdesk1-sl", src: deskSqSideLeftImg, alt: "机の脚", minLevel: 1, maxLevel: 3, col: 5, row: 13, z: 6 },
+  { id: "sqdesk1-sm", src: deskSqSideMidImg, alt: "机の脚", minLevel: 1, maxLevel: 3, col: 6, row: 13, z: 6 },
+  { id: "sqdesk1-sr", src: deskSqSideRightImg, alt: "机の脚", minLevel: 1, maxLevel: 3, col: 7, row: 13, z: 6 },
 
   // 9マス机2(左上 col=12, row=10)
-  { id: "sqdesk2-tl", src: deskSqTlImg, alt: "机", minLevel: 1, col: 12, row: 10, z: 6 },
-  { id: "sqdesk2-tm", src: deskSqTmImg, alt: "机", minLevel: 1, col: 13, row: 10, z: 6 },
-  { id: "sqdesk2-tr", src: deskSqTrImg, alt: "机", minLevel: 1, col: 14, row: 10, z: 6 },
-  { id: "sqdesk2-bl", src: deskSqBlImg, alt: "机", minLevel: 1, col: 12, row: 11, z: 6 },
-  { id: "sqdesk2-bm", src: deskSqBmImg, alt: "机", minLevel: 1, col: 13, row: 11, z: 6 },
-  { id: "sqdesk2-br", src: deskSqBrImg, alt: "机", minLevel: 1, col: 14, row: 11, z: 6 },
-  { id: "sqdesk2-sl", src: deskSqSideLeftImg, alt: "机の脚", minLevel: 1, col: 12, row: 12, z: 6 },
-  { id: "sqdesk2-sm", src: deskSqSideMidImg, alt: "机の脚", minLevel: 1, col: 13, row: 12, z: 6 },
-  { id: "sqdesk2-sr", src: deskSqSideRightImg, alt: "机の脚", minLevel: 1, col: 14, row: 12, z: 6 },
+  { id: "sqdesk2-tl", src: deskSqTlImg, alt: "机", minLevel: 1, maxLevel: 3, col: 12, row: 10, z: 6 },
+  { id: "sqdesk2-tm", src: deskSqTmImg, alt: "机", minLevel: 1, maxLevel: 3, col: 13, row: 10, z: 6 },
+  { id: "sqdesk2-tr", src: deskSqTrImg, alt: "机", minLevel: 1, maxLevel: 3, col: 14, row: 10, z: 6 },
+  { id: "sqdesk2-bl", src: deskSqBlImg, alt: "机", minLevel: 1, maxLevel: 3, col: 12, row: 11, z: 6 },
+  { id: "sqdesk2-bm", src: deskSqBmImg, alt: "机", minLevel: 1, maxLevel: 3, col: 13, row: 11, z: 6 },
+  { id: "sqdesk2-br", src: deskSqBrImg, alt: "机", minLevel: 1, maxLevel: 3, col: 14, row: 11, z: 6 },
+  { id: "sqdesk2-sl", src: deskSqSideLeftImg, alt: "机の脚", minLevel: 1, maxLevel: 3, col: 12, row: 12, z: 6 },
+  { id: "sqdesk2-sm", src: deskSqSideMidImg, alt: "机の脚", minLevel: 1, maxLevel: 3, col: 13, row: 12, z: 6 },
+  { id: "sqdesk2-sr", src: deskSqSideRightImg, alt: "机の脚", minLevel: 1, maxLevel: 3, col: 14, row: 12, z: 6 },
 
   // 9マス机3(左上 col=8, row=14)
-  { id: "sqdesk3-tl", src: deskSqTlImg, alt: "机", minLevel: 1, col: 8, row: 14, z: 6 },
-  { id: "sqdesk3-tm", src: deskSqTmImg, alt: "机", minLevel: 1, col: 9, row: 14, z: 6 },
-  { id: "sqdesk3-tr", src: deskSqTrImg, alt: "机", minLevel: 1, col: 10, row: 14, z: 6 },
-  { id: "sqdesk3-bl", src: deskSqBlImg, alt: "机", minLevel: 1, col: 8, row: 15, z: 6 },
-  { id: "sqdesk3-bm", src: deskSqBmImg, alt: "机", minLevel: 1, col: 9, row: 15, z: 6 },
-  { id: "sqdesk3-br", src: deskSqBrImg, alt: "机", minLevel: 1, col: 10, row: 15, z: 6 },
-  { id: "sqdesk3-sl", src: deskSqSideLeftImg, alt: "机の脚", minLevel: 1, col: 8, row: 16, z: 6 },
-  { id: "sqdesk3-sm", src: deskSqSideMidImg, alt: "机の脚", minLevel: 1, col: 9, row: 16, z: 6 },
-  { id: "sqdesk3-sr", src: deskSqSideRightImg, alt: "机の脚", minLevel: 1, col: 10, row: 16, z: 6 },
+  { id: "sqdesk3-tl", src: deskSqTlImg, alt: "机", minLevel: 1, maxLevel: 3, col: 8, row: 14, z: 6 },
+  { id: "sqdesk3-tm", src: deskSqTmImg, alt: "机", minLevel: 1, maxLevel: 3, col: 9, row: 14, z: 6 },
+  { id: "sqdesk3-tr", src: deskSqTrImg, alt: "机", minLevel: 1, maxLevel: 3, col: 10, row: 14, z: 6 },
+  { id: "sqdesk3-bl", src: deskSqBlImg, alt: "机", minLevel: 1, maxLevel: 3, col: 8, row: 15, z: 6 },
+  { id: "sqdesk3-bm", src: deskSqBmImg, alt: "机", minLevel: 1, maxLevel: 3, col: 9, row: 15, z: 6 },
+  { id: "sqdesk3-br", src: deskSqBrImg, alt: "机", minLevel: 1, maxLevel: 3, col: 10, row: 15, z: 6 },
+  { id: "sqdesk3-sl", src: deskSqSideLeftImg, alt: "机の脚", minLevel: 1, maxLevel: 3, col: 8, row: 16, z: 6 },
+  { id: "sqdesk3-sm", src: deskSqSideMidImg, alt: "机の脚", minLevel: 1, maxLevel: 3, col: 9, row: 16, z: 6 },
+  { id: "sqdesk3-sr", src: deskSqSideRightImg, alt: "机の脚", minLevel: 1, maxLevel: 3, col: 10, row: 16, z: 6 },
 
   // 9マス机4(左上 col=5, row=18)
-  { id: "sqdesk4-tl", src: deskSqTlImg, alt: "机", minLevel: 1, col: 5, row: 18, z: 6 },
-  { id: "sqdesk4-tm", src: deskSqTmImg, alt: "机", minLevel: 1, col: 6, row: 18, z: 6 },
-  { id: "sqdesk4-tr", src: deskSqTrImg, alt: "机", minLevel: 1, col: 7, row: 18, z: 6 },
-  { id: "sqdesk4-bl", src: deskSqBlImg, alt: "机", minLevel: 1, col: 5, row: 19, z: 6 },
-  { id: "sqdesk4-bm", src: deskSqBmImg, alt: "机", minLevel: 1, col: 6, row: 19, z: 6 },
-  { id: "sqdesk4-br", src: deskSqBrImg, alt: "机", minLevel: 1, col: 7, row: 19, z: 6 },
-  { id: "sqdesk4-sl", src: deskSqSideLeftImg, alt: "机の脚", minLevel: 1, col: 5, row: 20, z: 6 },
-  { id: "sqdesk4-sm", src: deskSqSideMidImg, alt: "机の脚", minLevel: 1, col: 6, row: 20, z: 6 },
-  { id: "sqdesk4-sr", src: deskSqSideRightImg, alt: "机の脚", minLevel: 1, col: 7, row: 20, z: 6 },
+  { id: "sqdesk4-tl", src: deskSqTlImg, alt: "机", minLevel: 1, maxLevel: 3, col: 5, row: 18, z: 6 },
+  { id: "sqdesk4-tm", src: deskSqTmImg, alt: "机", minLevel: 1, maxLevel: 3, col: 6, row: 18, z: 6 },
+  { id: "sqdesk4-tr", src: deskSqTrImg, alt: "机", minLevel: 1, maxLevel: 3, col: 7, row: 18, z: 6 },
+  { id: "sqdesk4-bl", src: deskSqBlImg, alt: "机", minLevel: 1, maxLevel: 3, col: 5, row: 19, z: 6 },
+  { id: "sqdesk4-bm", src: deskSqBmImg, alt: "机", minLevel: 1, maxLevel: 3, col: 6, row: 19, z: 6 },
+  { id: "sqdesk4-br", src: deskSqBrImg, alt: "机", minLevel: 1, maxLevel: 3, col: 7, row: 19, z: 6 },
+  { id: "sqdesk4-sl", src: deskSqSideLeftImg, alt: "机の脚", minLevel: 1, maxLevel: 3, col: 5, row: 20, z: 6 },
+  { id: "sqdesk4-sm", src: deskSqSideMidImg, alt: "机の脚", minLevel: 1, maxLevel: 3, col: 6, row: 20, z: 6 },
+  { id: "sqdesk4-sr", src: deskSqSideRightImg, alt: "机の脚", minLevel: 1, maxLevel: 3, col: 7, row: 20, z: 6 },
 
   // 9マス机5(左上 col=13, row=17)
-  { id: "sqdesk5-tl", src: deskSqTlImg, alt: "机", minLevel: 1, col: 13, row: 17, z: 6 },
-  { id: "sqdesk5-tm", src: deskSqTmImg, alt: "机", minLevel: 1, col: 14, row: 17, z: 6 },
-  { id: "sqdesk5-tr", src: deskSqTrImg, alt: "机", minLevel: 1, col: 15, row: 17, z: 6 },
-  { id: "sqdesk5-bl", src: deskSqBlImg, alt: "机", minLevel: 1, col: 13, row: 18, z: 6 },
-  { id: "sqdesk5-bm", src: deskSqBmImg, alt: "机", minLevel: 1, col: 14, row: 18, z: 6 },
-  { id: "sqdesk5-br", src: deskSqBrImg, alt: "机", minLevel: 1, col: 15, row: 18, z: 6 },
-  { id: "sqdesk5-sl", src: deskSqSideLeftImg, alt: "机の脚", minLevel: 1, col: 13, row: 19, z: 6 },
-  { id: "sqdesk5-sm", src: deskSqSideMidImg, alt: "机の脚", minLevel: 1, col: 14, row: 19, z: 6 },
-  { id: "sqdesk5-sr", src: deskSqSideRightImg, alt: "机の脚", minLevel: 1, col: 15, row: 19, z: 6 },
+  { id: "sqdesk5-tl", src: deskSqTlImg, alt: "机", minLevel: 1, maxLevel: 3, col: 13, row: 17, z: 6 },
+  { id: "sqdesk5-tm", src: deskSqTmImg, alt: "机", minLevel: 1, maxLevel: 3, col: 14, row: 17, z: 6 },
+  { id: "sqdesk5-tr", src: deskSqTrImg, alt: "机", minLevel: 1, maxLevel: 3, col: 15, row: 17, z: 6 },
+  { id: "sqdesk5-bl", src: deskSqBlImg, alt: "机", minLevel: 1, maxLevel: 3, col: 13, row: 18, z: 6 },
+  { id: "sqdesk5-bm", src: deskSqBmImg, alt: "机", minLevel: 1, maxLevel: 3, col: 14, row: 18, z: 6 },
+  { id: "sqdesk5-br", src: deskSqBrImg, alt: "机", minLevel: 1, maxLevel: 3, col: 15, row: 18, z: 6 },
+  { id: "sqdesk5-sl", src: deskSqSideLeftImg, alt: "机の脚", minLevel: 1, maxLevel: 3, col: 13, row: 19, z: 6 },
+  { id: "sqdesk5-sm", src: deskSqSideMidImg, alt: "机の脚", minLevel: 1, maxLevel: 3, col: 14, row: 19, z: 6 },
+  { id: "sqdesk5-sr", src: deskSqSideRightImg, alt: "机の脚", minLevel: 1, maxLevel: 3, col: 15, row: 19, z: 6 },
 
   // 横長机(col=15〜20, row=6上面 / row=7側面)
-  { id: "rectdesk-15-6", src: deskSqTlImg, alt: "机", minLevel: 1, col: 15, row: 6, z: 6 },
-  { id: "rectdesk-16-6", src: deskSqTmImg, alt: "机", minLevel: 1, col: 16, row: 6, z: 6 },
-  { id: "rectdesk-17-6", src: deskSqTmImg, alt: "机", minLevel: 1, col: 17, row: 6, z: 6 },
-  { id: "rectdesk-18-6", src: deskSqTmImg, alt: "机", minLevel: 1, col: 18, row: 6, z: 6 },
-  { id: "rectdesk-19-6", src: deskSqTmImg, alt: "机", minLevel: 1, col: 19, row: 6, z: 6 },
-  { id: "rectdesk-20-6", src: deskSqTrImg, alt: "机", minLevel: 1, col: 20, row: 6, z: 6 },
-  { id: "rectdesk-15-7", src: deskSqSideLeftImg, alt: "机の脚", minLevel: 1, col: 15, row: 7, z: 6 },
-  { id: "rectdesk-16-7", src: deskSqSideMidImg, alt: "机の脚", minLevel: 1, col: 16, row: 7, z: 6 },
-  { id: "rectdesk-17-7", src: deskSqSideMidImg, alt: "机の脚", minLevel: 1, col: 17, row: 7, z: 6 },
-  { id: "rectdesk-18-7", src: deskSqSideMidImg, alt: "机の脚", minLevel: 1, col: 18, row: 7, z: 6 },
-  { id: "rectdesk-19-7", src: deskSqSideMidImg, alt: "机の脚", minLevel: 1, col: 19, row: 7, z: 6 },
-  { id: "rectdesk-20-7", src: deskSqSideRightImg, alt: "机の脚", minLevel: 1, col: 20, row: 7, z: 6 },
+  { id: "rectdesk-15-6", src: deskSqTlImg, alt: "机", minLevel: 1, maxLevel: 3, col: 15, row: 6, z: 6 },
+  { id: "rectdesk-16-6", src: deskSqTmImg, alt: "机", minLevel: 1, maxLevel: 3, col: 16, row: 6, z: 6 },
+  { id: "rectdesk-17-6", src: deskSqTmImg, alt: "机", minLevel: 1, maxLevel: 3, col: 17, row: 6, z: 6 },
+  { id: "rectdesk-18-6", src: deskSqTmImg, alt: "机", minLevel: 1, maxLevel: 3, col: 18, row: 6, z: 6 },
+  { id: "rectdesk-19-6", src: deskSqTmImg, alt: "机", minLevel: 1, maxLevel: 3, col: 19, row: 6, z: 6 },
+  { id: "rectdesk-20-6", src: deskSqTrImg, alt: "机", minLevel: 1, maxLevel: 3, col: 20, row: 6, z: 6 },
+  { id: "rectdesk-15-7", src: deskSqSideLeftImg, alt: "机の脚", minLevel: 1, maxLevel: 3, col: 15, row: 7, z: 6 },
+  { id: "rectdesk-16-7", src: deskSqSideMidImg, alt: "机の脚", minLevel: 1, maxLevel: 3, col: 16, row: 7, z: 6 },
+  { id: "rectdesk-17-7", src: deskSqSideMidImg, alt: "机の脚", minLevel: 1, maxLevel: 3, col: 17, row: 7, z: 6 },
+  { id: "rectdesk-18-7", src: deskSqSideMidImg, alt: "机の脚", minLevel: 1, maxLevel: 3, col: 18, row: 7, z: 6 },
+  { id: "rectdesk-19-7", src: deskSqSideMidImg, alt: "机の脚", minLevel: 1, maxLevel: 3, col: 19, row: 7, z: 6 },
+  { id: "rectdesk-20-7", src: deskSqSideRightImg, alt: "机の脚", minLevel: 1, maxLevel: 3, col: 20, row: 7, z: 6 },
 
   // ロッカー(col=1, row=22〜23)
   { id: "locker-1-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, col: 1, row: 22, z: 4 },
@@ -229,24 +207,24 @@ export const townItems = [
   { id: "locker-20-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, col: 20, row: 22, z: 4 },
 
   // ガラス面(上の横枠 row=9〜10, col=17〜20)
-  { id: "glass-17-9", src: glassPaneImg, alt: "ガラス", minLevel: 1, col: 17, row: 9, z: 7 },
-  { id: "glass-18-9", src: glassPaneImg, alt: "ガラス", minLevel: 1, col: 18, row: 9, z: 7 },
-  { id: "glass-19-9", src: glassPaneImg, alt: "ガラス", minLevel: 1, col: 19, row: 9, z: 7 },
-  { id: "glass-20-9", src: glassPaneImg, alt: "ガラス", minLevel: 1, col: 20, row: 9, z: 7 },
-  { id: "glass-17-10", src: glassPaneImg, alt: "ガラス", minLevel: 1, col: 17, row: 10, z: 7 },
-  { id: "glass-18-10", src: glassPaneImg, alt: "ガラス", minLevel: 1, col: 18, row: 10, z: 7 },
-  { id: "glass-19-10", src: glassPaneImg, alt: "ガラス", minLevel: 1, col: 19, row: 10, z: 7 },
-  { id: "glass-20-10", src: glassPaneImg, alt: "ガラス", minLevel: 1, col: 20, row: 10, z: 7 },
+  { id: "glass-17-9", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 17, row: 9, z: 7 },
+  { id: "glass-18-9", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 18, row: 9, z: 7 },
+  { id: "glass-19-9", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 19, row: 9, z: 7 },
+  { id: "glass-20-9", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 20, row: 9, z: 7 },
+  { id: "glass-17-10", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 17, row: 10, z: 7 },
+  { id: "glass-18-10", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 18, row: 10, z: 7 },
+  { id: "glass-19-10", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 19, row: 10, z: 7 },
+  { id: "glass-20-10", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 20, row: 10, z: 1 },
 
   // ガラス面(下の横枠 row=18〜19, col=17〜20)
-  { id: "glass-17-18", src: glassPaneImg, alt: "ガラス", minLevel: 1, col: 17, row: 18, z: 7 },
-  { id: "glass-18-18", src: glassPaneImg, alt: "ガラス", minLevel: 1, col: 18, row: 18, z: 7 },
-  { id: "glass-19-18", src: glassPaneImg, alt: "ガラス", minLevel: 1, col: 19, row: 18, z: 7 },
-  { id: "glass-20-18", src: glassPaneImg, alt: "ガラス", minLevel: 1, col: 20, row: 18, z: 7 },
-  { id: "glass-17-19", src: glassPaneImg, alt: "ガラス", minLevel: 1, col: 17, row: 19, z: 7 },
-  { id: "glass-18-19", src: glassPaneImg, alt: "ガラス", minLevel: 1, col: 18, row: 19, z: 7 },
-  { id: "glass-19-19", src: glassPaneImg, alt: "ガラス", minLevel: 1, col: 19, row: 19, z: 7 },
-  { id: "glass-20-19", src: glassPaneImg, alt: "ガラス", minLevel: 1, col: 20, row: 19, z: 7 },
+  { id: "glass-17-18", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 17, row: 18, z: 7 },
+  { id: "glass-18-18", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 18, row: 18, z: 7 },
+  { id: "glass-19-18", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 19, row: 18, z: 7 },
+  { id: "glass-20-18", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 20, row: 18, z: 7 },
+  { id: "glass-17-19", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 17, row: 19, z: 7 },
+  { id: "glass-18-19", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 18, row: 19, z: 7 },
+  { id: "glass-19-19", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 19, row: 19, z: 7 },
+  { id: "glass-20-19", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 20, row: 19, z: 1 },
 
   // ガラス上の横枠(row=9〜10, col=17〜20)
   { id: "glass-htop-17-9", src: glassHframeImg, alt: "ガラス枠", minLevel: 1, col: 17, row: 9, z: 9 },
@@ -256,7 +234,7 @@ export const townItems = [
   { id: "glass-htop-17-10", src: glassHframeImg, alt: "ガラス枠", minLevel: 1, col: 17, row: 10, z: 9 },
   { id: "glass-htop-18-10", src: glassHframeImg, alt: "ガラス枠", minLevel: 1, col: 18, row: 10, z: 9 },
   { id: "glass-htop-19-10", src: glassHframeImg, alt: "ガラス枠", minLevel: 1, col: 19, row: 10, z: 9 },
-  { id: "glass-htop-20-10", src: glassHframeImg, alt: "ガラス枠", minLevel: 1, col: 20, row: 10, z: 9 },
+  { id: "glass-htop-20-10", src: glassHframeImg, alt: "ガラス枠", minLevel: 1, col: 20, row: 10, z: 2},
 
   // ガラス下の横枠(row=18〜19, col=17〜20)
   { id: "glass-hbot-17-18", src: glassHframeImg, alt: "ガラス枠", minLevel: 1, col: 17, row: 18, z: 9 },
@@ -352,15 +330,43 @@ export const townItems = [
   { id: "plant-4-22-lv3", src: plant_lv3Img, alt: "観葉植物", minLevel: 3, maxLevel: 3, col: 4, row: 22, z: 4 },
 
   // === Lv.4 で追加する家具は、ここに minLevel: 4 で書いていく ===
+
   // 観葉植物 Lv4(育成ライト付き・縦2マス。Lv5で入れ替えるので maxLevel:4)
   { id: "plant-4-22-lv4", src: plant_lv4Gif, alt: "観葉植物", minLevel: 4, maxLevel: 4, col: 4, row: 21.1, rowSpan: 2, z: 5 },
   { id: "plant-16-13-lv4", src: plant_lv4Gif, alt: "観葉植物", minLevel: 4, maxLevel: 4, col: 16, row: 12, rowSpan: 2, z: 5 },
   { id: "plant-16-15-lv4", src: plant_lv4Gif, alt: "観葉植物", minLevel: 4, maxLevel: 4, col: 16, row: 14.1, rowSpan: 2, z: 5 },
+  // === Lv.4:近未来机(9分割机を1枚版に置き換え・3×3マス)===
+  { id: "sqdesk1-future", src: deskFutureImg, alt: "机", minLevel: 4, col: 5, row: 11, colSpan: 3, rowSpan: 3, z: 6 },
+  { id: "sqdesk2-future", src: deskFutureImg, alt: "机", minLevel: 4, col: 12, row: 10, colSpan: 3, rowSpan: 3, z: 6 },
+  { id: "sqdesk3-future", src: deskFutureImg, alt: "机", minLevel: 4, col: 8, row: 14, colSpan: 3, rowSpan: 3, z: 6 },
+  { id: "sqdesk4-future", src: deskFutureImg, alt: "机", minLevel: 4, col: 5, row: 18, colSpan: 3, rowSpan: 3, z: 6 },
+  { id: "sqdesk5-future", src: deskFutureImg, alt: "机", minLevel: 4, col: 13, row: 17, colSpan: 3, rowSpan: 3, z: 6 },
+  // === Lv.4:横長の近未来机(6×2マス)===
+  { id: "rectdesk-future", src: deskFutureLongImg, alt: "机", minLevel: 4, col: 15, row: 6, colSpan: 6, rowSpan: 2, z: 6 },
+  // === Lv.4:青い半透明ガラスに置き換え ===
+  { id: "glass-17-9-blue", src: glassPaneBlueImg, alt: "ガラス", minLevel: 4, col: 17, row: 9, z: 7 },
+  { id: "glass-18-9-blue", src: glassPaneBlueImg, alt: "ガラス", minLevel: 4, col: 18, row: 9, z: 7 },
+  { id: "glass-19-9-blue", src: glassPaneBlueImg, alt: "ガラス", minLevel: 4, col: 19, row: 9, z: 7 },
+  { id: "glass-20-9-blue", src: glassPaneBlueImg, alt: "ガラス", minLevel: 4, col: 20, row: 9, z: 7 },
+  { id: "glass-17-10-blue", src: glassPaneBlueImg, alt: "ガラス", minLevel: 4, col: 17, row: 10, z: 7 },
+  { id: "glass-18-10-blue", src: glassPaneBlueImg, alt: "ガラス", minLevel: 4, col: 18, row: 10, z: 7 },
+  { id: "glass-19-10-blue", src: glassPaneBlueImg, alt: "ガラス", minLevel: 4, col: 19, row: 10, z: 7 },
+  { id: "glass-20-10-blue", src: glassPaneBlueImg, alt: "ガラス", minLevel: 4, col: 20, row: 10, z: 1 },
+  { id: "glass-17-18-blue", src: glassPaneBlueImg, alt: "ガラス", minLevel: 4, col: 17, row: 18, z: 7 },
+  { id: "glass-18-18-blue", src: glassPaneBlueImg, alt: "ガラス", minLevel: 4, col: 18, row: 18, z: 7 },
+  { id: "glass-19-18-blue", src: glassPaneBlueImg, alt: "ガラス", minLevel: 4, col: 19, row: 18, z: 7 },
+  { id: "glass-20-18-blue", src: glassPaneBlueImg, alt: "ガラス", minLevel: 4, col: 20, row: 18, z: 7 },
+  { id: "glass-17-19-blue", src: glassPaneBlueImg, alt: "ガラス", minLevel: 4, col: 17, row: 19, z: 7 },
+  { id: "glass-18-19-blue", src: glassPaneBlueImg, alt: "ガラス", minLevel: 4, col: 18, row: 19, z: 7 },
+  { id: "glass-19-19-blue", src: glassPaneBlueImg, alt: "ガラス", minLevel: 4, col: 19, row: 19, z: 7 },
+  { id: "glass-20-19-blue", src: glassPaneBlueImg, alt: "ガラス", minLevel: 4, col: 20, row: 19, z: 6 },
 
   // === Lv.5 で追加する家具は、ここに minLevel: 5 で書いていく ===
   // === Lv.5(最終形態:発光する栽培ドーム)===
   { id: "plant-4-22-lv5", src: plant_lv5Gif, alt: "観葉植物", minLevel: 5, col: 3.2, row: 21, colSpan: 2, rowSpan: 2, z: 5 },
   { id: "plant-16-13-lv5", src: plant_lv5Gif, alt: "観葉植物", minLevel: 5, col: 15.2, row: 12, colSpan: 2, rowSpan: 2, z: 5 },
   { id: "plant-16-15-lv5", src: plant_lv5Gif, alt: "観葉植物", minLevel: 5, col: 15.2, row: 14.2, colSpan: 2, rowSpan: 2, z: 5 },
+
+  
 
 ];
