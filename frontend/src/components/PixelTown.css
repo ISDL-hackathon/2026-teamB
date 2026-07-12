@@ -36,13 +36,25 @@
   z-index: 30;
 }
 
+/*
 .townSlotEmpty {
+  
   border-color: rgba(80, 180, 255, 0.85);
   background: rgba(80, 180, 255, 0.18);
 }
 
 .townSlotEmpty:hover {
   background: rgba(80, 180, 255, 0.34);
+}
+*/
+.townSlotEmpty {
+  
+  border-color: transparent;
+  background: transparent;
+}
+
+.townSlotEmpty:hover {
+  background: transparent;
 }
 
 .townSlotOccupied {

@@ -108,7 +108,8 @@ def init_db():
         grade TEXT NOT NULL,
         password_hash TEXT NOT NULL,
         point INTEGER NOT NULL DEFAULT 0,
-        total_point INTEGER NOT NULL DEFAULT 0
+        total_point INTEGER NOT NULL DEFAULT 0,
+        is_online INTEGER NOT NULL DEFAULT 0
     )
     """)
 
@@ -117,6 +118,9 @@ def init_db():
     if "total_point" not in user_columns:
         cur.execute("ALTER TABLE users ADD COLUMN total_point INTEGER NOT NULL DEFAULT 0")
         cur.execute("UPDATE users SET total_point = point WHERE total_point = 0")
+
+    if "is_online" not in user_columns:
+        cur.execute("ALTER TABLE users ADD COLUMN is_online INTEGER NOT NULL DEFAULT 0")
 
     cur.execute("""
     CREATE TABLE IF NOT EXISTS activities (
@@ -405,6 +409,23 @@ def get_user_by_id(user_id: int):
     row = cur.fetchone()
     conn.close()
     return dict(row) if row is not None else None
+
+
+def set_user_online(user_id: int, is_online: bool):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        UPDATE users
+        SET is_online = ?
+        WHERE id = ?
+        """,
+        (1 if is_online else 0, user_id),
+    )
+
+    conn.commit()
+    conn.close()
 
 
 def get_ranking():
@@ -751,7 +772,8 @@ def get_village_slots():
             vs.sort_order,
             u.id AS user_id,
             u.name AS user_name,
-            u.grade AS user_grade
+            u.grade AS user_grade,
+            u.is_online AS user_is_online
         FROM village_slots AS vs
         LEFT JOIN user_village_positions AS uvp
             ON uvp.slot_id = vs.id
@@ -770,6 +792,7 @@ def get_village_slots():
                 "id": row["user_id"],
                 "name": row["user_name"],
                 "grade": row["user_grade"],
+                "is_online": bool(row["user_is_online"]),
             }
 
         slots.append(

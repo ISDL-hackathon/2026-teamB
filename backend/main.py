@@ -19,6 +19,7 @@ from database import (
     purchase_furniture,
     save_room_layout,
     save_user_village_position,
+    set_user_online,
     verify_password,
 )
 from messages import (
@@ -41,6 +42,7 @@ from schemas import (
     BulletinLikeRequest,
     FurniturePurchaseRequest,
     LoginRequest,
+    LogoutRequest,
     RegisterRequest,
     RoomLayoutRequest,
     VillagePositionRequest,
@@ -96,6 +98,7 @@ def login(request: LoginRequest):
         raise HTTPException(status_code=401, detail=WRONG_PASSWORD)
 
     added_point = add_login_point_if_first_today(user["id"])
+    set_user_online(user["id"], True)
 
     return {
         "message": LOGIN_SUCCESS,
@@ -109,6 +112,12 @@ def login(request: LoginRequest):
             "village_slot_id": get_user_village_slot_id(user["id"]),
         },
     }
+
+
+@app.post("/logout")
+def logout(request: LogoutRequest):
+    set_user_online(request.user_id, False)
+    return {"ok": True}
 
 
 @app.get("/ranking")

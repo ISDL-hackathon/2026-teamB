@@ -14,6 +14,10 @@ class LoginRequest(BaseModel):
     password: str
 
 
+class LogoutRequest(BaseModel):
+    user_id: int
+
+
 class ActivityRequest(BaseModel):
     user_id: int
     activity_type: Literal["checkin"]
