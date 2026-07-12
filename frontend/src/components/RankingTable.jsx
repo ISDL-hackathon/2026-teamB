@@ -15,7 +15,7 @@ function RankingTable({ ranking }) {
             <td>{index + 1}</td>
             <td>{user.name}</td>
             <td>{user.grade}</td>
-            <td>{user.total_point ?? user.point} pt</td>
+            <td className="pointValue">{user.total_point ?? user.point} pt</td>
           </tr>
         ))}
       </tbody>

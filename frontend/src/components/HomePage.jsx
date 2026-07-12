@@ -65,7 +65,7 @@ function HomePage({
               <p>
                 {currentUser.name} / {currentUser.grade}
               </p>
-              <strong>{currentUser.point} pt</strong>
+              <strong className="pointValue">{currentUser.point} pt</strong>
             </div>
           </div>
           <button className="secondaryButton compactButton" onClick={onLogout}>
