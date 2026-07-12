@@ -27,6 +27,9 @@ import deskLowWhitebrownImg from "../assets/town/desk_low_whitebrown.png";
 import microwaveImg from "../assets/town/microwave.png";
 import fridgeImg from "../assets/town/fridge.png";
 import fridgeBrownImg from "../assets/town/fridge_brown.png";
+import plant_lv3Img from "../assets/town/plant_lv3.png";
+import plant_lv4Gif from "../assets/town/plant_lv4.gif";
+import plant_lv5Gif from "../assets/town/plant_lv5.gif";
 
 export const townItems = [
   // === Lv.1(初期段階)===
@@ -316,10 +319,9 @@ export const townItems = [
   { id: "navy-20-24", src: navyTileImg, alt: "紺マス", minLevel: 1, col: 20, row: 24, z: 1 },
 
   // 観葉植物lv1(空の鉢)
-  { id: "plant-4-22-lv1", src: plant_lv1Img, alt: "観葉植物", minLevel: 1, col: 4, row: 22, z: 2 },
-  { id: "plant-16-13-lv1", src: plant_lv1Img, alt: "観葉植物", minLevel: 1, col: 16, row: 13, z: 2 },
-  { id: "plant-16-15-lv1", src: plant_lv1Img, alt: "観葉植物", minLevel: 1, col: 16, row: 15, z: 2 },
-
+  { id: "plant-4-22-lv1", src: plant_lv1Img, alt: "観葉植物", minLevel: 1, maxLevel: 3, col: 4, row: 22, z: 2 },
+  { id: "plant-4-22-lv2", src: plant_lv2Img, alt: "観葉植物", minLevel: 2, maxLevel: 3, col: 4, row: 22, z: 3 },
+  { id: "plant-4-22-lv3", src: plant_lv3Img, alt: "観葉植物", minLevel: 3, maxLevel: 3, col: 4, row: 22, z: 4 },
   // 土台
   { id: "desk-low-10-1", src: deskLowWhitebrownImg, alt: "机", minLevel: 1, col: 10, row: 1, z: 5 },
   { id: "fridge-12-1", src: fridgeImg, alt: "冷蔵庫", minLevel: 1, col: 12, row: 1, z: 5 },
@@ -327,9 +329,9 @@ export const townItems = [
 
   // === Lv.2 で追加する家具は、ここに minLevel: 2 で書いていく ===
   // 観葉植物lv2(芽が出た鉢。lv1の上に重ねる)
-  { id: "plant-4-22-lv2", src: plant_lv2Img, alt: "観葉植物", minLevel: 2, col: 4, row: 22, z: 3 },
-  { id: "plant-16-13-lv2", src: plant_lv2Img, alt: "観葉植物", minLevel: 2, col: 16, row: 13, z: 3 },
-  { id: "plant-16-15-lv2", src: plant_lv2Img, alt: "観葉植物", minLevel: 2, col: 16, row: 15, z: 3 },
+  { id: "plant-16-13-lv1", src: plant_lv1Img, alt: "観葉植物", minLevel: 1, maxLevel: 3, col: 16, row: 13, z: 2 },
+  { id: "plant-16-13-lv2", src: plant_lv2Img, alt: "観葉植物", minLevel: 2, maxLevel: 3, col: 16, row: 13, z: 3 },
+  { id: "plant-16-13-lv3", src: plant_lv3Img, alt: "観葉植物", minLevel: 3, maxLevel: 3, col: 16, row: 13, z: 4 },
 
   // 電子レンジ(机の上に重ねる)
   { id: "microwave-10-1", src: microwaveImg, alt: "電子レンジ", minLevel: 2, col: 10, row: 1, z: 6 },
@@ -341,6 +343,21 @@ export const townItems = [
   { id: "dopa-10-20", src: dopaImg, alt: "ロボット", minLevel: 2, col: 10.1, row: 20.1, colSpan: 1.8, rowSpan: 1.8, z: 5 },
 
   // === Lv.3 で追加する家具は、ここに minLevel: 3 で書いていく ===
+  // 観葉植物lv3(茂った株。lv1・lv2の上に重ねる)
+  { id: "plant-16-15-lv1", src: plant_lv1Img, alt: "観葉植物", minLevel: 1, maxLevel: 3, col: 16, row: 15, z: 2 },
+  { id: "plant-16-15-lv2", src: plant_lv2Img, alt: "観葉植物", minLevel: 2, maxLevel: 3, col: 16, row: 15, z: 3 },
+  { id: "plant-16-15-lv3", src: plant_lv3Img, alt: "観葉植物", minLevel: 3, maxLevel: 3, col: 16, row: 15, z: 4 },
 
   // === Lv.4 で追加する家具は、ここに minLevel: 4 で書いていく ===
+  // 観葉植物 Lv4(育成ライト付き・縦2マス。Lv5で入れ替えるので maxLevel:4)
+  { id: "plant-4-22-lv4", src: plant_lv4Gif, alt: "観葉植物", minLevel: 4, maxLevel: 4, col: 4, row: 21.1, rowSpan: 2, z: 5 },
+  { id: "plant-16-13-lv4", src: plant_lv4Gif, alt: "観葉植物", minLevel: 4, maxLevel: 4, col: 16, row: 12, rowSpan: 2, z: 5 },
+  { id: "plant-16-15-lv4", src: plant_lv4Gif, alt: "観葉植物", minLevel: 4, maxLevel: 4, col: 16, row: 14.1, rowSpan: 2, z: 5 },
+
+  // === Lv.5 で追加する家具は、ここに minLevel: 5 で書いていく ===
+  // === Lv.5(最終形態:発光する栽培ドーム)===
+  { id: "plant-4-22-lv5", src: plant_lv5Gif, alt: "観葉植物", minLevel: 5, col: 3.2, row: 21, colSpan: 2, rowSpan: 2, z: 5 },
+  { id: "plant-16-13-lv5", src: plant_lv5Gif, alt: "観葉植物", minLevel: 5, col: 15.2, row: 12, colSpan: 2, rowSpan: 2, z: 5 },
+  { id: "plant-16-15-lv5", src: plant_lv5Gif, alt: "観葉植物", minLevel: 5, col: 15.2, row: 14.2, colSpan: 2, rowSpan: 2, z: 5 },
+
 ];
