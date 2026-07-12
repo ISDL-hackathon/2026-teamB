@@ -36,7 +36,7 @@ function VillagePage({ setPage, village, villageSlots, onPcClick }) {
             <div className="statusGrid">
               <div>
                 <span>全体ポイント</span>
-                <strong>{village.total_point} pt</strong>
+                <strong className="pointValue">{village.total_point} pt</strong>
               </div>
               <div>
                 <span>今日の活動人数</span>

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { requestJson } from "./api";
 import HomePage from "./components/HomePage";
 import BulletinBoardPage from "./components/BulletinBoardPage";
+import BulletinLoadingPage from "./components/BulletinLoadingPage";
 import LoginArea from "./components/LoginArea";
 import RoomPage from "./components/RoomPage";
 import ShopPage from "./components/ShopPage";
@@ -304,12 +305,16 @@ function App() {
 
       {currentUser && page === "room" && (
         <RoomPage
-          onOpenBulletinBoard={() => setPage("bulletin")}
+          onOpenBulletinBoard={() => setPage("bulletinLoading")}
           onSaveRoomLayout={handleSaveRoomLayout}
           readonly={viewingRoomUserId !== null}
           room={room}
           setPage={setPage}
         />
+      )}
+
+      {currentUser && page === "bulletinLoading" && (
+        <BulletinLoadingPage onComplete={() => setPage("bulletin")} />
       )}
 
       {currentUser && page === "bulletin" && (

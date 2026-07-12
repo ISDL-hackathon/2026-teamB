@@ -44,11 +44,11 @@ function RoomPage({ onOpenBulletinBoard, onSaveRoomLayout, readonly = false, roo
               </div>
               <div>
                 <span>所持ポイント</span>
-                <strong>{room.user.point} pt</strong>
+                <strong className="pointValue">{room.user.point} pt</strong>
               </div>
               <div>
                 <span>累計ポイント</span>
-                <strong>{room.user.total_point} pt</strong>
+                <strong className="pointValue">{room.user.total_point} pt</strong>
               </div>
             </div>
           </>
