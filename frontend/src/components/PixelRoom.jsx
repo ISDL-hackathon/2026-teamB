@@ -383,11 +383,7 @@ function PixelRoom({
   };
 
   const handleMoveSelectedItem = (deltaCol, deltaRow) => {
-    if (readonly) {
-      return;
-    }
-
-    if (!selectedItemId) {
+    if (readonly || !selectedItemId) {
       return;
     }
 
@@ -425,11 +421,7 @@ function PixelRoom({
   };
 
   const handleRemoveSelectedItem = () => {
-    if (readonly) {
-      return;
-    }
-
-    if (!selectedItem || selectedItem.isFixed) {
+    if (readonly || !selectedItem || selectedItem.isFixed) {
       return;
     }
 
@@ -467,88 +459,88 @@ function PixelRoom({
       )}
 
       <div className="isoRoom" aria-label={`room level ${level}`}>
-      {!readonly && (
-        <div className="roomEditBar">
-          <button
-            className="compactButton secondaryButton"
-            onClick={handleToggleEditing}
-            type="button"
-          >
-            {isEditing ? "Done" : "Edit"}
-          </button>
+        {!readonly && (
+          <div className="roomEditBar">
+            <button
+              className="compactButton secondaryButton"
+              onClick={handleToggleEditing}
+              type="button"
+            >
+              {isEditing ? "Done" : "Edit"}
+            </button>
 
-          {isEditing && (
-            <div className="roomMoveControls">
-              <span className="roomSelectedLabel">
-                {selectedItem ? selectedItem.name ?? selectedItem.id : "Select item"}
-              </span>
-              <MaterialSelect
-                label="Wall"
-                level={level}
-                onChange={(value) => handleChangeTheme("wall", value)}
-                options={wallTextureOptions}
-                value={roomTheme.wall}
-              />
-              <MaterialSelect
-                label="Floor"
-                level={level}
-                onChange={(value) => handleChangeTheme("floor", value)}
-                options={floorTextureOptions}
-                value={roomTheme.floor}
-              />
-              <ArrowButton
-                alt="Move up"
-                disabled={!selectedItem}
-                icon={arrowUpImg}
-                onClick={() => handleMoveSelectedItem(0, -1)}
-              />
-              <ArrowButton
-                alt="Move left"
-                disabled={!selectedItem}
-                icon={arrowLeftImg}
-                onClick={() => handleMoveSelectedItem(-1, 0)}
-              />
-              <ArrowButton
-                alt="Move right"
-                disabled={!selectedItem}
-                icon={arrowRightImg}
-                onClick={() => handleMoveSelectedItem(1, 0)}
-              />
-              <ArrowButton
-                alt="Move down"
-                disabled={!selectedItem}
-                icon={arrowDownImg}
-                onClick={() => handleMoveSelectedItem(0, 1)}
-              />
-              <button
-                className="roomMoveButton roomRemoveButton"
-                disabled={!selectedItem || selectedItem.isFixed}
-                onClick={handleRemoveSelectedItem}
-                type="button"
-              >
-                Remove
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+            {isEditing && (
+              <div className="roomMoveControls">
+                <span className="roomSelectedLabel">
+                  {selectedItem ? selectedItem.name ?? selectedItem.id : "Select item"}
+                </span>
+                <MaterialSelect
+                  label="Wall"
+                  level={level}
+                  onChange={(value) => handleChangeTheme("wall", value)}
+                  options={wallTextureOptions}
+                  value={roomTheme.wall}
+                />
+                <MaterialSelect
+                  label="Floor"
+                  level={level}
+                  onChange={(value) => handleChangeTheme("floor", value)}
+                  options={floorTextureOptions}
+                  value={roomTheme.floor}
+                />
+                <ArrowButton
+                  alt="Move up"
+                  disabled={!selectedItem}
+                  icon={arrowUpImg}
+                  onClick={() => handleMoveSelectedItem(0, -1)}
+                />
+                <ArrowButton
+                  alt="Move left"
+                  disabled={!selectedItem}
+                  icon={arrowLeftImg}
+                  onClick={() => handleMoveSelectedItem(-1, 0)}
+                />
+                <ArrowButton
+                  alt="Move right"
+                  disabled={!selectedItem}
+                  icon={arrowRightImg}
+                  onClick={() => handleMoveSelectedItem(1, 0)}
+                />
+                <ArrowButton
+                  alt="Move down"
+                  disabled={!selectedItem}
+                  icon={arrowDownImg}
+                  onClick={() => handleMoveSelectedItem(0, 1)}
+                />
+                <button
+                  className="roomMoveButton roomRemoveButton"
+                  disabled={!selectedItem || selectedItem.isFixed}
+                  onClick={handleRemoveSelectedItem}
+                  type="button"
+                >
+                  Remove
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
-      <WallSurface
-        items={wallItems}
-        isEditing={isEditing}
-        onActivateItem={onOpenBulletinBoard}
-        onSelectItem={setSelectedItemId}
-        selectedItemId={selectedItemId}
-        wallTexture={roomTheme.wall}
-      />
-      <RoomSurface
-        surface="floor"
-        items={floorItems}
-        isEditing={isEditing}
-        onSelectItem={setSelectedItemId}
-        selectedItemId={selectedItemId}
-        textureId={roomTheme.floor}
-      />
+        <WallSurface
+          items={wallItems}
+          isEditing={isEditing}
+          onActivateItem={onOpenBulletinBoard}
+          onSelectItem={setSelectedItemId}
+          selectedItemId={selectedItemId}
+          wallTexture={roomTheme.wall}
+        />
+        <RoomSurface
+          surface="floor"
+          items={floorItems}
+          isEditing={isEditing}
+          onSelectItem={setSelectedItemId}
+          selectedItemId={selectedItemId}
+          textureId={roomTheme.floor}
+        />
       </div>
     </div>
   );
