@@ -105,7 +105,11 @@ function PixelTown({
   onPcClick,
   }) {
   const vents = createVents();
-  const visibleItems = townItems.filter((item) => level >= item.minLevel);
+  const visibleItems = townItems.filter(
+  (item) =>
+    level >= item.minLevel &&
+    (item.maxLevel == null || level <= item.maxLevel),
+  );
 
   return (
     <div
