@@ -27,9 +27,12 @@ import deskLowWhitebrownImg from "../assets/town/desk_low_whitebrown.png";
 import microwaveImg from "../assets/town/microwave.png";
 import fridgeImg from "../assets/town/fridge.png";
 import fridgeBrownImg from "../assets/town/fridge_brown.png";
+<<<<<<< HEAD
 import plant_lv3Img from "../assets/town/plant_lv3.png";
 import plant_lv4Gif from "../assets/town/plant_lv4.gif";
 import plant_lv5Gif from "../assets/town/plant_lv5.gif";
+=======
+>>>>>>> 92ef516e5006eb8540bcbbbba366f28761baeeb4
 
 export const townItems = [
   // === Lv.1(初期段階)===
@@ -322,6 +325,7 @@ export const townItems = [
   { id: "plant-4-22-lv1", src: plant_lv1Img, alt: "観葉植物", minLevel: 1, maxLevel: 3, col: 4, row: 22, z: 2 },
   { id: "plant-4-22-lv2", src: plant_lv2Img, alt: "観葉植物", minLevel: 2, maxLevel: 3, col: 4, row: 22, z: 3 },
   { id: "plant-4-22-lv3", src: plant_lv3Img, alt: "観葉植物", minLevel: 3, maxLevel: 3, col: 4, row: 22, z: 4 },
+
   // 土台
   { id: "desk-low-10-1", src: deskLowWhitebrownImg, alt: "机", minLevel: 1, col: 10, row: 1, z: 5 },
   { id: "fridge-12-1", src: fridgeImg, alt: "冷蔵庫", minLevel: 1, col: 12, row: 1, z: 5 },
@@ -329,6 +333,7 @@ export const townItems = [
 
   // === Lv.2 で追加する家具は、ここに minLevel: 2 で書いていく ===
   // 観葉植物lv2(芽が出た鉢。lv1の上に重ねる)
+
   { id: "plant-16-13-lv1", src: plant_lv1Img, alt: "観葉植物", minLevel: 1, maxLevel: 3, col: 16, row: 13, z: 2 },
   { id: "plant-16-13-lv2", src: plant_lv2Img, alt: "観葉植物", minLevel: 2, maxLevel: 3, col: 16, row: 13, z: 3 },
   { id: "plant-16-13-lv3", src: plant_lv3Img, alt: "観葉植物", minLevel: 3, maxLevel: 3, col: 16, row: 13, z: 4 },
