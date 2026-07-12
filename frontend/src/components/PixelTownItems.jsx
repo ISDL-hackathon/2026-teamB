@@ -22,7 +22,7 @@ import deskBrownRightImg from "../assets/town/desk_brown_right.png";
 import navyTileImg from "../assets/town/navy_tile.png";
 import plant_lv1Img from "../assets/town/plant_lv1.png";
 import plant_lv2Img from "../assets/town/plant_lv2.png";
-import dopaImg from "../assets/town/dopakun.png";
+import dopaGif from "../assets/town/dopa.gif";
 import deskLowWhitebrownImg from "../assets/town/desk_low_whitebrown.png";
 import microwaveImg from "../assets/town/microwave.png";
 import fridgeImg from "../assets/town/fridge.png";
@@ -320,7 +320,7 @@ export const townItems = [
   { id: "fridge-brown-11-1", src: fridgeBrownImg, alt: "冷蔵庫", minLevel: 2, col: 11, row: 1, z: 5 },
 
   // ロボット(2×2エリアの中央に約8割サイズ)
-  { id: "dopa-10-20", src: dopaImg, alt: "ロボット", minLevel: 2, col: 10.1, row: 20.1, colSpan: 1.8, rowSpan: 1.8, z: 5 },
+  { id: "dopa-10-20", src: dopaGif, alt: "ロボット", minLevel: 2, col: 10.1, row: 20.1, colSpan: 1.8, rowSpan: 1.8, z: 5 },
 
   // === Lv.3 で追加する家具は、ここに minLevel: 3 で書いていく ===
   // 観葉植物lv3(茂った株。lv1・lv2の上に重ねる)
