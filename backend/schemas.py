@@ -1,4 +1,4 @@
-from typing import List, Literal, Optional
+from typing import Dict, List, Literal, Optional
 
 from pydantic import BaseModel
 
@@ -32,11 +32,28 @@ class RoomLayoutItem(BaseModel):
 
 class RoomLayoutRequest(BaseModel):
     items: List[RoomLayoutItem]
+    theme: Optional[Dict[str, str]] = None
 
 
 class FurniturePurchaseRequest(BaseModel):
     user_id: int
     furniture_id: str
+
+
+class BulletinPostRequest(BaseModel):
+    user_id: int
+    content: str
+    image_data: Optional[str] = None
+
+
+class BulletinFollowRequest(BaseModel):
+    follower_id: int
+    followed_id: int
+
+
+class BulletinLikeRequest(BaseModel):
+    user_id: int
+    post_id: int
 
 
 class VillagePositionRequest(BaseModel):

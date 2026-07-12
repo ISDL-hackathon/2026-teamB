@@ -10,11 +10,11 @@
 .isoRoom {
   position: relative;
   width: min(560px, 100%);
-  aspect-ratio: 14 / 9;
+  aspect-ratio: 1 / 1;
   margin: 0;
   image-rendering: pixelated;
-  --room-wall-frame: #d6b48a;
-  --room-floor-frame: #7a5135;
+  --room-wall-frame: #7a766c;
+  --room-floor-frame: #4f4f4f;
   --room-grid-line: rgba(255, 255, 255, 0.1);
 }
 
@@ -24,47 +24,45 @@
 }
 
 .roomWallSurface {
-  left: 7%;
-  top: 4%;
-  width: 86%;
-  height: 30%;
+  left: calc(8% - 6px);
+  top: calc(4% - 6px);
+  width: calc(84% + 12px);
+  height: calc(28% + 6px);
   border: 6px solid var(--room-wall-frame);
   border-bottom: 0;
-  background: #c79a6b;
+  background: #e8dfcc;
   z-index: 1;
   overflow: visible;
 }
 
 .roomFloorSurface {
-  left: calc(7% + 6px);
-  top: 34%;
-  width: calc(86% - 12px);
-  height: 61%;
-  background: #6f472f;
+  left: 8%;
+  top: 32%;
+  width: 84%;
+  height: 56%;
+  background: #85827d;
   z-index: 2;
   overflow: visible;
 }
 
-.roomTileLayer,
+.roomFloorTextureLayer,
 .roomObjectLayer {
   position: absolute;
   inset: 0;
-  display: grid;
 }
 
-.roomTileLayer {
+.roomFloorTextureLayer {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
   z-index: 1;
   overflow: hidden;
 }
 
-.roomObjectLayer {
-  z-index: 5;
-  pointer-events: none;
-  overflow: visible;
-}
-
-.roomObjectLayerEditing {
-  pointer-events: auto;
+.roomFloorTexturePanel {
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
 }
 
 .roomFloorSurface::after {
@@ -76,11 +74,15 @@
   z-index: 4;
 }
 
-.roomTile {
-  min-width: 0;
-  min-height: 0;
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
+.roomObjectLayer {
+  display: grid;
+  z-index: 5;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.roomObjectLayerEditing {
+  pointer-events: auto;
 }
 
 .roomItem {
@@ -97,15 +99,25 @@
   cursor: pointer;
 }
 
+.roomItem[alt="bulletin board"]:not(.roomItemEditable) {
+  cursor: pointer;
+  pointer-events: auto;
+}
+
 .roomItemSelected {
   outline: 2px solid #ffe16a;
   outline-offset: 2px;
 }
 
+.roomBookshelf {
+  object-fit: fill;
+}
+
 .roomChara {
   min-width: 48px;
-  justify-self:start;
-  transform: translate(-12%, -8%);
+  justify-self: start;
+  transform: translate(-12%, -8%) scale(2.5);
+  transform-origin: center bottom;
 }
 
 .roomEditBar {
@@ -127,6 +139,7 @@
   background: rgba(18, 22, 32, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 6px;
+  flex-wrap: wrap;
 }
 
 .roomSelectedLabel {
@@ -134,6 +147,27 @@
   color: #f8fafc;
   font-size: 12px;
   font-weight: 700;
+}
+
+.roomMaterialSelect {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #f8fafc;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.roomMaterialSelect select {
+  width: auto;
+  min-height: 28px;
+  margin: 0;
+  padding: 3px 24px 3px 8px;
+  color: #101827;
+  background: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 6px;
+  font-size: 12px;
 }
 
 .roomMoveButton {
@@ -245,13 +279,13 @@
   position: absolute;
   inset: 0;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   grid-template-rows: 1fr;
   z-index: 1;
 }
 
 .roomWallTexturePanel {
-  background-image: url("../assets/room/wall.png");
+  background-image: url("../assets/room/wall_lv1.png");
   background-repeat: no-repeat;
   background-size: 100% 100%;
   background-position: center;

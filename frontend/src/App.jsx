@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { requestJson } from "./api";
 import HomePage from "./components/HomePage";
+import BulletinBoardPage from "./components/BulletinBoardPage";
 import LoginArea from "./components/LoginArea";
 import RoomPage from "./components/RoomPage";
 import ShopPage from "./components/ShopPage";
@@ -217,19 +218,28 @@ function App() {
       .catch((err) => setMessage(err.message));
   };
 
-  const handleSaveRoomLayout = (layout) => {
+  const handleSaveRoomLayout = (roomState) => {
     if (!currentUser) {
       return;
     }
 
+    const items = Array.isArray(roomState) ? roomState : roomState.items;
+    const theme = Array.isArray(roomState) ? room?.room_theme : roomState.theme;
+
     requestJson(`/room/layout/${currentUser.id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ items: layout }),
+      body: JSON.stringify({ items, theme }),
     })
       .then((data) => {
         setRoom((prev) =>
-          prev ? { ...prev, room_layout: data.room_layout } : prev,
+          prev
+            ? {
+                ...prev,
+                room_layout: data.room_layout,
+                room_theme: data.room_theme,
+              }
+            : prev,
         );
       })
       .catch((err) => setMessage(err.message));
@@ -294,11 +304,16 @@ function App() {
 
       {currentUser && page === "room" && (
         <RoomPage
+          onOpenBulletinBoard={() => setPage("bulletin")}
           onSaveRoomLayout={handleSaveRoomLayout}
           readonly={viewingRoomUserId !== null}
           room={room}
           setPage={setPage}
         />
+      )}
+
+      {currentUser && page === "bulletin" && (
+        <BulletinBoardPage currentUser={currentUser} setPage={setPage} />
       )}
 
       {currentUser && page === "shop" && (

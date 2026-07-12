@@ -1,5 +1,5 @@
-import charaImg from "../assets/chara.png";
 import { Fragment } from "react";
+import charaImg from "../assets/izumi.gif";
 import floorGreyImg from "../assets/town/floor_grey.png";
 import ventImg from "../assets/town/vent.png";
 import { townItems } from "./PixeltownItems";
@@ -231,7 +231,11 @@ function PixelTown({
         src={charaImg}
         className="townChara"
         alt="街のキャラクター"
-        style={getItemStyle({ col: 11, row: 7 })}
+        style={{
+          ...getItemStyle({ col: 11, row: 7 }),
+          transform: "translateY(-10px) scale(2.5)",
+          transformOrigin: "center bottom",
+        }}
       />
 
       {SHOW_GRID && <TownGridOverlay />}

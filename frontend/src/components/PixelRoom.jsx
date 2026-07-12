@@ -5,10 +5,12 @@ import arrowRightImg from "../assets/controls/arrow-right.png";
 import arrowUpImg from "../assets/controls/arrow-up.png";
 import {
   SHOW_GRID,
+  defaultRoomTheme,
+  floorTextureOptions,
   roomGrids,
   roomItems,
-  roomTiles,
   tileTextures,
+  wallTextureOptions,
 } from "./pixelRoomConfig";
 import "./PixelRoom.css";
 
@@ -34,11 +36,17 @@ function moveItem(item, deltaCol, deltaRow) {
 function applySavedItem(item, savedItem) {
   return {
     ...item,
-    col: savedItem.col ?? item.col,
-    row: savedItem.row ?? item.row,
-    colSpan: savedItem.colSpan ?? item.colSpan,
-    rowSpan: savedItem.rowSpan ?? item.rowSpan,
-    z: savedItem.z ?? item.z,
+    col: savedItem.surface === item.surface ? savedItem.col ?? item.col : item.col,
+    row: savedItem.surface === item.surface ? savedItem.row ?? item.row : item.row,
+    colSpan:
+      savedItem.surface === item.surface
+        ? savedItem.colSpan ?? item.colSpan
+        : item.colSpan,
+    rowSpan:
+      savedItem.surface === item.surface
+        ? savedItem.rowSpan ?? item.rowSpan
+        : item.rowSpan,
+    z: item.z,
     anchor: savedItem.anchor ?? item.anchor,
   };
 }
@@ -74,6 +82,13 @@ function createSavedLayout(items) {
       isFixed,
     }),
   );
+}
+
+function createInitialRoomTheme(savedTheme = {}) {
+  return {
+    ...defaultRoomTheme,
+    ...savedTheme,
+  };
 }
 
 function getGridStyle(surface) {
@@ -128,25 +143,20 @@ function getItemStyle(item) {
   };
 }
 
-function RoomTile({ tile }) {
-  return (
-    <div
-      className="roomTile"
-      style={{
-        backgroundImage: `url(${tileTextures[tile.texture]})`,
-      }}
-    />
-  );
-}
-
-function RoomItem({ item, isEditing, isSelected, onSelect }) {
+function RoomItem({ item, isEditing, isSelected, onActivate, onSelect }) {
   return (
     <img
       alt={item.alt}
       className={`roomItem ${item.className ?? ""} ${
         isEditing ? "roomItemEditable" : ""
       } ${isSelected ? "roomItemSelected" : ""}`}
-      onClick={isEditing ? () => onSelect(item.id) : undefined}
+      onClick={
+        isEditing
+          ? () => onSelect(item.id)
+          : item.id === "bulletin_board"
+            ? onActivate
+            : undefined
+      }
       src={item.src}
       style={getItemStyle(item)}
     />
@@ -201,23 +211,55 @@ function RoomGridOverlay({ surface }) {
   );
 }
 
-function WallSurface({ items, isEditing, selectedItemId, onSelectItem }) {
+function createTexturePanels(count, className, textureId) {
+  return Array.from({ length: count }, (_, index) => (
+    <div
+      className={className}
+      key={`${textureId}-${index}`}
+      style={{ backgroundImage: `url(${tileTextures[textureId]})` }}
+    />
+  ));
+}
+
+function MaterialSelect({ label, options, value, level, onChange }) {
+  const unlockedOptions = options.filter((option) => level >= option.minLevel);
+
+  return (
+    <label className="roomMaterialSelect">
+      <span>{label}</span>
+      <select
+        onChange={(event) => onChange(event.target.value)}
+        value={value}
+      >
+        {unlockedOptions.map((option) => (
+          <option key={option.id} value={option.id}>
+            {option.name}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function WallSurface({
+  items,
+  isEditing,
+  onActivateItem,
+  selectedItemId,
+  onSelectItem,
+  wallTexture,
+}) {
   return (
     <div className="roomSurface roomWallSurface">
       <div className="roomWallTextureLayer">
-        <div className="roomWallTexturePanel" />
-        <div className="roomWallTexturePanel" />
-        <div className="roomWallTexturePanel" />
+        {createTexturePanels(4, "roomWallTexturePanel", wallTexture)}
       </div>
 
       <div
         className={`roomObjectLayer roomWallObjectLayer ${
           isEditing ? "roomObjectLayerEditing" : ""
         }`}
-        style={{
-          gridTemplateColumns: "repeat(12, 1fr)",
-          gridTemplateRows: "repeat(3, 1fr)",
-        }}
+        style={getGridStyle("wall")}
       >
         {items.map((item) => (
           <RoomItem
@@ -225,6 +267,7 @@ function WallSurface({ items, isEditing, selectedItemId, onSelectItem }) {
             isEditing={isEditing}
             isSelected={selectedItemId === item.id}
             key={item.id}
+            onActivate={onActivateItem}
             onSelect={onSelectItem}
           />
         ))}
@@ -237,11 +280,11 @@ function WallSurface({ items, isEditing, selectedItemId, onSelectItem }) {
 
 function RoomSurface({
   surface,
-  tiles,
   items,
   isEditing,
   selectedItemId,
   onSelectItem,
+  textureId,
 }) {
   const gridStyle = getGridStyle(surface);
 
@@ -251,10 +294,10 @@ function RoomSurface({
         surface === "wall" ? "roomWallSurface" : "roomFloorSurface"
       }`}
     >
-      <div className="roomTileLayer" style={gridStyle}>
-        {tiles.map((tile) => (
-          <RoomTile tile={tile} key={tile.id} />
-        ))}
+      <div
+        className="roomFloorTextureLayer"
+      >
+        {createTexturePanels(16, "roomFloorTexturePanel", textureId)}
       </div>
 
       <div
@@ -279,16 +322,35 @@ function RoomSurface({
   );
 }
 
-function PixelRoom({ level, ownedItemIds = [], savedLayout = [], onSaveLayout, readonly = false }) {
+function PixelRoom({
+  level,
+  ownedItemIds = [],
+  savedLayout = [],
+  savedTheme = {},
+  onSaveLayout,
+  onOpenBulletinBoard,
+  readonly = false,
+}) {
   const [items, setItems] = useState(() =>
     createInitialPlacedItems(roomItems, savedLayout, ownedItemIds),
+  );
+  const [roomTheme, setRoomTheme] = useState(() =>
+    createInitialRoomTheme(savedTheme),
   );
   const [isEditing, setIsEditing] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState(null);
 
   useEffect(() => {
     setItems(createInitialPlacedItems(roomItems, savedLayout, ownedItemIds));
-  }, [ownedItemIds, savedLayout]);
+    setRoomTheme(createInitialRoomTheme(savedTheme));
+  }, [ownedItemIds, savedLayout, savedTheme]);
+
+  useEffect(() => {
+    if (readonly) {
+      setIsEditing(false);
+      setSelectedItemId(null);
+    }
+  }, [readonly]);
 
   const placedItemIds = new Set(items.map((item) => item.id));
   const ownedItemIdSet = new Set(ownedItemIds);
@@ -300,17 +362,28 @@ function PixelRoom({ level, ownedItemIds = [], savedLayout = [], onSaveLayout, r
   const floorItems = items.filter((item) => item.surface === "floor");
   const selectedItem = items.find((item) => item.id === selectedItemId);
 
-  const saveItems = (nextItems) => {
-    onSaveLayout?.(createSavedLayout(nextItems));
+  const saveRoomState = (nextItems, nextTheme = roomTheme) => {
+    if (readonly) {
+      return;
+    }
+
+    onSaveLayout?.({
+      items: createSavedLayout(nextItems),
+      theme: nextTheme,
+    });
   };
 
   const handleToggleEditing = () => {
+    if (readonly) {
+      return;
+    }
+
     setIsEditing((current) => !current);
     setSelectedItemId(null);
   };
 
   const handleMoveSelectedItem = (deltaCol, deltaRow) => {
-    if (!selectedItemId) {
+    if (readonly || !selectedItemId) {
       return;
     }
 
@@ -319,12 +392,16 @@ function PixelRoom({ level, ownedItemIds = [], savedLayout = [], onSaveLayout, r
         item.id === selectedItemId ? moveItem(item, deltaCol, deltaRow) : item,
       );
 
-      saveItems(nextItems);
+      saveRoomState(nextItems);
       return nextItems;
     });
   };
 
   const handleAddItem = (itemId) => {
+    if (readonly) {
+      return;
+    }
+
     const itemToAdd = roomItems.find((item) => item.id === itemId);
 
     if (!itemToAdd || itemToAdd.isFixed || !ownedItemIdSet.has(itemToAdd.id)) {
@@ -337,14 +414,14 @@ function PixelRoom({ level, ownedItemIds = [], savedLayout = [], onSaveLayout, r
       }
 
       const nextItems = [...currentItems, itemToAdd];
-      saveItems(nextItems);
+      saveRoomState(nextItems);
       setSelectedItemId(itemId);
       return nextItems;
     });
   };
 
   const handleRemoveSelectedItem = () => {
-    if (!selectedItem || selectedItem.isFixed) {
+    if (readonly || !selectedItem || selectedItem.isFixed) {
       return;
     }
 
@@ -353,81 +430,117 @@ function PixelRoom({ level, ownedItemIds = [], savedLayout = [], onSaveLayout, r
         (item) => item.id !== selectedItem.id,
       );
 
-      saveItems(nextItems);
+      saveRoomState(nextItems);
       setSelectedItemId(null);
       return nextItems;
     });
   };
 
+  const handleChangeTheme = (surface, value) => {
+    if (readonly) {
+      return;
+    }
+
+    setRoomTheme((currentTheme) => {
+      const nextTheme = {
+        ...currentTheme,
+        [surface]: value,
+      };
+
+      saveRoomState(items, nextTheme);
+      return nextTheme;
+    });
+  };
+
   return (
     <div className={`roomEditorShell ${isEditing ? "roomEditorShellEditing" : ""}`}>
-      {isEditing && <RoomBag items={bagItems} onAddItem={handleAddItem} />}
+      {!readonly && isEditing && (
+        <RoomBag items={bagItems} onAddItem={handleAddItem} />
+      )}
 
       <div className="isoRoom" aria-label={`room level ${level}`}>
-      <div className="roomEditBar">
-        <button
-          className="compactButton secondaryButton"
-          onClick={handleToggleEditing}
-          type="button"
-        >
-          {isEditing ? "Done" : "Edit"}
-        </button>
-
-        {isEditing && (
-          <div className="roomMoveControls">
-            <span className="roomSelectedLabel">
-              {selectedItem ? selectedItem.name ?? selectedItem.id : "Select item"}
-            </span>
-            <ArrowButton
-              alt="Move up"
-              disabled={!selectedItem}
-              icon={arrowUpImg}
-              onClick={() => handleMoveSelectedItem(0, -1)}
-            />
-            <ArrowButton
-              alt="Move left"
-              disabled={!selectedItem}
-              icon={arrowLeftImg}
-              onClick={() => handleMoveSelectedItem(-1, 0)}
-            />
-            <ArrowButton
-              alt="Move right"
-              disabled={!selectedItem}
-              icon={arrowRightImg}
-              onClick={() => handleMoveSelectedItem(1, 0)}
-            />
-            <ArrowButton
-              alt="Move down"
-              disabled={!selectedItem}
-              icon={arrowDownImg}
-              onClick={() => handleMoveSelectedItem(0, 1)}
-            />
+        {!readonly && (
+          <div className="roomEditBar">
             <button
-              className="roomMoveButton roomRemoveButton"
-              disabled={!selectedItem || selectedItem.isFixed}
-              onClick={handleRemoveSelectedItem}
+              className="compactButton secondaryButton"
+              onClick={handleToggleEditing}
               type="button"
             >
-              Remove
+              {isEditing ? "Done" : "Edit"}
             </button>
+
+            {isEditing && (
+              <div className="roomMoveControls">
+                <span className="roomSelectedLabel">
+                  {selectedItem ? selectedItem.name ?? selectedItem.id : "Select item"}
+                </span>
+                <MaterialSelect
+                  label="Wall"
+                  level={level}
+                  onChange={(value) => handleChangeTheme("wall", value)}
+                  options={wallTextureOptions}
+                  value={roomTheme.wall}
+                />
+                <MaterialSelect
+                  label="Floor"
+                  level={level}
+                  onChange={(value) => handleChangeTheme("floor", value)}
+                  options={floorTextureOptions}
+                  value={roomTheme.floor}
+                />
+                <ArrowButton
+                  alt="Move up"
+                  disabled={!selectedItem}
+                  icon={arrowUpImg}
+                  onClick={() => handleMoveSelectedItem(0, -1)}
+                />
+                <ArrowButton
+                  alt="Move left"
+                  disabled={!selectedItem}
+                  icon={arrowLeftImg}
+                  onClick={() => handleMoveSelectedItem(-1, 0)}
+                />
+                <ArrowButton
+                  alt="Move right"
+                  disabled={!selectedItem}
+                  icon={arrowRightImg}
+                  onClick={() => handleMoveSelectedItem(1, 0)}
+                />
+                <ArrowButton
+                  alt="Move down"
+                  disabled={!selectedItem}
+                  icon={arrowDownImg}
+                  onClick={() => handleMoveSelectedItem(0, 1)}
+                />
+                <button
+                  className="roomMoveButton roomRemoveButton"
+                  disabled={!selectedItem || selectedItem.isFixed}
+                  onClick={handleRemoveSelectedItem}
+                  type="button"
+                >
+                  Remove
+                </button>
+              </div>
+            )}
           </div>
         )}
-      </div>
 
-      <WallSurface
-        items={wallItems}
-        isEditing={isEditing}
-        onSelectItem={setSelectedItemId}
-        selectedItemId={selectedItemId}
-      />
-      <RoomSurface
-        surface="floor"
-        tiles={roomTiles.floor}
-        items={floorItems}
-        isEditing={isEditing}
-        onSelectItem={setSelectedItemId}
-        selectedItemId={selectedItemId}
-      />
+        <WallSurface
+          items={wallItems}
+          isEditing={isEditing}
+          onActivateItem={onOpenBulletinBoard}
+          onSelectItem={setSelectedItemId}
+          selectedItemId={selectedItemId}
+          wallTexture={roomTheme.wall}
+        />
+        <RoomSurface
+          surface="floor"
+          items={floorItems}
+          isEditing={isEditing}
+          onSelectItem={setSelectedItemId}
+          selectedItemId={selectedItemId}
+          textureId={roomTheme.floor}
+        />
       </div>
     </div>
   );

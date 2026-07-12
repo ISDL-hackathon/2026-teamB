@@ -12,16 +12,19 @@ CHECKIN_POINT = 20
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 FURNITURE_CATALOG = [
-    {"id": "window", "name": "Window", "price": 30, "min_level": 1},
-    {"id": "clock", "name": "Clock", "price": 30, "min_level": 1},
-    {"id": "stove", "name": "Stove", "price": 50, "min_level": 1},
-    {"id": "bookshelf", "name": "Bookshelf", "price": 80, "min_level": 3},
-    {"id": "shelf", "name": "Shelf", "price": 100, "min_level": 4},
-    {"id": "bed", "name": "Bed", "price": 150, "min_level": 5},
+    {"id": "round_table", "name": "Round Table", "price": 50, "min_level": 1, "category": "lab", "surface": "floor"},
+    {"id": "office_chair", "name": "Office Chair", "price": 35, "min_level": 1, "category": "lab", "surface": "floor"},
+    {"id": "bulletin_board", "name": "Bulletin Board", "price": 50, "min_level": 1, "category": "lab", "surface": "wall"},
+    {"id": "window", "name": "Window", "price": 30, "min_level": 2, "category": "western", "surface": "wall"},
+    {"id": "clock", "name": "Clock", "price": 30, "min_level": 2, "category": "western", "surface": "wall"},
+    {"id": "stove", "name": "Stove", "price": 50, "min_level": 2, "category": "western", "surface": "wall"},
+    {"id": "bookshelf", "name": "Bookshelf", "price": 80, "min_level": 3, "category": "western", "surface": "floor"},
+    {"id": "shelf", "name": "Shelf", "price": 100, "min_level": 4, "category": "western", "surface": "floor"},
+    {"id": "bed", "name": "Bed", "price": 150, "min_level": 5, "category": "western", "surface": "floor"},
 ]
 
 VILLAGE_LEVELS = [
-    (1000, 5, "ISDL都市", "研究室が完全に活性化しています。みんなの活動で街が大きく発展しました。"),
+    (1000, 5, "ISDL研究都市", "研究室全体が活発に動いています。みんなの活動で街が大きく発展しました。"),
     (600, 4, "にぎやかな研究室", "人が集まり、研究や交流も活発になってきました。"),
     (300, 3, "活動中の研究室", "研究室に人が集まり始め、設備も少しずつ充実してきました。"),
     (100, 2, "少し明るい研究室", "少しずつ人が来るようになり、研究室に活気が出てきました。"),
@@ -130,10 +133,16 @@ def init_db():
     CREATE TABLE IF NOT EXISTS room_layouts (
         user_id INTEGER PRIMARY KEY,
         layout_json TEXT NOT NULL,
+        theme_json TEXT NOT NULL DEFAULT '{}',
         updated_at TEXT NOT NULL,
         FOREIGN KEY (user_id) REFERENCES users(id)
     )
     """)
+
+    cur.execute("PRAGMA table_info(room_layouts)")
+    room_layout_columns = {row["name"] for row in cur.fetchall()}
+    if "theme_json" not in room_layout_columns:
+        cur.execute("ALTER TABLE room_layouts ADD COLUMN theme_json TEXT NOT NULL DEFAULT '{}'")
 
     cur.execute("""
     CREATE TABLE IF NOT EXISTS user_furniture (
@@ -142,6 +151,44 @@ def init_db():
         purchased_at TEXT NOT NULL,
         PRIMARY KEY (user_id, furniture_id),
         FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+    """)
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS bulletin_posts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        content TEXT NOT NULL,
+        image_data TEXT,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+    """)
+
+    cur.execute("PRAGMA table_info(bulletin_posts)")
+    bulletin_post_columns = {row["name"] for row in cur.fetchall()}
+    if "image_data" not in bulletin_post_columns:
+        cur.execute("ALTER TABLE bulletin_posts ADD COLUMN image_data TEXT")
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS bulletin_follows (
+        follower_id INTEGER NOT NULL,
+        followed_id INTEGER NOT NULL,
+        created_at TEXT NOT NULL,
+        PRIMARY KEY (follower_id, followed_id),
+        FOREIGN KEY (follower_id) REFERENCES users(id),
+        FOREIGN KEY (followed_id) REFERENCES users(id)
+    )
+    """)
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS bulletin_likes (
+        user_id INTEGER NOT NULL,
+        post_id INTEGER NOT NULL,
+        created_at TEXT NOT NULL,
+        PRIMARY KEY (user_id, post_id),
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (post_id) REFERENCES bulletin_posts(id)
     )
     """)
 
@@ -185,6 +232,118 @@ def init_db():
     seed_village_slots(cur)
     conn.commit()
     conn.close()    
+
+
+def get_bulletin_posts(limit: int = 100, viewer_id: int = 0):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT bulletin_posts.id, bulletin_posts.content, bulletin_posts.image_data,
+               bulletin_posts.created_at, users.id AS user_id,
+               users.name AS user_name, users.grade AS user_grade,
+               EXISTS(
+                   SELECT 1 FROM bulletin_follows
+                   WHERE follower_id = ? AND followed_id = bulletin_posts.user_id
+               ) AS is_following,
+               EXISTS(
+                   SELECT 1 FROM bulletin_likes
+                   WHERE user_id = ? AND post_id = bulletin_posts.id
+               ) AS is_liked,
+               (SELECT COUNT(*) FROM bulletin_likes WHERE post_id = bulletin_posts.id) AS like_count
+        FROM bulletin_posts
+        JOIN users ON users.id = bulletin_posts.user_id
+        ORDER BY bulletin_posts.id DESC
+        LIMIT ?
+        """,
+        (viewer_id, viewer_id, limit),
+    )
+    posts = [dict(row) for row in cur.fetchall()]
+    conn.close()
+    return posts
+
+
+def create_bulletin_post(user_id: int, content: str, image_data=None):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM users WHERE id = ?", (user_id,))
+    if cur.fetchone() is None:
+        conn.close()
+        return None
+
+    created_at = get_now()
+    cur.execute(
+        "INSERT INTO bulletin_posts (user_id, content, image_data, created_at) VALUES (?, ?, ?, ?)",
+        (user_id, content, image_data, created_at),
+    )
+    conn.commit()
+    post_id = cur.lastrowid
+    conn.close()
+    return next((post for post in get_bulletin_posts(viewer_id=user_id) if post["id"] == post_id), None)
+
+
+def toggle_bulletin_follow(follower_id: int, followed_id: int):
+    if follower_id == followed_id:
+        return None
+
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM users WHERE id IN (?, ?)", (follower_id, followed_id))
+    if len(cur.fetchall()) != 2:
+        conn.close()
+        return None
+
+    cur.execute(
+        "SELECT 1 FROM bulletin_follows WHERE follower_id = ? AND followed_id = ?",
+        (follower_id, followed_id),
+    )
+    following = cur.fetchone() is None
+    if following:
+        cur.execute(
+            "INSERT INTO bulletin_follows (follower_id, followed_id, created_at) VALUES (?, ?, ?)",
+            (follower_id, followed_id, get_now()),
+        )
+    else:
+        cur.execute(
+            "DELETE FROM bulletin_follows WHERE follower_id = ? AND followed_id = ?",
+            (follower_id, followed_id),
+        )
+    conn.commit()
+    conn.close()
+    return {"following": following}
+
+
+def toggle_bulletin_like(user_id: int, post_id: int):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM users WHERE id = ?", (user_id,))
+    user_exists = cur.fetchone() is not None
+    cur.execute("SELECT user_id FROM bulletin_posts WHERE id = ?", (post_id,))
+    post = cur.fetchone()
+    if not user_exists or post is None or post["user_id"] == user_id:
+        conn.close()
+        return None
+
+    cur.execute(
+        "SELECT 1 FROM bulletin_likes WHERE user_id = ? AND post_id = ?",
+        (user_id, post_id),
+    )
+    liked = cur.fetchone() is None
+    if liked:
+        cur.execute(
+            "INSERT INTO bulletin_likes (user_id, post_id, created_at) VALUES (?, ?, ?)",
+            (user_id, post_id, get_now()),
+        )
+    else:
+        cur.execute(
+            "DELETE FROM bulletin_likes WHERE user_id = ? AND post_id = ?",
+            (user_id, post_id),
+        )
+    cur.execute("SELECT COUNT(*) AS count FROM bulletin_likes WHERE post_id = ?", (post_id,))
+    like_count = cur.fetchone()["count"]
+    conn.commit()
+    conn.close()
+    return {"liked": liked, "like_count": like_count}
 
 
 def create_user(name: str, grade: str, password: str):
@@ -387,6 +546,7 @@ def get_room_status(user_id: int):
         "room_name": room_name,
         "room_description": room_description,
         "room_layout": get_room_layout(user_id),
+        "room_theme": get_room_theme(user_id),
         "owned_furniture": get_owned_furniture_ids(user_id),
         "shop_items": get_furniture_shop_items(user_id, room_level),
     }
@@ -412,6 +572,28 @@ def get_room_layout(user_id: int):
         return []
 
     return json.loads(row["layout_json"])
+
+
+def get_room_theme(user_id: int):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT theme_json
+        FROM room_layouts
+        WHERE user_id = ?
+        """,
+        (user_id,),
+    )
+
+    row = cur.fetchone()
+    conn.close()
+
+    if row is None:
+        return {}
+
+    return json.loads(row["theme_json"])
 
 
 def get_owned_furniture_ids(user_id: int):
@@ -526,25 +708,30 @@ def purchase_furniture(user_id: int, furniture_id: str):
     }
 
 
-def save_room_layout(user_id: int, items):
+def save_room_layout(user_id: int, items, theme=None):
     conn = get_connection()
     cur = conn.cursor()
     layout_json = json.dumps(items, ensure_ascii=False)
+    theme_json = json.dumps(theme or {}, ensure_ascii=False)
 
     cur.execute(
         """
-        INSERT INTO room_layouts (user_id, layout_json, updated_at)
-        VALUES (?, ?, ?)
+        INSERT INTO room_layouts (user_id, layout_json, theme_json, updated_at)
+        VALUES (?, ?, ?, ?)
         ON CONFLICT(user_id) DO UPDATE SET
             layout_json = excluded.layout_json,
+            theme_json = excluded.theme_json,
             updated_at = excluded.updated_at
         """,
-        (user_id, layout_json, get_now()),
+        (user_id, layout_json, theme_json, get_now()),
     )
 
     conn.commit()
     conn.close()
-    return get_room_layout(user_id)
+    return {
+        "room_layout": get_room_layout(user_id),
+        "room_theme": get_room_theme(user_id),
+    }
 
 def get_village_slots():
     # スロット一覧とそこを使っているユーザ情報を返す
@@ -698,3 +885,4 @@ def save_user_village_position(user_id: int, slot_id: str):
         "user_id": user_id,
         "slot_id": slot_id,
     }
+
