@@ -42,6 +42,10 @@ import waterDispenserGif from "../assets/town/water_dispenser.gif";
 import lockerTopFutureImg from "../assets/town/locker_top_future.png";
 import lockerTopFutureVImg from "../assets/town/locker_top_future_v.png";
 import benchWoodImg from "../assets/town/bench_wood.png";
+import monitorFrontImg from "../assets/town/monitor_front.png";
+import monitorBackImg from "../assets/town/monitor_back.png";
+import monitorLeftImg from "../assets/town/monitor_left.png";
+import monitorRightImg from "../assets/town/monitor_right.png";
 
 // 白い縦長机(各机の col と、天面の行リスト・側面の行)
 const WHITE_DESKS = [
@@ -324,7 +328,21 @@ export const townItems = [
   { id: "fridge-brown-11-1", src: fridgeBrownImg, alt: "冷蔵庫", minLevel: 2, maxLevel: 3, col: 11, row: 1, z: 5 },
   // ロボット(2×2エリアの中央に約8割サイズ)
   { id: "dopa-10-20", src: dopaGif, alt: "ロボット", minLevel: 2, col: 10.1, row: 20.1, colSpan: 1.8, rowSpan: 1.8, z: 5 },
-  { id: "bench-4-2", src: benchWoodImg, alt: "ベンチ", minLevel: 2, col: 4.4, row: 1.6, colSpan: 3.2, rowSpan: 1, z: 5 },
+  { id: "bench-4-2", src: benchWoodImg, alt: "ベンチ", minLevel: 2, col: 4.4, row: 1.5, colSpan: 3.4, rowSpan: 1.2, z: 5 },
+  // 9マス机の中央にモニター(向きは机ごとに変える)
+  { id: "monitor-sq1", src: monitorFrontImg, alt: "モニター", minLevel: 2, col: 5.9,  row: 11.5, z: 8 },
+  { id: "monitor-sq2", src: monitorBackImg,  alt: "モニター", minLevel: 2, col: 6.1,  row: 11, z: 7 },
+  { id: "monitor-sq3", src: monitorRightImg, alt: "モニター", minLevel: 2, col: 6.2, row: 18.2, z: 7 },
+  { id: "monitor-sq4", src: monitorLeftImg,  alt: "モニター", minLevel: 2, col: 5.8, row: 18.2, z: 7 },
+  { id: "monitor-sq5", src: monitorLeftImg, alt: "モニター", minLevel: 2, col: 8.8,  row: 14.3, z: 8 },
+  { id: "monitor-sq6", src: monitorBackImg,  alt: "モニター", minLevel: 2, col: 9.1,  row: 14.1, z: 7 },
+  { id: "monitor-sq7", src: monitorLeftImg, alt: "モニター", minLevel: 2, col: 12.8, row: 10.2, z: 7 },
+  { id: "monitor-sq8", src: monitorRightImg,  alt: "モニター", minLevel: 2, col: 13.2, row: 10.2, z: 7 },
+  { id: "monitor-sq9", src: monitorFrontImg, alt: "モニター", minLevel: 2, col: 14.1,  row: 17.5, z: 8 },
+  { id: "monitor-sq10", src: monitorBackImg,  alt: "モニター", minLevel: 2, col: 13.9,  row: 17, z: 7 },
+
+  { id: "monitor-sq11", src: monitorLeftImg, alt: "モニター", minLevel: 2, col: 20,  row: 5.8, z: 8 },
+
 
   // === Lv.3 で追加する家具は、ここに minLevel: 3 で書いていく ===
 
