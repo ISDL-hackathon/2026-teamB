@@ -41,7 +41,7 @@ import tatamiFutureGif from "../assets/town/tatami_future.gif";
 import waterDispenserGif from "../assets/town/water_dispenser.gif";
 import lockerTopFutureImg from "../assets/town/locker_top_future.png";
 import lockerTopFutureVImg from "../assets/town/locker_top_future_v.png";
-
+import benchWoodImg from "../assets/town/bench_wood.png";
 
 // 白い縦長机(各机の col と、天面の行リスト・側面の行)
 const WHITE_DESKS = [
@@ -324,6 +324,7 @@ export const townItems = [
   { id: "fridge-brown-11-1", src: fridgeBrownImg, alt: "冷蔵庫", minLevel: 2, maxLevel: 3, col: 11, row: 1, z: 5 },
   // ロボット(2×2エリアの中央に約8割サイズ)
   { id: "dopa-10-20", src: dopaGif, alt: "ロボット", minLevel: 2, col: 10.1, row: 20.1, colSpan: 1.8, rowSpan: 1.8, z: 5 },
+  { id: "bench-4-2", src: benchWoodImg, alt: "ベンチ", minLevel: 2, col: 4.4, row: 1.6, colSpan: 3.2, rowSpan: 1, z: 5 },
 
   // === Lv.3 で追加する家具は、ここに minLevel: 3 で書いていく ===
 
