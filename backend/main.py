@@ -4,9 +4,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from database import (
     add_activity,
     add_login_point_if_first_today,
+    cancel_battle_queue,
+    cancel_battle_room,
+    create_battle_room,
+    create_login_session,
     create_user,
     create_bulletin_post,
     get_bulletin_posts,
+    get_battle_snapshot,
     toggle_bulletin_follow,
     toggle_bulletin_like,
     get_ranking,
@@ -15,11 +20,18 @@ from database import (
     get_user_village_slot_id,
     get_village_slots,
     get_village_status,
+    heartbeat_login_session,
     init_db,
+    join_battle_room,
+    list_battle_rooms,
+    matchmake_battle,
     purchase_furniture,
     save_room_layout,
     save_user_village_position,
     set_user_online,
+    submit_battle_move,
+    end_login_session,
+    forfeit_battle,
     verify_password,
 )
 from messages import (
@@ -37,12 +49,18 @@ from messages import (
 )
 from schemas import (
     ActivityRequest,
+    BattleForfeitRequest,
+    BattleMoveRequest,
+    BattleRoomCreateRequest,
+    BattleRoomUserRequest,
+    BattleUserRequest,
     BulletinPostRequest,
     BulletinFollowRequest,
     BulletinLikeRequest,
     FurniturePurchaseRequest,
     LoginRequest,
     LogoutRequest,
+    SessionHeartbeatRequest,
     RegisterRequest,
     RoomLayoutRequest,
     VillagePositionRequest,
@@ -68,6 +86,74 @@ def startup():
 @app.get("/")
 def root():
     return {"message": "FastAPI backend is running"}
+
+
+@app.post("/battle/matchmake")
+def battle_matchmake(request: BattleUserRequest):
+    result = matchmake_battle(request.user_id)
+    if result.get("error"):
+        raise HTTPException(status_code=result["status"], detail=result["error"])
+    return result
+
+
+@app.get("/battle/rooms")
+def battle_rooms(user_id: int):
+    result = list_battle_rooms(user_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail=USER_NOT_FOUND)
+    return result
+
+
+@app.post("/battle/rooms")
+def battle_room_create(request: BattleRoomCreateRequest):
+    result = create_battle_room(request.user_id, request.stake_type)
+    if result.get("error"):
+        raise HTTPException(status_code=result["status"], detail=result["error"])
+    return result
+
+
+@app.post("/battle/rooms/{room_id}/join")
+def battle_room_join(room_id: int, request: BattleRoomUserRequest):
+    result = join_battle_room(room_id, request.user_id)
+    if result.get("error"):
+        raise HTTPException(status_code=result["status"], detail=result["error"])
+    return result
+
+
+@app.post("/battle/rooms/{room_id}/cancel")
+def battle_room_cancel(room_id: int, request: BattleRoomUserRequest):
+    if not cancel_battle_room(room_id, request.user_id):
+        raise HTTPException(status_code=409, detail="この部屋はキャンセルできません")
+    return {"ok": True}
+
+
+@app.post("/battle/cancel")
+def battle_cancel(request: BattleUserRequest):
+    cancel_battle_queue(request.user_id)
+    return {"ok": True}
+
+
+@app.get("/battle/match/{match_id}")
+def battle_match_status(match_id: int, user_id: int):
+    match = get_battle_snapshot(match_id, user_id)
+    if match is None:
+        raise HTTPException(status_code=404, detail="対戦が見つかりません")
+    return {"match": match}
+
+
+@app.post("/battle/move")
+def battle_move(request: BattleMoveRequest):
+    result = submit_battle_move(request.match_id, request.user_id, request.action)
+    if result.get("error"):
+        raise HTTPException(status_code=result["status"], detail=result["error"])
+    return result
+
+
+@app.post("/battle/forfeit")
+def battle_forfeit(request: BattleForfeitRequest):
+    if not forfeit_battle(request.match_id, request.user_id):
+        raise HTTPException(status_code=404, detail="対戦が見つかりません")
+    return {"ok": True}
 
 
 @app.post("/register")
@@ -97,6 +183,10 @@ def login(request: LoginRequest):
     if not verify_password(request.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail=WRONG_PASSWORD)
 
+    session_token = create_login_session(user["id"])
+    if session_token is None:
+        raise HTTPException(status_code=409, detail="このアカウントは別の端末でログイン中です")
+
     added_point = add_login_point_if_first_today(user["id"])
     set_user_online(user["id"], True)
 
@@ -110,14 +200,22 @@ def login(request: LoginRequest):
             "point": user["point"] + added_point,
             "total_point": user["total_point"] + added_point,
             "village_slot_id": get_user_village_slot_id(user["id"]),
+            "session_token": session_token,
         },
     }
 
 
 @app.post("/logout")
 def logout(request: LogoutRequest):
-    set_user_online(request.user_id, False)
+    end_login_session(request.user_id, request.session_token)
     return {"ok": True}
+
+
+@app.post("/session/heartbeat")
+def session_heartbeat(request: SessionHeartbeatRequest):
+    return {
+        "active": heartbeat_login_session(request.user_id, request.session_token),
+    }
 
 
 @app.get("/ranking")

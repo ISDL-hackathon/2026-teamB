@@ -3,23 +3,42 @@ import selectBase from "../assets/game-select-base.png";
 import "./GamePages.css";
 
 function GameSelectPage({ setPage }) {
-  const [message, setMessage] = useState("");
+  const [screen, setScreen] = useState("games");
 
   return (
     <main className="gamePage">
       <div className="gameSelectCanvas">
         <img alt="ゲーム選択画面" src={selectBase} />
-        {message && <p className="gameSelectMessage">{message}</p>}
+        <div className="gameSelectPanel">
+          {screen === "games" ? (
+            <button className="gameMenuButton" onClick={() => setScreen("modes")} type="button">
+              <strong>対戦ゲーム</strong>
+              <span>攻守交替バトル</span>
+            </button>
+          ) : (
+            <>
+              <h3>モードをえらんでね</h3>
+              <button className="gameMenuButton" onClick={() => setPage("cpuBattle")} type="button">
+                <strong>CPU戦</strong>
+                <span>ひとりであそぶ</span>
+              </button>
+              <button className="gameMenuButton" onClick={() => setPage("onlineBattle")} type="button">
+                <strong>対人戦</strong>
+                <span>ログインユーザーとあそぶ</span>
+              </button>
+            </>
+          )}
+        </div>
         <button
           aria-label="個人ルームへ戻る"
           className="gameSelectHitArea gameSelectBack"
-          onClick={() => setPage("room")}
+          onClick={() => screen === "games" ? setPage("room") : setScreen("games")}
           type="button"
         />
         <button
           aria-label="ゲームをスタート"
           className="gameSelectHitArea gameSelectStart"
-          onClick={() => setMessage("ゲームは準備中です")}
+          onClick={() => screen === "games" ? setScreen("modes") : setPage("onlineBattle")}
           type="button"
         />
       </div>
