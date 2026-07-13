@@ -35,6 +35,9 @@ import deskFutureLongImg from "../assets/town/desk_future_long.png";
 import deskTopFutureImg from "../assets/town/desk_top_future.png";
 import deskSideFutureImg from "../assets/town/desk_side_future.png";
 import glassPaneBlueImg from "../assets/town/glass_pane_blue.png";
+import wallFuture9Img from "../assets/town/wall_future_9.png";
+import wallFuture8Img from "../assets/town/wall_future_8.png";
+import tatamiFutureGif from "../assets/town/tatami_future.gif";
 
 
 // 白い縦長机(各机の col と、天面の行リスト・側面の行)
@@ -80,38 +83,37 @@ export const townItems = [
   { id: "wall-20-1", src: wallBeigeImg, alt: "壁", minLevel: 1, col: 20, row: 1, z: 1 },
 
   // 畳の天面(col=15〜20, row=2〜4)
-  { id: "tatami-15-2", src: tatamiTopImg, alt: "畳", minLevel: 1, col: 15, row: 2, z: 2 },
-  { id: "tatami-16-2", src: tatamiTopImg, alt: "畳", minLevel: 1, col: 16, row: 2, z: 2 },
-  { id: "tatami-17-2", src: tatamiTopImg, alt: "畳", minLevel: 1, col: 17, row: 2, z: 2 },
-  { id: "tatami-18-2", src: tatamiTopImg, alt: "畳", minLevel: 1, col: 18, row: 2, z: 2 },
-  { id: "tatami-19-2", src: tatamiTopImg, alt: "畳", minLevel: 1, col: 19, row: 2, z: 2 },
-  { id: "tatami-20-2", src: tatamiTopImg, alt: "畳", minLevel: 1, col: 20, row: 2, z: 2 },
-  { id: "tatami-15-3", src: tatamiTopImg, alt: "畳", minLevel: 1, col: 15, row: 3, z: 2 },
-  { id: "tatami-16-3", src: tatamiTopImg, alt: "畳", minLevel: 1, col: 16, row: 3, z: 2 },
-  { id: "tatami-17-3", src: tatamiTopImg, alt: "畳", minLevel: 1, col: 17, row: 3, z: 2 },
-  { id: "tatami-18-3", src: tatamiTopImg, alt: "畳", minLevel: 1, col: 18, row: 3, z: 2 },
-  { id: "tatami-19-3", src: tatamiTopImg, alt: "畳", minLevel: 1, col: 19, row: 3, z: 2 },
-  { id: "tatami-20-3", src: tatamiTopImg, alt: "畳", minLevel: 1, col: 20, row: 3, z: 2 },
-  { id: "tatami-15-4", src: tatamiTopImg, alt: "畳", minLevel: 1, col: 15, row: 4, z: 2 },
-  { id: "tatami-16-4", src: tatamiTopImg, alt: "畳", minLevel: 1, col: 16, row: 4, z: 2 },
-  { id: "tatami-17-4", src: tatamiTopImg, alt: "畳", minLevel: 1, col: 17, row: 4, z: 2 },
-  { id: "tatami-18-4", src: tatamiTopImg, alt: "畳", minLevel: 1, col: 18, row: 4, z: 2 },
-  { id: "tatami-19-4", src: tatamiTopImg, alt: "畳", minLevel: 1, col: 19, row: 4, z: 2 },
-  { id: "tatami-20-4", src: tatamiTopImg, alt: "畳", minLevel: 1, col: 20, row: 4, z: 2 },
-
-// 茶色の横長机(col=16〜19, row=3、畳の上に乗せる)
+  { id: "tatami-15-2", src: tatamiTopImg, alt: "畳", minLevel: 1, maxLevel: 4, col: 15, row: 2, z: 2 },
+  { id: "tatami-16-2", src: tatamiTopImg, alt: "畳", minLevel: 1, maxLevel: 4, col: 16, row: 2, z: 2 },
+  { id: "tatami-17-2", src: tatamiTopImg, alt: "畳", minLevel: 1, maxLevel: 4, col: 17, row: 2, z: 2 },
+  { id: "tatami-18-2", src: tatamiTopImg, alt: "畳", minLevel: 1, maxLevel: 4, col: 18, row: 2, z: 2 },
+  { id: "tatami-19-2", src: tatamiTopImg, alt: "畳", minLevel: 1, maxLevel: 4, col: 19, row: 2, z: 2 },
+  { id: "tatami-20-2", src: tatamiTopImg, alt: "畳", minLevel: 1, maxLevel: 4, col: 20, row: 2, z: 2 },
+  { id: "tatami-15-3", src: tatamiTopImg, alt: "畳", minLevel: 1, maxLevel: 4, col: 15, row: 3, z: 2 },
+  { id: "tatami-16-3", src: tatamiTopImg, alt: "畳", minLevel: 1, maxLevel: 4, col: 16, row: 3, z: 2 },
+  { id: "tatami-17-3", src: tatamiTopImg, alt: "畳", minLevel: 1, maxLevel: 4, col: 17, row: 3, z: 2 },
+  { id: "tatami-18-3", src: tatamiTopImg, alt: "畳", minLevel: 1, maxLevel: 4, col: 18, row: 3, z: 2 },
+  { id: "tatami-19-3", src: tatamiTopImg, alt: "畳", minLevel: 1, maxLevel: 4, col: 19, row: 3, z: 2 },
+  { id: "tatami-20-3", src: tatamiTopImg, alt: "畳", minLevel: 1, maxLevel: 4, col: 20, row: 3, z: 2 },
+  { id: "tatami-15-4", src: tatamiTopImg, alt: "畳", minLevel: 1, maxLevel: 4, col: 15, row: 4, z: 2 },
+  { id: "tatami-16-4", src: tatamiTopImg, alt: "畳", minLevel: 1, maxLevel: 4, col: 16, row: 4, z: 2 },
+  { id: "tatami-17-4", src: tatamiTopImg, alt: "畳", minLevel: 1, maxLevel: 4, col: 17, row: 4, z: 2 },
+  { id: "tatami-18-4", src: tatamiTopImg, alt: "畳", minLevel: 1, maxLevel: 4, col: 18, row: 4, z: 2 },
+  { id: "tatami-19-4", src: tatamiTopImg, alt: "畳", minLevel: 1, maxLevel: 4, col: 19, row: 4, z: 2 },
+  { id: "tatami-20-4", src: tatamiTopImg, alt: "畳", minLevel: 1, maxLevel: 4, col: 20, row: 4, z: 2 },
+  // 茶色の横長机(col=16〜19, row=3、畳の上に乗せる)
   { id: "brown-desk-16-3", src: deskBrownLeftImg, alt: "茶机", minLevel: 1, col: 16, row: 3, z: 6 },
   { id: "brown-desk-17-3", src: deskBrownMidImg, alt: "茶机", minLevel: 1, col: 17, row: 3, z: 6 },
   { id: "brown-desk-18-3", src: deskBrownMidImg, alt: "茶机", minLevel: 1, col: 18, row: 3, z: 6 },
   { id: "brown-desk-19-3", src: deskBrownRightImg, alt: "茶机", minLevel: 1, col: 19, row: 3, z: 6 },
 
   // 畳の側面(col=15〜20, row=5)
-  { id: "tatami-side-15-5", src: tatamiSideImg, alt: "畳の側面", minLevel: 1, col: 15, row: 5, z: 3 },
-  { id: "tatami-side-16-5", src: tatamiSideImg, alt: "畳の側面", minLevel: 1, col: 16, row: 5, z: 3 },
-  { id: "tatami-side-17-5", src: tatamiSideImg, alt: "畳の側面", minLevel: 1, col: 17, row: 5, z: 3 },
-  { id: "tatami-side-18-5", src: tatamiSideImg, alt: "畳の側面", minLevel: 1, col: 18, row: 5, z: 3 },
-  { id: "tatami-side-19-5", src: tatamiSideImg, alt: "畳の側面", minLevel: 1, col: 19, row: 5, z: 3 },
-  { id: "tatami-side-20-5", src: tatamiSideImg, alt: "畳の側面", minLevel: 1, col: 20, row: 5, z: 3 },
+  { id: "tatami-side-15-5", src: tatamiSideImg, alt: "畳の側面", minLevel: 1, maxLevel: 4, col: 15, row: 5, z: 3 },
+  { id: "tatami-side-16-5", src: tatamiSideImg, alt: "畳の側面", minLevel: 1, maxLevel: 4, col: 16, row: 5, z: 3 },
+  { id: "tatami-side-17-5", src: tatamiSideImg, alt: "畳の側面", minLevel: 1, maxLevel: 4, col: 17, row: 5, z: 3 },
+  { id: "tatami-side-18-5", src: tatamiSideImg, alt: "畳の側面", minLevel: 1, maxLevel: 4, col: 18, row: 5, z: 3 },
+  { id: "tatami-side-19-5", src: tatamiSideImg, alt: "畳の側面", minLevel: 1, maxLevel: 4, col: 19, row: 5, z: 3 },
+  { id: "tatami-side-20-5", src: tatamiSideImg, alt: "畳の側面", minLevel: 1, maxLevel: 4, col: 20, row: 5, z: 3 },
 
   ...whiteDeskItems,
 
@@ -324,7 +326,6 @@ export const townItems = [
 
   // === Lv.3 で追加する家具は、ここに minLevel: 3 で書いていく ===
   // 観葉植物lv3(茂った株。lv1・lv2の上に重ねる)
-  
   { id: "plant-16-13-lv3", src: plant_lv3Img, alt: "観葉植物", minLevel: 3, maxLevel: 3, col: 16, row: 13, z: 4 },
   { id: "plant-16-15-lv3", src: plant_lv3Img, alt: "観葉植物", minLevel: 3, maxLevel: 3, col: 16, row: 15, z: 4 },
   { id: "plant-4-22-lv3", src: plant_lv3Img, alt: "観葉植物", minLevel: 3, maxLevel: 3, col: 4, row: 22, z: 4 },
@@ -360,13 +361,17 @@ export const townItems = [
   { id: "glass-18-19-blue", src: glassPaneBlueImg, alt: "ガラス", minLevel: 4, col: 18, row: 19, z: 7 },
   { id: "glass-19-19-blue", src: glassPaneBlueImg, alt: "ガラス", minLevel: 4, col: 19, row: 19, z: 7 },
   { id: "glass-20-19-blue", src: glassPaneBlueImg, alt: "ガラス", minLevel: 4, col: 20, row: 19, z: 6 },
+  // 壁(近未来・横長1枚)
+  { id: "wall-left",  src: wallFuture9Img, alt: "壁", minLevel: 4, col: 1,  row: 1, colSpan: 9, z: 1 },
+  { id: "wall-right", src: wallFuture8Img, alt: "壁", minLevel: 4, col: 13, row: 1, colSpan: 8, z: 1 },
 
   // === Lv.5 で追加する家具は、ここに minLevel: 5 で書いていく ===
   // === Lv.5(最終形態:発光する栽培ドーム)===
   { id: "plant-4-22-lv5", src: plant_lv5Gif, alt: "観葉植物", minLevel: 5, col: 3.2, row: 21, colSpan: 2, rowSpan: 2, z: 5 },
   { id: "plant-16-13-lv5", src: plant_lv5Gif, alt: "観葉植物", minLevel: 5, col: 15.2, row: 12, colSpan: 2, rowSpan: 2, z: 5 },
   { id: "plant-16-15-lv5", src: plant_lv5Gif, alt: "観葉植物", minLevel: 5, col: 15.2, row: 14.2, colSpan: 2, rowSpan: 2, z: 5 },
-
+  // === Lv.5:近未来畳(6×4マスの1枚絵) ===
+  { id: "tatami-future", src: tatamiFutureGif, alt: "畳", minLevel: 5, col: 15, row: 2, colSpan: 6, rowSpan: 4, z: 2 },
   
 
 ];
