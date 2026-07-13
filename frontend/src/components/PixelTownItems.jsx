@@ -38,6 +38,9 @@ import glassPaneBlueImg from "../assets/town/glass_pane_blue.png";
 import wallFuture9Img from "../assets/town/wall_future_9.png";
 import wallFuture8Img from "../assets/town/wall_future_8.png";
 import tatamiFutureGif from "../assets/town/tatami_future.gif";
+import waterDispenserGif from "../assets/town/water_dispenser.gif";
+import lockerTopFutureImg from "../assets/town/locker_top_future.png";
+import lockerTopFutureVImg from "../assets/town/locker_top_future_v.png";
 
 
 // 白い縦長机(各机の col と、天面の行リスト・側面の行)
@@ -187,26 +190,25 @@ export const townItems = [
   { id: "rectdesk-20-7", src: deskSqSideRightImg, alt: "机の脚", minLevel: 1, maxLevel: 3, col: 20, row: 7, z: 6 },
 
   // ロッカー(col=1, row=22〜23)
-  { id: "locker-1-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, col: 1, row: 22, z: 4 },
-  { id: "locker-1-23", src: lockerTopImg, alt: "ロッカー", minLevel: 1, col: 1, row: 23, z: 4 },
-
+  { id: "locker-1-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, maxLevel: 4, col: 1, row: 22, z: 4 },
+  { id: "locker-1-23", src: lockerTopImg, alt: "ロッカー", minLevel: 1, maxLevel: 4, col: 1, row: 23, z: 4 },
   // ロッカー(row=22, col=5〜20)
-  { id: "locker-5-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, col: 5, row: 22, z: 4 },
-  { id: "locker-6-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, col: 6, row: 22, z: 4 },
-  { id: "locker-7-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, col: 7, row: 22, z: 4 },
-  { id: "locker-8-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, col: 8, row: 22, z: 4 },
-  { id: "locker-9-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, col: 9, row: 22, z: 4 },
-  { id: "locker-10-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, col: 10, row: 22, z: 4 },
-  { id: "locker-11-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, col: 11, row: 22, z: 4 },
-  { id: "locker-12-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, col: 12, row: 22, z: 4 },
-  { id: "locker-13-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, col: 13, row: 22, z: 4 },
-  { id: "locker-14-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, col: 14, row: 22, z: 4 },
-  { id: "locker-15-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, col: 15, row: 22, z: 4 },
-  { id: "locker-16-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, col: 16, row: 22, z: 4 },
-  { id: "locker-17-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, col: 17, row: 22, z: 4 },
-  { id: "locker-18-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, col: 18, row: 22, z: 4 },
-  { id: "locker-19-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, col: 19, row: 22, z: 4 },
-  { id: "locker-20-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, col: 20, row: 22, z: 4 },
+  { id: "locker-5-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, maxLevel: 4, col: 5, row: 22, z: 4 },
+  { id: "locker-6-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, maxLevel: 4, col: 6, row: 22, z: 4 },
+  { id: "locker-7-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, maxLevel: 4, col: 7, row: 22, z: 4 },
+  { id: "locker-8-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, maxLevel: 4, col: 8, row: 22, z: 4 },
+  { id: "locker-9-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, maxLevel: 4, col: 9, row: 22, z: 4 },
+  { id: "locker-10-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, maxLevel: 4, col: 10, row: 22, z: 4 },
+  { id: "locker-11-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, maxLevel: 4, col: 11, row: 22, z: 4 },
+  { id: "locker-12-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, maxLevel: 4, col: 12, row: 22, z: 4 },
+  { id: "locker-13-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, maxLevel: 4, col: 13, row: 22, z: 4 },
+  { id: "locker-14-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, maxLevel: 4, col: 14, row: 22, z: 4 },
+  { id: "locker-15-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, maxLevel: 4, col: 15, row: 22, z: 4 },
+  { id: "locker-16-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, maxLevel: 4, col: 16, row: 22, z: 4 },
+  { id: "locker-17-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, maxLevel: 4, col: 17, row: 22, z: 4 },
+  { id: "locker-18-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, maxLevel: 4, col: 18, row: 22, z: 4 },
+  { id: "locker-19-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, maxLevel: 4, col: 19, row: 22, z: 4 },
+  { id: "locker-20-22", src: lockerTopImg, alt: "ロッカー", minLevel: 1, maxLevel: 4, col: 20, row: 22, z: 4 },
 
   // ガラス面(上の横枠 row=9〜10, col=17〜20)
   { id: "glass-17-9", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 17, row: 9, z: 7 },
@@ -310,21 +312,21 @@ export const townItems = [
 
 
   // === Lv.2 で追加する家具は、ここに minLevel: 2 で書いていく ===
+
   // 観葉植物lv2(芽が出た鉢。lv1の上に重ねる)
   { id: "plant-4-22-lv2", src: plant_lv2Img, alt: "観葉植物", minLevel: 2, maxLevel: 3, col: 4, row: 22, z: 3 },
   { id: "plant-16-13-lv2", src: plant_lv2Img, alt: "観葉植物", minLevel: 2, maxLevel: 3, col: 16, row: 13, z: 3 },
   { id: "plant-16-15-lv2", src: plant_lv2Img, alt: "観葉植物", minLevel: 2, maxLevel: 3, col: 16, row: 15, z: 3 },
- 
   // 電子レンジ(机の上に重ねる)
   { id: "microwave-10-1", src: microwaveImg, alt: "電子レンジ", minLevel: 2, col: 10, row: 1, z: 6 },
-
   // 茶色の冷蔵庫
-  { id: "fridge-brown-11-1", src: fridgeBrownImg, alt: "冷蔵庫", minLevel: 2, col: 11, row: 1, z: 5 },
-
+  // 茶色の冷蔵庫は Lv3 まで
+  { id: "fridge-brown-11-1", src: fridgeBrownImg, alt: "冷蔵庫", minLevel: 2, maxLevel: 3, col: 11, row: 1, z: 5 },
   // ロボット(2×2エリアの中央に約8割サイズ)
   { id: "dopa-10-20", src: dopaGif, alt: "ロボット", minLevel: 2, col: 10.1, row: 20.1, colSpan: 1.8, rowSpan: 1.8, z: 5 },
 
   // === Lv.3 で追加する家具は、ここに minLevel: 3 で書いていく ===
+
   // 観葉植物lv3(茂った株。lv1・lv2の上に重ねる)
   { id: "plant-16-13-lv3", src: plant_lv3Img, alt: "観葉植物", minLevel: 3, maxLevel: 3, col: 16, row: 13, z: 4 },
   { id: "plant-16-15-lv3", src: plant_lv3Img, alt: "観葉植物", minLevel: 3, maxLevel: 3, col: 16, row: 15, z: 4 },
@@ -364,6 +366,8 @@ export const townItems = [
   // 壁(近未来・横長1枚)
   { id: "wall-left",  src: wallFuture9Img, alt: "壁", minLevel: 4, col: 1,  row: 1, colSpan: 9, z: 1 },
   { id: "wall-right", src: wallFuture8Img, alt: "壁", minLevel: 4, col: 13, row: 1, colSpan: 8, z: 1 },
+  // Lv4:冷水機(ハイテク)に置き換え
+{ id: "water-dispenser-11-1", src: waterDispenserGif, alt: "冷水機", minLevel: 4, col: 11, row: 1, z: 5 },
 
   // === Lv.5 で追加する家具は、ここに minLevel: 5 で書いていく ===
   // === Lv.5(最終形態:発光する栽培ドーム)===
@@ -372,6 +376,8 @@ export const townItems = [
   { id: "plant-16-15-lv5", src: plant_lv5Gif, alt: "観葉植物", minLevel: 5, col: 15.2, row: 14.2, colSpan: 2, rowSpan: 2, z: 5 },
   // === Lv.5:近未来畳(6×4マスの1枚絵) ===
   { id: "tatami-future", src: tatamiFutureGif, alt: "畳", minLevel: 5, col: 15, row: 2, colSpan: 6, rowSpan: 4, z: 2 },
-  
+  // === Lv.5:近未来ロッカー天面(横16マスの1枚絵)===
+  { id: "locker-future-h", src: lockerTopFutureImg, alt: "ロッカー", minLevel: 5, col: 5, row: 22, colSpan: 16, z: 4 },
+  { id: "locker-future-v", src: lockerTopFutureVImg, alt: "ロッカー", minLevel: 5, col: 1, row: 22, rowSpan: 2, z: 4 },
 
 ];
