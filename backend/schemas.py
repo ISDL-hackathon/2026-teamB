@@ -16,6 +16,12 @@ class LoginRequest(BaseModel):
 
 class LogoutRequest(BaseModel):
     user_id: int
+    session_token: str
+
+
+class SessionHeartbeatRequest(BaseModel):
+    user_id: int
+    session_token: str
 
 
 class ActivityRequest(BaseModel):
@@ -63,3 +69,27 @@ class BulletinLikeRequest(BaseModel):
 class VillagePositionRequest(BaseModel):
     user_id: int
     slot_id: str
+
+
+class BattleUserRequest(BaseModel):
+    user_id: int
+
+
+class BattleRoomCreateRequest(BaseModel):
+    user_id: int
+    stake_type: Literal["free", "10", "50", "all"]
+
+
+class BattleRoomUserRequest(BaseModel):
+    user_id: int
+
+
+class BattleMoveRequest(BaseModel):
+    match_id: int
+    user_id: int
+    action: str
+
+
+class BattleForfeitRequest(BaseModel):
+    match_id: int
+    user_id: int

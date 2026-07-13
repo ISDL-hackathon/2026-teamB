@@ -5,6 +5,8 @@ import BulletinBoardPage from "./components/BulletinBoardPage";
 import BulletinLoadingPage from "./components/BulletinLoadingPage";
 import GameLoadingPage from "./components/GameLoadingPage";
 import GameSelectPage from "./components/GameSelectPage";
+import CpuBattlePage from "./components/CpuBattlePage";
+import OnlineBattlePage from "./components/OnlineBattlePage";
 import LoginArea from "./components/LoginArea";
 import RoomPage from "./components/RoomPage";
 import ShopPage from "./components/ShopPage";
@@ -25,7 +27,14 @@ function App() {
   const [villageSlots, setVillageSlots] = useState([]);
   const [viewingRoomUserId, setViewingRoomUserId] = useState(null);
 
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const savedUser = JSON.parse(sessionStorage.getItem("isdlCurrentUser"));
+      return savedUser?.session_token ? savedUser : null;
+    } catch {
+      return null;
+    }
+  });
   const [ranking, setRanking] = useState([]);
   const [village, setVillage] = useState(null);
   const [room, setRoom] = useState(null);
@@ -63,6 +72,45 @@ function App() {
     fetchRanking();
     fetchVillage();
   }, []);
+
+  useEffect(() => {
+    if (!currentUser?.session_token) return undefined;
+    let stopped = false;
+
+    const heartbeat = () => {
+      requestJson("/session/heartbeat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: currentUser.id,
+          session_token: currentUser.session_token,
+        }),
+      })
+        .then((data) => {
+          if (stopped || data.active) return;
+          sessionStorage.removeItem("isdlCurrentUser");
+          setCurrentUser(null);
+          setRoom(null);
+          setViewingRoomUserId(null);
+          setPage("home");
+          setMessage("ログインの有効期限が切れました。もう一度ログインしてください");
+        })
+        .catch(() => {});
+    };
+
+    heartbeat();
+    const timer = window.setInterval(heartbeat, 15_000);
+    return () => {
+      stopped = true;
+      window.clearInterval(timer);
+    };
+  }, [currentUser?.id, currentUser?.session_token]);
+
+  useEffect(() => {
+    if (currentUser?.session_token) {
+      sessionStorage.setItem("isdlCurrentUser", JSON.stringify(currentUser));
+    }
+  }, [currentUser]);
 
   const handleRegister = () => {
     if (!registerName.trim() || !registerPassword.trim()) {
@@ -105,6 +153,7 @@ function App() {
     })
       .then((data) => {
         setCurrentUser(data.user);
+        sessionStorage.setItem("isdlCurrentUser", JSON.stringify(data.user));
         setMessage(
           data.added_point > 0
             ? `${data.user.name}でログインしました。本日初ログイン +${data.added_point}pt`
@@ -128,8 +177,10 @@ function App() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         user_id: currentUser.id,
+        session_token: currentUser.session_token,
       }),
     }).finally(() => {
+      sessionStorage.removeItem("isdlCurrentUser");
       setCurrentUser(null);
       setRoom(null);
       setViewingRoomUserId(null);
@@ -332,6 +383,14 @@ function App() {
 
       {currentUser && page === "gameSelect" && (
         <GameSelectPage setPage={setPage} />
+      )}
+
+      {currentUser && page === "cpuBattle" && (
+        <CpuBattlePage currentUser={currentUser} setPage={setPage} />
+      )}
+
+      {currentUser && page === "onlineBattle" && (
+        <OnlineBattlePage currentUser={currentUser} setCurrentUser={setCurrentUser} setPage={setPage} />
       )}
 
       {currentUser && page === "bulletinLoading" && (
