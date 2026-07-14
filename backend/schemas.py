@@ -50,6 +50,15 @@ class FurniturePurchaseRequest(BaseModel):
     furniture_id: str
 
 
+class GachaUserRequest(BaseModel):
+    user_id: int
+
+
+class AvatarSelectRequest(BaseModel):
+    user_id: int
+    avatar_id: str
+
+
 class BulletinPostRequest(BaseModel):
     user_id: int
     content: str

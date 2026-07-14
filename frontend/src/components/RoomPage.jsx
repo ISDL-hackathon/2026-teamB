@@ -1,4 +1,5 @@
 import PixelRoom from "./PixelRoom";
+import { getAvatarImage } from "./avatarAssets";
 function RoomPage({ onOpenBulletinBoard, onOpenGameSelect, onSaveRoomLayout, readonly = false, room, setPage }) {
   return (
     <>
@@ -16,6 +17,7 @@ function RoomPage({ onOpenBulletinBoard, onOpenGameSelect, onSaveRoomLayout, rea
         {room ? (
           <>
             <PixelRoom
+              avatarSrc={getAvatarImage(room.user.selected_avatar)}
               level={room.room_level}
               onOpenBulletinBoard={onOpenBulletinBoard}
               onOpenGameSelect={onOpenGameSelect}
@@ -25,6 +27,11 @@ function RoomPage({ onOpenBulletinBoard, onOpenGameSelect, onSaveRoomLayout, rea
               savedLayout={room.room_layout}
               savedTheme={room.room_theme}
             />
+            {!readonly && (
+              <button onClick={() => setPage("settings")} type="button">
+                {"\u8a2d\u5b9a"}
+              </button>
+            )}
             {!readonly && (
               <button onClick={() => setPage("shop")} type="button">
                 ショップへ

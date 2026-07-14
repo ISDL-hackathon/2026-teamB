@@ -741,6 +741,8 @@ tr:last-child td {
     padding: 14px;
   }
 
+  .roomCard { padding: 12px; }
+
   .homeUserHeader,
   .statusGrid {
     grid-template-columns: 1fr;
@@ -759,4 +761,138 @@ tr:last-child td {
     padding: 10px 8px;
     font-size: 14px;
   }
+}
+
+.gachaPage {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 18px;
+  color: #dff7ff;
+  background: #001538;
+  border: 4px solid #169ee8;
+  box-shadow: inset 0 0 0 2px #63d9ff;
+  image-rendering: pixelated;
+}
+
+.gachaHeader {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.gachaHeader h2,
+.gachaHeader p { margin: 4px; }
+
+.gachaMachine {
+  position: relative;
+  width: min(440px, 100%);
+  aspect-ratio: 1;
+  margin: 14px auto;
+}
+
+.gachaMachineBase {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.gachaKnobAnimation {
+  position: absolute;
+  left: 37.109375%;
+  top: 57.5%;
+  width: 25%;
+  height: 25%;
+  transform: none;
+  mix-blend-mode: normal;
+  object-fit: contain;
+}
+
+.gachaPullButton {
+  display: block;
+  min-width: 220px;
+  margin: 0 auto;
+  color: #001538;
+  background: #36c8ff;
+  border-color: #b9efff;
+}
+
+.gachaResult,
+.gachaError {
+  padding: 12px;
+  text-align: center;
+  border: 2px solid #36c8ff;
+  background: #062657;
+}
+
+.gachaError { color: #ff96a9; border-color: #ff6481; }
+
+.avatarCollection { margin-top: 24px; }
+.avatarCollectionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.avatarPrize {
+  display: grid;
+  place-items: center;
+  gap: 7px;
+  padding: 12px;
+  color: #001538;
+  background: #e8f8ff;
+  border: 3px solid #36c8ff;
+}
+
+.avatarPrize img {
+  width: 112px;
+  height: 112px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.avatarPrizeLocked img { filter: brightness(0); opacity: 0.55; }
+.avatarPrize button { width: 100%; }
+
+.gachaCoinShopItem {
+  display: grid;
+  grid-template-columns: 72px 1fr auto;
+  align-items: center;
+  gap: 14px;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 16px;
+  color: #052033;
+  background: #fff7d6;
+  border: 2px solid #cf9b31;
+  border-radius: 8px;
+}
+
+.gachaCoinIcon {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.gachaCoinBalance {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.gachaCoinBalance img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+@media (max-width: 520px) {
+  .gachaHeader { grid-template-columns: 1fr 1fr; }
+  .gachaHeader div { grid-column: 1 / -1; grid-row: 1; }
+  .gachaCoinShopItem { grid-template-columns: 64px 1fr; }
+  .gachaCoinShopItem button { grid-column: 1 / -1; }
 }

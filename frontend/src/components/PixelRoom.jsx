@@ -23,18 +23,20 @@ function moveItem(item, deltaCol, deltaRow) {
   const colSpan = item.colSpan ?? 1;
   const rowSpan = item.rowSpan ?? 1;
   const maxCol = grid.cols - colSpan + 1;
+  const minRow =
+    item.surface === "wall" && item.anchor === "bottomLeft" ? rowSpan : 1;
   const maxRow =
     item.anchor === "bottomLeft" ? grid.rows : grid.rows - rowSpan + 1;
 
   return {
     ...item,
     col: clamp(item.col + deltaCol, 1, maxCol),
-    row: clamp(item.row + deltaRow, 1, maxRow),
+    row: clamp(item.row + deltaRow, minRow, maxRow),
   };
 }
 
 function applySavedItem(item, savedItem) {
-  return {
+  return moveItem({
     ...item,
     col: savedItem.surface === item.surface ? savedItem.col ?? item.col : item.col,
     row: savedItem.surface === item.surface ? savedItem.row ?? item.row : item.row,
@@ -48,7 +50,7 @@ function applySavedItem(item, savedItem) {
         : item.rowSpan,
     z: item.z,
     anchor: savedItem.anchor ?? item.anchor,
-  };
+  }, 0, 0);
 }
 
 function createInitialPlacedItems(itemDefinitions, savedLayout = [], ownedItemIds = []) {
@@ -82,6 +84,12 @@ function createSavedLayout(items) {
       isFixed,
     }),
   );
+}
+
+function applyAvatar(items, avatarSrc) {
+  return avatarSrc
+    ? items.map((item) => item.id === "chara" ? { ...item, src: avatarSrc } : item)
+    : items;
 }
 
 function createInitialRoomTheme(savedTheme = {}) {
@@ -166,7 +174,7 @@ function RoomItem({ item, isEditing, isSelected, onActivate, onSelect }) {
 function RoomBag({ items, onAddItem }) {
   return (
     <div className="roomBag" aria-label="Furniture bag">
-      <span className="roomBagLabel">Bag</span>
+      <span className="roomBagLabel">家具バッグ</span>
       {items.length > 0 ? (
         <div className="roomBagItems">
           {items.map((item) => (
@@ -325,6 +333,7 @@ function RoomSurface({
 }
 
 function PixelRoom({
+  avatarSrc,
   level,
   ownedItemIds = [],
   savedLayout = [],
@@ -335,7 +344,7 @@ function PixelRoom({
   readonly = false,
 }) {
   const [items, setItems] = useState(() =>
-    createInitialPlacedItems(roomItems, savedLayout, ownedItemIds),
+    applyAvatar(createInitialPlacedItems(roomItems, savedLayout, ownedItemIds), avatarSrc),
   );
   const [roomTheme, setRoomTheme] = useState(() =>
     createInitialRoomTheme(savedTheme),
@@ -344,9 +353,9 @@ function PixelRoom({
   const [selectedItemId, setSelectedItemId] = useState(null);
 
   useEffect(() => {
-    setItems(createInitialPlacedItems(roomItems, savedLayout, ownedItemIds));
+    setItems(applyAvatar(createInitialPlacedItems(roomItems, savedLayout, ownedItemIds), avatarSrc));
     setRoomTheme(createInitialRoomTheme(savedTheme));
-  }, [ownedItemIds, savedLayout, savedTheme]);
+  }, [avatarSrc, ownedItemIds, savedLayout, savedTheme]);
 
   useEffect(() => {
     if (readonly) {
@@ -421,7 +430,7 @@ function PixelRoom({
         return currentItems;
       }
 
-      const nextItems = [...currentItems, itemToAdd];
+      const nextItems = [...currentItems, moveItem(itemToAdd, 0, 0)];
       saveRoomState(nextItems);
       setSelectedItemId(itemId);
       return nextItems;
@@ -462,76 +471,77 @@ function PixelRoom({
 
   return (
     <div className={`roomEditorShell ${isEditing ? "roomEditorShellEditing" : ""}`}>
+      {!readonly && (
+        <div className="roomEditBar">
+          <button
+            className="compactButton secondaryButton"
+            onClick={handleToggleEditing}
+            type="button"
+          >
+            {isEditing ? "編集完了" : "家具を編集"}
+          </button>
+
+          {isEditing && (
+            <div className="roomMoveControls">
+              <span className="roomSelectedLabel">
+                {selectedItem ? selectedItem.name ?? selectedItem.id : "家具を選択してください"}
+              </span>
+              <MaterialSelect
+                label="壁"
+                level={level}
+                onChange={(value) => handleChangeTheme("wall", value)}
+                options={wallTextureOptions}
+                value={roomTheme.wall}
+              />
+              <MaterialSelect
+                label="床"
+                level={level}
+                onChange={(value) => handleChangeTheme("floor", value)}
+                options={floorTextureOptions}
+                value={roomTheme.floor}
+              />
+              <ArrowButton
+                alt="上へ移動"
+                disabled={!selectedItem}
+                icon={arrowUpImg}
+                onClick={() => handleMoveSelectedItem(0, -1)}
+              />
+              <ArrowButton
+                alt="左へ移動"
+                disabled={!selectedItem}
+                icon={arrowLeftImg}
+                onClick={() => handleMoveSelectedItem(-1, 0)}
+              />
+              <ArrowButton
+                alt="右へ移動"
+                disabled={!selectedItem}
+                icon={arrowRightImg}
+                onClick={() => handleMoveSelectedItem(1, 0)}
+              />
+              <ArrowButton
+                alt="下へ移動"
+                disabled={!selectedItem}
+                icon={arrowDownImg}
+                onClick={() => handleMoveSelectedItem(0, 1)}
+              />
+              <button
+                className="roomMoveButton roomRemoveButton"
+                disabled={!selectedItem || selectedItem.isFixed}
+                onClick={handleRemoveSelectedItem}
+                type="button"
+              >
+                削除
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       {!readonly && isEditing && (
         <RoomBag items={bagItems} onAddItem={handleAddItem} />
       )}
 
       <div className="isoRoom" aria-label={`room level ${level}`}>
-        {!readonly && (
-          <div className="roomEditBar">
-            <button
-              className="compactButton secondaryButton"
-              onClick={handleToggleEditing}
-              type="button"
-            >
-              {isEditing ? "Done" : "Edit"}
-            </button>
-
-            {isEditing && (
-              <div className="roomMoveControls">
-                <span className="roomSelectedLabel">
-                  {selectedItem ? selectedItem.name ?? selectedItem.id : "Select item"}
-                </span>
-                <MaterialSelect
-                  label="Wall"
-                  level={level}
-                  onChange={(value) => handleChangeTheme("wall", value)}
-                  options={wallTextureOptions}
-                  value={roomTheme.wall}
-                />
-                <MaterialSelect
-                  label="Floor"
-                  level={level}
-                  onChange={(value) => handleChangeTheme("floor", value)}
-                  options={floorTextureOptions}
-                  value={roomTheme.floor}
-                />
-                <ArrowButton
-                  alt="Move up"
-                  disabled={!selectedItem}
-                  icon={arrowUpImg}
-                  onClick={() => handleMoveSelectedItem(0, -1)}
-                />
-                <ArrowButton
-                  alt="Move left"
-                  disabled={!selectedItem}
-                  icon={arrowLeftImg}
-                  onClick={() => handleMoveSelectedItem(-1, 0)}
-                />
-                <ArrowButton
-                  alt="Move right"
-                  disabled={!selectedItem}
-                  icon={arrowRightImg}
-                  onClick={() => handleMoveSelectedItem(1, 0)}
-                />
-                <ArrowButton
-                  alt="Move down"
-                  disabled={!selectedItem}
-                  icon={arrowDownImg}
-                  onClick={() => handleMoveSelectedItem(0, 1)}
-                />
-                <button
-                  className="roomMoveButton roomRemoveButton"
-                  disabled={!selectedItem || selectedItem.isFixed}
-                  onClick={handleRemoveSelectedItem}
-                  type="button"
-                >
-                  Remove
-                </button>
-              </div>
-            )}
-          </div>
-        )}
 
         <WallSurface
           items={wallItems}
