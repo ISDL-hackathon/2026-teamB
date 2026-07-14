@@ -24,6 +24,19 @@ from database import (
     init_db,
     join_battle_room,
     list_battle_rooms,
+    create_mahjong_room,
+    cancel_mahjong_riichi,
+    declare_mahjong_riichi,
+    get_current_mahjong_room,
+    finish_mahjong_room,
+    get_mahjong_room,
+    join_mahjong_room,
+    join_mahjong_room_by_id,
+    leave_mahjong_room,
+    list_open_mahjong_rooms,
+    roll_mahjong_dice,
+    start_mahjong_room,
+    submit_mahjong_hand,
     matchmake_battle,
     purchase_furniture,
     save_room_layout,
@@ -61,6 +74,11 @@ from schemas import (
     LoginRequest,
     LogoutRequest,
     SessionHeartbeatRequest,
+    MahjongHandRequest,
+    MahjongRiichiRequest,
+    MahjongRoomCreateRequest,
+    MahjongRoomJoinRequest,
+    MahjongRoomUserRequest,
     RegisterRequest,
     RoomLayoutRequest,
     VillagePositionRequest,
@@ -154,6 +172,111 @@ def battle_forfeit(request: BattleForfeitRequest):
     if not forfeit_battle(request.match_id, request.user_id):
         raise HTTPException(status_code=404, detail="対戦が見つかりません")
     return {"ok": True}
+
+
+@app.get("/mahjong/current")
+def mahjong_current(user_id: int):
+    return {"room": get_current_mahjong_room(user_id)}
+
+
+@app.post("/mahjong/rooms")
+def mahjong_room_create(request: MahjongRoomCreateRequest):
+    result = create_mahjong_room(request.user_id, request.game_type, request.stake_amount, request.starting_score)
+    if result.get("error"):
+        raise HTTPException(status_code=result["status"], detail=result["error"])
+    return result
+
+
+@app.get("/mahjong/rooms")
+def mahjong_open_rooms():
+    return list_open_mahjong_rooms()
+
+
+@app.post("/mahjong/rooms/join")
+def mahjong_room_join(request: MahjongRoomJoinRequest):
+    result = join_mahjong_room(request.user_id, request.room_code)
+    if result.get("error"):
+        raise HTTPException(status_code=result["status"], detail=result["error"])
+    return result
+
+
+@app.post("/mahjong/rooms/{room_id}/join")
+def mahjong_room_join_by_id(room_id: int, request: MahjongRoomUserRequest):
+    result = join_mahjong_room_by_id(request.user_id, room_id)
+    if result.get("error"):
+        raise HTTPException(status_code=result["status"], detail=result["error"])
+    return result
+
+
+@app.post("/mahjong/rooms/{room_id}/leave")
+def mahjong_room_leave(room_id: int, request: MahjongRoomUserRequest):
+    result = leave_mahjong_room(room_id, request.user_id)
+    if result.get("error"):
+        raise HTTPException(status_code=result["status"], detail=result["error"])
+    return result
+
+
+@app.get("/mahjong/rooms/{room_id}")
+def mahjong_room_status(room_id: int, user_id: int):
+    room = get_mahjong_room(room_id, user_id)
+    if room is None:
+        raise HTTPException(status_code=404, detail="麻雀部屋が見つかりません")
+    return {"room": room}
+
+
+@app.post("/mahjong/rooms/{room_id}/start")
+def mahjong_room_start(room_id: int, request: MahjongRoomUserRequest):
+    result = start_mahjong_room(room_id, request.user_id)
+    if result.get("error"):
+        raise HTTPException(status_code=result["status"], detail=result["error"])
+    return result
+
+
+@app.post("/mahjong/rooms/{room_id}/dice")
+def mahjong_dice(room_id: int, request: MahjongRoomUserRequest):
+    if not roll_mahjong_dice(room_id, request.user_id):
+        raise HTTPException(status_code=403, detail="サイコロを振れません")
+    room = get_mahjong_room(room_id, request.user_id)
+    return {"room": room}
+
+
+@app.post("/mahjong/rooms/{room_id}/riichi")
+def mahjong_riichi(room_id: int, request: MahjongRiichiRequest):
+    result = declare_mahjong_riichi(room_id, request.user_id, request.target_user_id)
+    if result.get("error"):
+        raise HTTPException(status_code=result["status"], detail=result["error"])
+    return result
+
+
+@app.post("/mahjong/rooms/{room_id}/riichi/cancel")
+def mahjong_riichi_cancel(room_id: int, request: MahjongRiichiRequest):
+    result = cancel_mahjong_riichi(room_id, request.user_id, request.target_user_id)
+    if result.get("error"):
+        raise HTTPException(status_code=result["status"], detail=result["error"])
+    return result
+
+
+@app.post("/mahjong/rooms/{room_id}/finish")
+def mahjong_room_finish(room_id: int, request: MahjongRoomUserRequest):
+    result = finish_mahjong_room(room_id, request.user_id)
+    if result is None:
+        raise HTTPException(status_code=403, detail="ゲームを終了できません")
+    return result
+
+
+@app.post("/mahjong/rooms/{room_id}/hand")
+def mahjong_hand(room_id: int, request: MahjongHandRequest):
+    result = submit_mahjong_hand(
+        room_id,
+        request.user_id,
+        request.adjustments,
+        request.dealer_continues,
+        request.riichi_winner_id,
+        request.note,
+    )
+    if result.get("error"):
+        raise HTTPException(status_code=result["status"], detail=result["error"])
+    return result
 
 
 @app.post("/register")

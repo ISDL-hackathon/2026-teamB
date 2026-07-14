@@ -568,6 +568,577 @@ def forfeit_battle(match_id: int, user_id: int):
     conn.close()
     return True
 
+
+MAHJONG_WINDS = ("東", "南", "西", "北")
+
+
+def _mahjong_event(cur, room_id: int, event_type: str, payload=None):
+    cur.execute(
+        "INSERT INTO mahjong_events (room_id, event_type, payload_json, created_at) "
+        "VALUES (?, ?, ?, ?)",
+        (room_id, event_type, json.dumps(payload or {}, ensure_ascii=False), get_now()),
+    )
+
+
+def _mahjong_snapshot(cur, room_id: int, user_id: int):
+    cur.execute("SELECT * FROM mahjong_rooms WHERE id = ?", (room_id,))
+    room_row = cur.fetchone()
+    if room_row is None:
+        return None
+    room = dict(room_row)
+    cur.execute(
+        """
+        SELECT mp.user_id, u.name, mp.join_order, mp.seat_index, mp.score,
+               mp.riichi_declared, mp.app_point_reward,
+               u.point AS app_point, u.total_point AS app_total_point
+        FROM mahjong_players mp
+        JOIN users u ON u.id = mp.user_id
+        WHERE mp.room_id = ?
+        ORDER BY COALESCE(mp.seat_index, mp.join_order), mp.join_order
+        """,
+        (room_id,),
+    )
+    players = [dict(row) for row in cur.fetchall()]
+    if user_id not in {player["user_id"] for player in players}:
+        return None
+
+    for player in players:
+        if player["seat_index"] is None:
+            player["wind"] = None
+            player["is_dealer"] = False
+        else:
+            wind_index = (player["seat_index"] - room["dealer_seat"]) % 4
+            player["wind"] = MAHJONG_WINDS[wind_index]
+            player["is_dealer"] = player["seat_index"] == room["dealer_seat"]
+
+    cur.execute(
+        """
+        SELECT event_type, payload_json, created_at
+        FROM mahjong_events WHERE room_id = ?
+        ORDER BY id DESC LIMIT 12
+        """,
+        (room_id,),
+    )
+    history = [
+        {
+            "event_type": row["event_type"],
+            "payload": json.loads(row["payload_json"]),
+            "created_at": row["created_at"],
+        }
+        for row in cur.fetchall()
+    ]
+    ranking = sorted(players, key=lambda player: (-player["score"], player["join_order"]))
+    return {
+        **room,
+        "players": players,
+        "ranking": ranking,
+        "history": history,
+        "is_host": room["host_id"] == user_id,
+        "current_user_id": user_id,
+        "round_label": f"{'東' if room['round_wind'] == 'east' else '南'}{room['round_number']}局",
+    }
+
+
+def get_mahjong_room(room_id: int, user_id: int):
+    conn = get_connection()
+    result = _mahjong_snapshot(conn.cursor(), room_id, user_id)
+    conn.close()
+    return result
+
+
+def get_current_mahjong_room(user_id: int):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT r.id
+        FROM mahjong_rooms r
+        JOIN mahjong_players p ON p.room_id = r.id
+        WHERE p.user_id = ? AND r.status IN ('waiting', 'playing')
+        ORDER BY r.id DESC LIMIT 1
+        """,
+        (user_id,),
+    )
+    row = cur.fetchone()
+    result = _mahjong_snapshot(cur, row["id"], user_id) if row else None
+    conn.close()
+    return result
+
+
+def create_mahjong_room(user_id: int, game_type: str, stake_amount: int = 0, starting_score: int = 25000):
+    if game_type not in ("tonpu", "hanchan"):
+        return {"error": "対局形式が不正です", "status": 400}
+    if stake_amount not in (0, 10, 50):
+        return {"error": "参加ポイントが不正です", "status": 400}
+    if starting_score not in (25000, 35000):
+        return {"error": "開始点数が不正です", "status": 400}
+    if get_current_mahjong_room(user_id):
+        return {"error": "すでに参加中の麻雀部屋があります", "status": 409}
+
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id, point FROM users WHERE id = ?", (user_id,))
+    user = cur.fetchone()
+    if user is None:
+        conn.close()
+        return {"error": "ユーザーが存在しません", "status": 404}
+    if user["point"] < stake_amount:
+        conn.close()
+        return {"error": "部屋作成に必要なポイントが足りません", "status": 400}
+    room_code = None
+    for _ in range(20):
+        candidate = f"{secrets.randbelow(1_000_000):06d}"
+        cur.execute("SELECT 1 FROM mahjong_rooms WHERE room_code = ?", (candidate,))
+        if cur.fetchone() is None:
+            room_code = candidate
+            break
+    if room_code is None:
+        conn.close()
+        return {"error": "部屋番号を作成できませんでした", "status": 500}
+
+    now = get_now()
+    dice1, dice2 = secrets.randbelow(6) + 1, secrets.randbelow(6) + 1
+    cur.execute(
+        """
+        INSERT INTO mahjong_rooms (
+            room_code, host_id, game_type, dice1, dice2, stake_amount, starting_score, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (room_code, user_id, game_type, dice1, dice2, stake_amount, starting_score, now, now),
+    )
+    room_id = cur.lastrowid
+    cur.execute(
+        """
+        INSERT INTO mahjong_players (room_id, user_id, join_order, score, joined_at)
+        VALUES (?, ?, 0, ?, ?)
+        """,
+        (room_id, user_id, starting_score, now),
+    )
+    cur.execute(
+        "UPDATE users SET point = point - ?, total_point = total_point - ? WHERE id = ?",
+        (stake_amount, stake_amount, user_id),
+    )
+    _mahjong_event(cur, room_id, "room_created", {"user_id": user_id})
+    conn.commit()
+    result = {"room": _mahjong_snapshot(cur, room_id, user_id)}
+    conn.close()
+    return result
+
+
+def list_open_mahjong_rooms():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT r.id, r.host_id, u.name AS host_name, r.game_type, r.stake_amount, r.starting_score, r.created_at,
+               COUNT(p.user_id) AS player_count
+        FROM mahjong_rooms r
+        JOIN users u ON u.id = r.host_id
+        JOIN mahjong_players p ON p.room_id = r.id
+        WHERE r.status = 'waiting'
+        GROUP BY r.id, r.host_id, u.name, r.game_type, r.stake_amount, r.starting_score, r.created_at
+        HAVING COUNT(p.user_id) < 4
+        ORDER BY r.created_at DESC, r.id DESC
+        """
+    )
+    result = [dict(row) for row in cur.fetchall()]
+    conn.close()
+    return result
+
+
+def _join_mahjong_room(user_id: int, room_id=None, room_code=None):
+    if get_current_mahjong_room(user_id):
+        return {"error": "すでに参加中の麻雀部屋があります", "status": 409}
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("BEGIN IMMEDIATE")
+    if room_id is not None:
+        cur.execute(
+            "SELECT id, stake_amount, starting_score FROM mahjong_rooms WHERE id = ? AND status = 'waiting'",
+            (room_id,),
+        )
+    else:
+        cur.execute(
+            "SELECT id, stake_amount, starting_score FROM mahjong_rooms WHERE room_code = ? AND status = 'waiting'",
+            (room_code.strip(),),
+        )
+    room = cur.fetchone()
+    if room is None:
+        conn.close()
+        return {"error": "参加できる部屋が見つかりません", "status": 404}
+    cur.execute("SELECT point FROM users WHERE id = ?", (user_id,))
+    user = cur.fetchone()
+    if user is None or user["point"] < room["stake_amount"]:
+        conn.close()
+        return {"error": "参加に必要なポイントが足りません", "status": 400}
+    cur.execute("SELECT COUNT(*) AS count FROM mahjong_players WHERE room_id = ?", (room["id"],))
+    count = cur.fetchone()["count"]
+    if count >= 4:
+        conn.close()
+        return {"error": "この部屋は満員です", "status": 409}
+    try:
+        cur.execute(
+            """
+            INSERT INTO mahjong_players (room_id, user_id, join_order, score, joined_at)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (room["id"], user_id, count, room["starting_score"], get_now()),
+        )
+        cur.execute(
+            "UPDATE users SET point = point - ?, total_point = total_point - ? WHERE id = ?",
+            (room["stake_amount"], room["stake_amount"], user_id),
+        )
+        _mahjong_event(cur, room["id"], "player_joined", {"user_id": user_id})
+        conn.commit()
+    except sqlite3.IntegrityError:
+        conn.rollback()
+        conn.close()
+        return {"error": "この部屋には参加できません", "status": 409}
+    result = {"room": _mahjong_snapshot(cur, room["id"], user_id)}
+    conn.close()
+    return result
+
+
+def join_mahjong_room(user_id: int, room_code: str):
+    return _join_mahjong_room(user_id, room_code=room_code)
+
+
+def join_mahjong_room_by_id(user_id: int, room_id: int):
+    return _join_mahjong_room(user_id, room_id=room_id)
+
+
+def leave_mahjong_room(room_id: int, user_id: int):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("BEGIN IMMEDIATE")
+    cur.execute(
+        "SELECT host_id, status, stake_amount FROM mahjong_rooms WHERE id = ?",
+        (room_id,),
+    )
+    room = cur.fetchone()
+    if room is None or room["status"] != "waiting":
+        conn.close()
+        return {"error": "参加待ちの部屋からのみ退出できます", "status": 403}
+    cur.execute(
+        "SELECT 1 FROM mahjong_players WHERE room_id = ? AND user_id = ?",
+        (room_id, user_id),
+    )
+    if cur.fetchone() is None:
+        conn.close()
+        return {"error": "この部屋に参加していません", "status": 404}
+
+    if room["host_id"] == user_id:
+        cur.execute("SELECT user_id FROM mahjong_players WHERE room_id = ?", (room_id,))
+        player_ids = [row["user_id"] for row in cur.fetchall()]
+        for player_id in player_ids:
+            cur.execute(
+                "UPDATE users SET point = point + ?, total_point = total_point + ? WHERE id = ?",
+                (room["stake_amount"], room["stake_amount"], player_id),
+            )
+        cur.execute("DELETE FROM mahjong_events WHERE room_id = ?", (room_id,))
+        cur.execute("DELETE FROM mahjong_players WHERE room_id = ?", (room_id,))
+        cur.execute("DELETE FROM mahjong_rooms WHERE id = ?", (room_id,))
+    else:
+        cur.execute(
+            "DELETE FROM mahjong_players WHERE room_id = ? AND user_id = ?",
+            (room_id, user_id),
+        )
+        cur.execute(
+            "UPDATE users SET point = point + ?, total_point = total_point + ? WHERE id = ?",
+            (room["stake_amount"], room["stake_amount"], user_id),
+        )
+        cur.execute(
+            "SELECT user_id FROM mahjong_players WHERE room_id = ? ORDER BY join_order, user_id",
+            (room_id,),
+        )
+        for join_order, row in enumerate(cur.fetchall()):
+            cur.execute(
+                "UPDATE mahjong_players SET join_order = ? WHERE room_id = ? AND user_id = ?",
+                (join_order, room_id, row["user_id"]),
+            )
+    conn.commit()
+    conn.close()
+    return {"room": None, "closed": room["host_id"] == user_id}
+
+
+def start_mahjong_room(room_id: int, user_id: int):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT host_id, status FROM mahjong_rooms WHERE id = ?", (room_id,))
+    room = cur.fetchone()
+    if room is None or room["host_id"] != user_id or room["status"] != "waiting":
+        conn.close()
+        return {"error": "対局を開始できません", "status": 403}
+    cur.execute("SELECT user_id FROM mahjong_players WHERE room_id = ?", (room_id,))
+    player_ids = [row["user_id"] for row in cur.fetchall()]
+    if len(player_ids) != 4:
+        conn.close()
+        return {"error": "4人揃うまで開始できません", "status": 400}
+    secrets.SystemRandom().shuffle(player_ids)
+    for seat_index, player_id in enumerate(player_ids):
+        cur.execute(
+            "UPDATE mahjong_players SET seat_index = ? WHERE room_id = ? AND user_id = ?",
+            (seat_index, room_id, player_id),
+        )
+    dice1, dice2 = secrets.randbelow(6) + 1, secrets.randbelow(6) + 1
+    cur.execute(
+        """
+        UPDATE mahjong_rooms SET status = 'playing', dealer_seat = 0,
+          dice1 = ?, dice2 = ?, updated_at = ? WHERE id = ?
+        """,
+        (dice1, dice2, get_now(), room_id),
+    )
+    _mahjong_event(cur, room_id, "game_started", {"seat_order": player_ids})
+    conn.commit()
+    result = {"room": _mahjong_snapshot(cur, room_id, user_id)}
+    conn.close()
+    return result
+
+
+def roll_mahjong_dice(room_id: int, user_id: int):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT host_id, status FROM mahjong_rooms WHERE id = ?", (room_id,))
+    room = cur.fetchone()
+    if room is None or room["host_id"] != user_id or room["status"] != "playing":
+        conn.close()
+        return False
+    dice1, dice2 = secrets.randbelow(6) + 1, secrets.randbelow(6) + 1
+    cur.execute(
+        "UPDATE mahjong_rooms SET dice1 = ?, dice2 = ?, updated_at = ? WHERE id = ?",
+        (dice1, dice2, get_now(), room_id),
+    )
+    _mahjong_event(cur, room_id, "dice", {"dice1": dice1, "dice2": dice2})
+    conn.commit()
+    conn.close()
+    return True
+
+
+def declare_mahjong_riichi(room_id: int, user_id: int, target_user_id: int):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("BEGIN IMMEDIATE")
+    cur.execute("SELECT host_id, status FROM mahjong_rooms WHERE id = ?", (room_id,))
+    room = cur.fetchone()
+    if room is None or room["status"] != "playing" or user_id != room["host_id"]:
+        conn.close()
+        return {"error": "リーチを登録できません", "status": 403}
+    cur.execute(
+        "SELECT score, riichi_declared FROM mahjong_players WHERE room_id = ? AND user_id = ?",
+        (room_id, target_user_id),
+    )
+    player = cur.fetchone()
+    if player is None or player["score"] < 1000:
+        conn.close()
+        return {"error": "リーチに必要な点数がありません", "status": 400}
+    if player["riichi_declared"]:
+        conn.close()
+        return {"error": "この局ではすでにリーチしています", "status": 409}
+    cur.execute(
+        """
+        UPDATE mahjong_players
+        SET score = score - 1000, riichi_declared = 1
+        WHERE room_id = ? AND user_id = ?
+        """,
+        (room_id, target_user_id),
+    )
+    cur.execute(
+        "UPDATE mahjong_rooms SET riichi_sticks = riichi_sticks + 1, updated_at = ? WHERE id = ?",
+        (get_now(), room_id),
+    )
+    _mahjong_event(cur, room_id, "riichi", {"user_id": target_user_id})
+    conn.commit()
+    result = {"room": _mahjong_snapshot(cur, room_id, user_id)}
+    conn.close()
+    return result
+
+
+def cancel_mahjong_riichi(room_id: int, user_id: int, target_user_id: int):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("BEGIN IMMEDIATE")
+    cur.execute(
+        "SELECT host_id, status, riichi_sticks FROM mahjong_rooms WHERE id = ?",
+        (room_id,),
+    )
+    room = cur.fetchone()
+    if room is None or room["status"] != "playing" or user_id != room["host_id"]:
+        conn.close()
+        return {"error": "リーチを解除できません", "status": 403}
+    cur.execute(
+        "SELECT riichi_declared FROM mahjong_players WHERE room_id = ? AND user_id = ?",
+        (room_id, target_user_id),
+    )
+    player = cur.fetchone()
+    if player is None or not player["riichi_declared"] or room["riichi_sticks"] <= 0:
+        conn.close()
+        return {"error": "このプレイヤーはリーチしていません", "status": 409}
+    cur.execute(
+        """
+        UPDATE mahjong_players
+        SET score = score + 1000, riichi_declared = 0
+        WHERE room_id = ? AND user_id = ?
+        """,
+        (room_id, target_user_id),
+    )
+    cur.execute(
+        "UPDATE mahjong_rooms SET riichi_sticks = riichi_sticks - 1, updated_at = ? WHERE id = ?",
+        (get_now(), room_id),
+    )
+    _mahjong_event(cur, room_id, "riichi_cancelled", {"user_id": target_user_id})
+    conn.commit()
+    result = {"room": _mahjong_snapshot(cur, room_id, user_id)}
+    conn.close()
+    return result
+
+
+def _settle_mahjong_points(cur, room_id: int):
+    cur.execute(
+        "SELECT stake_amount, points_settled, status FROM mahjong_rooms WHERE id = ?",
+        (room_id,),
+    )
+    room = cur.fetchone()
+    if room is None or room["status"] != "finished" or room["points_settled"]:
+        return
+    cur.execute(
+        "SELECT user_id, score FROM mahjong_players WHERE room_id = ?",
+        (room_id,),
+    )
+    players = [dict(row) for row in cur.fetchall()]
+    pot = room["stake_amount"] * len(players)
+    positive_total = sum(max(0, player["score"]) for player in players)
+    rewards = {player["user_id"]: 0 for player in players}
+    if pot > 0 and positive_total > 0:
+        fractions = []
+        distributed = 0
+        for player in players:
+            numerator = pot * max(0, player["score"])
+            reward = numerator // positive_total
+            rewards[player["user_id"]] = reward
+            distributed += reward
+            fractions.append((numerator % positive_total, player["score"], -player["user_id"], player["user_id"]))
+        fractions.sort(reverse=True)
+        for index in range(pot - distributed):
+            rewards[fractions[index][3]] += 1
+
+    for player in players:
+        reward = rewards[player["user_id"]]
+        cur.execute(
+            "UPDATE users SET point = point + ?, total_point = total_point + ? WHERE id = ?",
+            (reward, reward, player["user_id"]),
+        )
+        cur.execute(
+            "UPDATE mahjong_players SET app_point_reward = ? WHERE room_id = ? AND user_id = ?",
+            (reward, room_id, player["user_id"]),
+        )
+    cur.execute("UPDATE mahjong_rooms SET points_settled = 1 WHERE id = ?", (room_id,))
+    _mahjong_event(cur, room_id, "point_distribution", {"pot": pot, "rewards": rewards})
+
+
+def finish_mahjong_room(room_id: int, user_id: int):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        UPDATE mahjong_rooms SET status = 'finished', updated_at = ?
+        WHERE id = ? AND host_id = ? AND status = 'playing'
+        """,
+        (get_now(), room_id, user_id),
+    )
+    finished = cur.rowcount > 0
+    if finished:
+        _mahjong_event(cur, room_id, "game_finished", {"reason": "manual"})
+        _settle_mahjong_points(cur, room_id)
+    conn.commit()
+    result = {"room": _mahjong_snapshot(cur, room_id, user_id)} if finished else None
+    conn.close()
+    return result
+
+
+def submit_mahjong_hand(
+    room_id: int,
+    user_id: int,
+    adjustments: dict,
+    dealer_continues: bool,
+    riichi_winner_id=None,
+    note: str = "",
+):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("BEGIN IMMEDIATE")
+    cur.execute("SELECT * FROM mahjong_rooms WHERE id = ?", (room_id,))
+    room = cur.fetchone()
+    if room is None or room["host_id"] != user_id or room["status"] != "playing":
+        conn.close()
+        return {"error": "局結果を登録できません", "status": 403}
+    cur.execute("SELECT user_id FROM mahjong_players WHERE room_id = ?", (room_id,))
+    player_ids = {row["user_id"] for row in cur.fetchall()}
+    try:
+        normalized = {int(key): int(value) for key, value in adjustments.items()}
+    except (TypeError, ValueError):
+        conn.close()
+        return {"error": "点数入力が不正です", "status": 400}
+    if not set(normalized).issubset(player_ids) or sum(normalized.values()) != 0:
+        conn.close()
+        return {"error": "点数変動の合計を0にしてください", "status": 400}
+    for player_id in player_ids:
+        cur.execute(
+            "UPDATE mahjong_players SET score = score + ? WHERE room_id = ? AND user_id = ?",
+            (normalized.get(player_id, 0), room_id, player_id),
+        )
+    if riichi_winner_id is not None:
+        if riichi_winner_id not in player_ids:
+            conn.close()
+            return {"error": "供託の受取人が不正です", "status": 400}
+        cur.execute(
+            "UPDATE mahjong_players SET score = score + ? WHERE room_id = ? AND user_id = ?",
+            (room["riichi_sticks"] * 1000, room_id, riichi_winner_id),
+        )
+
+    next_status = "playing"
+    next_wind = room["round_wind"]
+    next_round = room["round_number"]
+    next_dealer = room["dealer_seat"]
+    next_honba = room["honba"] + 1 if dealer_continues else 0
+    if not dealer_continues:
+        next_dealer = (room["dealer_seat"] + 1) % 4
+        next_round += 1
+        if next_round > 4:
+            if room["round_wind"] == "east" and room["game_type"] == "hanchan":
+                next_wind, next_round = "south", 1
+            else:
+                next_status = "finished"
+    dice1, dice2 = secrets.randbelow(6) + 1, secrets.randbelow(6) + 1
+    payload = {
+        "adjustments": normalized,
+        "dealer_continues": dealer_continues,
+        "riichi_winner_id": riichi_winner_id,
+        "note": note.strip()[:100],
+    }
+    cur.execute(
+        """
+        UPDATE mahjong_rooms SET status = ?, round_wind = ?, round_number = ?,
+          dealer_seat = ?, honba = ?, riichi_sticks = ?, dice1 = ?, dice2 = ?, updated_at = ?
+        WHERE id = ?
+        """,
+        (
+            next_status, next_wind, next_round, next_dealer, next_honba,
+            0 if riichi_winner_id is not None else room["riichi_sticks"],
+            dice1, dice2, get_now(), room_id,
+        ),
+    )
+    cur.execute(
+        "UPDATE mahjong_players SET riichi_declared = 0 WHERE room_id = ?",
+        (room_id,),
+    )
+    if next_status == "finished":
+        _settle_mahjong_points(cur, room_id)
+    _mahjong_event(cur, room_id, "hand_result", payload)
+    conn.commit()
+    result = {"room": _mahjong_snapshot(cur, room_id, user_id)}
+    conn.close()
+    return result
+
 def seed_village_slots(cur):
     slots = [
         ("pc1", 1, 2, "left", "chair", "机1奥", 1),
@@ -919,6 +1490,87 @@ def init_db():
       WHERE id = NEW.winner_id;
       UPDATE battle_matches SET points_settled = 1 WHERE id = NEW.id;
     END
+    """)
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS mahjong_rooms (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        room_code TEXT NOT NULL UNIQUE,
+        host_id INTEGER NOT NULL,
+        game_type TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'waiting',
+        round_wind TEXT NOT NULL DEFAULT 'east',
+        round_number INTEGER NOT NULL DEFAULT 1,
+        honba INTEGER NOT NULL DEFAULT 0,
+        riichi_sticks INTEGER NOT NULL DEFAULT 0,
+        dealer_seat INTEGER NOT NULL DEFAULT 0,
+        dice1 INTEGER NOT NULL DEFAULT 1,
+        dice2 INTEGER NOT NULL DEFAULT 1,
+        stake_amount INTEGER NOT NULL DEFAULT 0,
+        starting_score INTEGER NOT NULL DEFAULT 25000,
+        points_settled INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        FOREIGN KEY (host_id) REFERENCES users(id)
+    )
+    """)
+    cur.execute("PRAGMA table_info(mahjong_rooms)")
+    mahjong_room_columns = {row["name"] for row in cur.fetchall()}
+    if "stake_amount" not in mahjong_room_columns:
+        cur.execute(
+            "ALTER TABLE mahjong_rooms ADD COLUMN stake_amount INTEGER NOT NULL DEFAULT 0"
+        )
+    if "points_settled" not in mahjong_room_columns:
+        cur.execute(
+            "ALTER TABLE mahjong_rooms ADD COLUMN points_settled INTEGER NOT NULL DEFAULT 0"
+        )
+    if "starting_score" not in mahjong_room_columns:
+        cur.execute(
+            "ALTER TABLE mahjong_rooms ADD COLUMN starting_score INTEGER NOT NULL DEFAULT 25000"
+        )
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS mahjong_players (
+        room_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        join_order INTEGER NOT NULL,
+        seat_index INTEGER,
+        score INTEGER NOT NULL DEFAULT 25000,
+        riichi_declared INTEGER NOT NULL DEFAULT 0,
+        app_point_reward INTEGER NOT NULL DEFAULT 0,
+        joined_at TEXT NOT NULL,
+        PRIMARY KEY (room_id, user_id),
+        UNIQUE (room_id, seat_index),
+        FOREIGN KEY (room_id) REFERENCES mahjong_rooms(id),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+    """)
+    cur.execute("PRAGMA table_info(mahjong_players)")
+    mahjong_player_columns = {row["name"] for row in cur.fetchall()}
+    if "riichi_declared" not in mahjong_player_columns:
+        cur.execute(
+            "ALTER TABLE mahjong_players ADD COLUMN riichi_declared INTEGER NOT NULL DEFAULT 0"
+        )
+    if "app_point_reward" not in mahjong_player_columns:
+        cur.execute(
+            "ALTER TABLE mahjong_players ADD COLUMN app_point_reward INTEGER NOT NULL DEFAULT 0"
+        )
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS mahjong_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        room_id INTEGER NOT NULL,
+        event_type TEXT NOT NULL,
+        payload_json TEXT NOT NULL DEFAULT '{}',
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (room_id) REFERENCES mahjong_rooms(id)
+    )
+    """)
+    cur.execute("""
+    CREATE INDEX IF NOT EXISTS idx_mahjong_rooms_status
+    ON mahjong_rooms(status, updated_at)
+    """)
+    cur.execute("""
+    CREATE INDEX IF NOT EXISTS idx_mahjong_events_room
+    ON mahjong_events(room_id, id)
     """)
 
     seed_village_slots(cur)
