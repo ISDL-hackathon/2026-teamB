@@ -7,7 +7,9 @@ import GameLoadingPage from "./components/GameLoadingPage";
 import GameSelectPage from "./components/GameSelectPage";
 import CpuBattlePage from "./components/CpuBattlePage";
 import OnlineBattlePage from "./components/OnlineBattlePage";
+import MahjongSupportPage from "./components/MahjongSupportPage";
 import LoginArea from "./components/LoginArea";
+import RoomLoadingPage from "./components/RoomLoadingPage";
 import RoomPage from "./components/RoomPage";
 import ShopPage from "./components/ShopPage";
 import VillagePage from "./components/VillagePage";
@@ -222,7 +224,7 @@ function App() {
 
     setViewingRoomUserId(userId);
     fetchRoom(userId);
-    setPage("room");
+    setPage("roomLoading");
   };
 
   const handleOpenMyRoom = () => {
@@ -230,7 +232,7 @@ function App() {
 
     setViewingRoomUserId(null);
     fetchRoom(currentUser.id);
-    setPage("room");
+    setPage("roomLoading");
   };
   
   const handleCheckin = () => {
@@ -377,6 +379,10 @@ function App() {
         />
       )}
 
+      {currentUser && page === "roomLoading" && (
+        <RoomLoadingPage onComplete={() => setPage("room")} />
+      )}
+
       {currentUser && page === "gameLoading" && (
         <GameLoadingPage onComplete={() => setPage("gameSelect")} />
       )}
@@ -391,6 +397,10 @@ function App() {
 
       {currentUser && page === "onlineBattle" && (
         <OnlineBattlePage currentUser={currentUser} setCurrentUser={setCurrentUser} setPage={setPage} />
+      )}
+
+      {currentUser && page === "mahjongSupport" && (
+        <MahjongSupportPage currentUser={currentUser} setCurrentUser={setCurrentUser} setPage={setPage} />
       )}
 
       {currentUser && page === "bulletinLoading" && (

@@ -11,10 +11,16 @@ function GameSelectPage({ setPage }) {
         <img alt="ゲーム選択画面" src={selectBase} />
         <div className="gameSelectPanel">
           {screen === "games" ? (
-            <button className="gameMenuButton" onClick={() => setScreen("modes")} type="button">
-              <strong>対戦ゲーム</strong>
-              <span>攻守交替バトル</span>
-            </button>
+            <>
+              <button className="gameMenuButton" onClick={() => setScreen("modes")} type="button">
+                <strong>対戦ゲーム</strong>
+                <span>攻守交替バトル</span>
+              </button>
+              <button className="gameMenuButton" onClick={() => setPage("mahjongSupport")} type="button">
+                <strong>麻雀サポート</strong>
+                <span>現実の対局を点数・サイコロで補助</span>
+              </button>
+            </>
           ) : (
             <>
               <h3>モードをえらんでね</h3>

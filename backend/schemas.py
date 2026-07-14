@@ -93,3 +93,32 @@ class BattleMoveRequest(BaseModel):
 class BattleForfeitRequest(BaseModel):
     match_id: int
     user_id: int
+
+
+class MahjongRoomCreateRequest(BaseModel):
+    user_id: int
+    game_type: Literal["tonpu", "hanchan"]
+    stake_amount: Literal[0, 10, 50]
+    starting_score: Literal[25000, 35000] = 25000
+
+
+class MahjongRoomJoinRequest(BaseModel):
+    user_id: int
+    room_code: str
+
+
+class MahjongRoomUserRequest(BaseModel):
+    user_id: int
+
+
+class MahjongRiichiRequest(BaseModel):
+    user_id: int
+    target_user_id: int
+
+
+class MahjongHandRequest(BaseModel):
+    user_id: int
+    adjustments: Dict[str, int]
+    dealer_continues: bool
+    riichi_winner_id: Optional[int] = None
+    note: str = ""
