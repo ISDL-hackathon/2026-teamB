@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { requestJson } from "../api";
+import { requestBulletinJson, requestJson } from "../api";
 import cpuNormalImg from "../assets/game/cpu-normal.gif";
 import cpuChargeImg from "../assets/game/cpu-charge.gif";
 import cpuHighImg from "../assets/game/cpu-high.gif";
@@ -158,11 +158,25 @@ function OnlineBattlePage({ currentUser, setCurrentUser, setPage }) {
     setSubmitting(true);
     setError("");
     try {
-      await requestJson("/battle/rooms", {
+      const created = await requestJson("/battle/rooms", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ user_id: currentUser.id, stake_type: stakeType }),
       });
+      if (created.room_id) {
+        const stakeLabel = stakeType === "all"
+          ? `全額勝負（${created.stake_amount}pt）`
+          : `${created.stake_amount}pt勝負`;
+        void requestBulletinJson("/bulletin/posts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: currentUser.id,
+            content: `🎮 対戦ゲームの部屋 #${created.room_id} を作りました！\n${stakeLabel}\nゲームセレクトから参加できます。`,
+            image_data: null,
+          }),
+        }).catch(() => {});
+      }
       const data = await requestJson(`/battle/rooms?user_id=${currentUser.id}`);
       setLobby(data);
     } catch (err) {

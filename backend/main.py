@@ -39,6 +39,10 @@ from database import (
     submit_mahjong_hand,
     matchmake_battle,
     purchase_furniture,
+    get_avatar_status,
+    purchase_gacha_coin,
+    pull_gacha,
+    select_avatar,
     save_room_layout,
     save_user_village_position,
     set_user_online,
@@ -71,6 +75,8 @@ from schemas import (
     BulletinFollowRequest,
     BulletinLikeRequest,
     FurniturePurchaseRequest,
+    GachaUserRequest,
+    AvatarSelectRequest,
     LoginRequest,
     LogoutRequest,
     SessionHeartbeatRequest,
@@ -322,6 +328,8 @@ def login(request: LoginRequest):
             "grade": user["grade"],
             "point": user["point"] + added_point,
             "total_point": user["total_point"] + added_point,
+            "gacha_coins": user["gacha_coins"],
+            "selected_avatar": user["selected_avatar"],
             "village_slot_id": get_user_village_slot_id(user["id"]),
             "session_token": session_token,
         },
@@ -424,6 +432,40 @@ def furniture_purchase(request: FurniturePurchaseRequest):
     }
     status_code, detail = errors.get(result["reason"], (400, PURCHASE_FAILED))
     raise HTTPException(status_code=status_code, detail=detail)
+
+
+@app.get("/gacha/status/{user_id}")
+def gacha_status(user_id: int):
+    status = get_avatar_status(user_id)
+    if status is None:
+        raise HTTPException(status_code=404, detail=USER_NOT_FOUND)
+    return status
+
+
+@app.post("/shop/gacha-coins/purchase")
+def gacha_coin_purchase(request: GachaUserRequest):
+    result = purchase_gacha_coin(request.user_id)
+    if result["ok"]:
+        return result
+    detail = USER_NOT_FOUND if result["reason"] == "user_not_found" else NOT_ENOUGH_POINT
+    raise HTTPException(status_code=404 if result["reason"] == "user_not_found" else 400, detail=detail)
+
+
+@app.post("/gacha/pull")
+def gacha_pull(request: GachaUserRequest):
+    result = pull_gacha(request.user_id)
+    if result["ok"]:
+        return result
+    detail = USER_NOT_FOUND if result["reason"] == "user_not_found" else "ガチャコインがありません"
+    raise HTTPException(status_code=404 if result["reason"] == "user_not_found" else 400, detail=detail)
+
+
+@app.post("/gacha/avatar/select")
+def gacha_avatar_select(request: AvatarSelectRequest):
+    result = select_avatar(request.user_id, request.avatar_id)
+    if result["ok"]:
+        return result
+    raise HTTPException(status_code=400, detail="未所持のアバターは選択できません")
 
 
 @app.get("/village/status")
