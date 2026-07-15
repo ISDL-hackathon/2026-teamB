@@ -179,6 +179,7 @@ function PixelTown({
             const direction = getDirection(slot);
             const seatType = slot.seat_type ?? "chair";
             const seatPosition = getSeatPosition(slot);
+            const isOnline = Boolean(slot.user?.is_online);
             const shouldShowPc = occupied || isSelectMode;
 
             const pcImg = pcImages[direction] ?? pcImages.down;
@@ -200,7 +201,7 @@ function PixelTown({
                   style={getItemStyle({
                     col: slot.col,
                     row: slot.row,
-                    z: 40,
+                    z: 6,
                   })}
                   disabled={isSelectMode && occupied}
                   onClick={() => {
@@ -229,8 +230,33 @@ function PixelTown({
                   )}
                 </button>
 
-                {occupied && (
-                  <>
+                {occupied &&
+                  (isOnline ? (
+                    // ログイン中:キャラ + 名前
+                    <>
+                      <img
+                        src={charaImgForSeat}
+                        alt=""
+                        className={`townPersonalChara townPersonalChara-${direction}`}
+                        style={getItemStyle({
+                          col: seatPosition.col + 0.05,
+                          row: seatPosition.row + 0.2,
+                          z: 45,
+                        })}
+                      />
+                      <span
+                        className="townUserName"
+                        style={getItemStyle({
+                          col: seatPosition.col,
+                          row: seatPosition.row,
+                          z: 60,
+                        })}
+                      >
+                        {slot.user.name}
+                      </span>
+                    </>
+                  ) : (
+                    // 未ログイン:椅子だけ
                     <img
                       src={seatImg}
                       alt=""
@@ -239,23 +265,12 @@ function PixelTown({
                         col: seatPosition.col,
                         row: seatPosition.row,
                         colSpan: 1,
-                        rowSpan: 1,
+                        rowSpan: 1.2,
                         z: 40,
                       })}
                     />
-
-                    <img
-                      src={charaImgForSeat}
-                      alt=""
-                      className={`townPersonalChara townPersonalChara-${direction}`}
-                      style={getItemStyle({
-                        col: seatPosition.col,
-                        row: seatPosition.row,
-                        z: 45,
-                      })}
-                    />
-                  </>
-                )}
+                  ))}
+                  
               </Fragment>
             );
           })}

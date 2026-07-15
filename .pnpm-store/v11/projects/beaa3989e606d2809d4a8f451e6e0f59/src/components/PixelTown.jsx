@@ -227,6 +227,16 @@ function PixelTown({
                   z: 45,
                 })}
               />
+              <span
+                 className="townUserName"
+                 style={getItemStyle({
+                  col: seatPosition.col,
+                  row: seatPosition.row,
+                  z: 60,
+                })}
+                >
+                {slot.user.name}
+              </span>
 
               <span
                 className="townUserName"

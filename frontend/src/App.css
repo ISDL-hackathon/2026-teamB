@@ -761,6 +761,14 @@ tr:last-child td {
   }
 }
 
+.villageWeather {
+  min-height: 100vh;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;   /* スクロールしても背景固定。不要なら削除 */
+  background-repeat: no-repeat;
+}
+
 /* ===== ログイン画面:街背景 + 明るいカード ===== */
 
 /* 背景に街をぼかして敷く + ゆっくり動かす */
