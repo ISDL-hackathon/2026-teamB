@@ -6,6 +6,7 @@ import BulletinLoadingPage from "./components/BulletinLoadingPage";
 import LoginArea from "./components/LoginArea";
 import RoomPage from "./components/RoomPage";
 import ShopPage from "./components/ShopPage";
+import VillageLoadingPage from "./components/VillageLoadingPage";
 import VillagePage from "./components/VillagePage";
 import VillageSlotSelectPage from "./components/VillageSlotSelectPage";
 import "./App.css";
@@ -301,6 +302,10 @@ function App() {
           village={village}
           villageSlots={villageSlots}
         />
+      )}
+
+      {currentUser && page === "villageLoading" && (
+        <VillageLoadingPage onComplete={() => setPage("village")} />
       )}
 
       {currentUser && page === "room" && (
