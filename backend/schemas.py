@@ -14,6 +14,16 @@ class LoginRequest(BaseModel):
     password: str
 
 
+class LogoutRequest(BaseModel):
+    user_id: int
+    session_token: str
+
+
+class SessionHeartbeatRequest(BaseModel):
+    user_id: int
+    session_token: str
+
+
 class ActivityRequest(BaseModel):
     user_id: int
     activity_type: Literal["checkin"]
@@ -40,6 +50,15 @@ class FurniturePurchaseRequest(BaseModel):
     furniture_id: str
 
 
+class GachaUserRequest(BaseModel):
+    user_id: int
+
+
+class AvatarSelectRequest(BaseModel):
+    user_id: int
+    avatar_id: str
+
+
 class BulletinPostRequest(BaseModel):
     user_id: int
     content: str
@@ -59,3 +78,56 @@ class BulletinLikeRequest(BaseModel):
 class VillagePositionRequest(BaseModel):
     user_id: int
     slot_id: str
+
+
+class BattleUserRequest(BaseModel):
+    user_id: int
+
+
+class BattleRoomCreateRequest(BaseModel):
+    user_id: int
+    stake_type: Literal["free", "10", "50", "all"]
+
+
+class BattleRoomUserRequest(BaseModel):
+    user_id: int
+
+
+class BattleMoveRequest(BaseModel):
+    match_id: int
+    user_id: int
+    action: str
+
+
+class BattleForfeitRequest(BaseModel):
+    match_id: int
+    user_id: int
+
+
+class MahjongRoomCreateRequest(BaseModel):
+    user_id: int
+    game_type: Literal["tonpu", "hanchan"]
+    stake_amount: Literal[0, 10, 50]
+    starting_score: Literal[25000, 35000] = 25000
+
+
+class MahjongRoomJoinRequest(BaseModel):
+    user_id: int
+    room_code: str
+
+
+class MahjongRoomUserRequest(BaseModel):
+    user_id: int
+
+
+class MahjongRiichiRequest(BaseModel):
+    user_id: int
+    target_user_id: int
+
+
+class MahjongHandRequest(BaseModel):
+    user_id: int
+    adjustments: Dict[str, int]
+    dealer_continues: bool
+    riichi_winner_id: Optional[int] = None
+    note: str = ""

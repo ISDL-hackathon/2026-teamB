@@ -4,16 +4,16 @@ import RankingTable from "./RankingTable";
 
 const weatherBackgrounds = {
   快晴: {
-    overlay: "linear-gradient(rgba(255, 188, 94, 0.18), rgba(41, 128, 185, 0.38))",
-    image: "linear-gradient(135deg, #78c8ff 0%, #f8d87a 100%)",
+    overlay: "linear-gradient(rgba(255, 188, 94, 0.10), rgba(41, 128, 185, 0.14))",
+    image: "url('/weather/clear.gif')",
   },
   晴れ: {
-    overlay: "linear-gradient(rgba(255, 216, 119, 0.16), rgba(38, 98, 145, 0.42))",
-    image: "linear-gradient(135deg, #6fb8f7 0%, #bfe7ff 52%, #ffe08a 100%)",
+    overlay: "linear-gradient(rgba(255, 216, 119, 0.08), rgba(38, 98, 145, 0.14))",
+    image: "url('/weather/sunny.gif')",
   },
   曇り: {
-    overlay: "linear-gradient(rgba(35, 43, 56, 0.32), rgba(18, 22, 31, 0.58))",
-    image: "linear-gradient(135deg, #6f7f91 0%, #b9c0c8 48%, #526273 100%)",
+    overlay: "linear-gradient(rgba(35, 43, 56, 0.14), rgba(18, 22, 31, 0.22))",
+    image: "url('/weather/cloudy.gif')",
   },
   雨: {
     overlay: "linear-gradient(rgba(17, 19, 26, 0.5), rgba(17, 19, 26, 0.72))",
@@ -79,6 +79,7 @@ function HomePage({
         <button onClick={() => setPage("villageLoading")}>共有街へ</button>
         <button onClick={onOpenMyRoom}>個人ルームへ</button>
         <button onClick={() => setPage("shop")}>Shop</button>
+        <button onClick={() => setPage("gacha")}>{"\u30ac\u30c1\u30e3"}</button>
       </div>
 
       {village && (

@@ -3,10 +3,18 @@ import { requestJson } from "./api";
 import HomePage from "./components/HomePage";
 import BulletinBoardPage from "./components/BulletinBoardPage";
 import BulletinLoadingPage from "./components/BulletinLoadingPage";
+import GameLoadingPage from "./components/GameLoadingPage";
+import GameSelectPage from "./components/GameSelectPage";
+import CpuBattlePage from "./components/CpuBattlePage";
+import OnlineBattlePage from "./components/OnlineBattlePage";
+import MahjongSupportPage from "./components/MahjongSupportPage";
 import LoginArea from "./components/LoginArea";
+import RoomLoadingPage from "./components/RoomLoadingPage";
 import RoomPage from "./components/RoomPage";
 import ShopPage from "./components/ShopPage";
 import VillageLoadingPage from "./components/VillageLoadingPage";
+import GachaPage from "./components/GachaPage";
+import SettingsPage from "./components/SettingsPage";
 import VillagePage from "./components/VillagePage";
 import VillageSlotSelectPage from "./components/VillageSlotSelectPage";
 import "./App.css";
@@ -24,7 +32,14 @@ function App() {
   const [villageSlots, setVillageSlots] = useState([]);
   const [viewingRoomUserId, setViewingRoomUserId] = useState(null);
 
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const savedUser = JSON.parse(sessionStorage.getItem("isdlCurrentUser"));
+      return savedUser?.session_token ? savedUser : null;
+    } catch {
+      return null;
+    }
+  });
   const [ranking, setRanking] = useState([]);
   const [village, setVillage] = useState(null);
   const [room, setRoom] = useState(null);
@@ -62,6 +77,45 @@ function App() {
     fetchRanking();
     fetchVillage();
   }, []);
+
+  useEffect(() => {
+    if (!currentUser?.session_token) return undefined;
+    let stopped = false;
+
+    const heartbeat = () => {
+      requestJson("/session/heartbeat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: currentUser.id,
+          session_token: currentUser.session_token,
+        }),
+      })
+        .then((data) => {
+          if (stopped || data.active) return;
+          sessionStorage.removeItem("isdlCurrentUser");
+          setCurrentUser(null);
+          setRoom(null);
+          setViewingRoomUserId(null);
+          setPage("home");
+          setMessage("ログインの有効期限が切れました。もう一度ログインしてください");
+        })
+        .catch(() => {});
+    };
+
+    heartbeat();
+    const timer = window.setInterval(heartbeat, 15_000);
+    return () => {
+      stopped = true;
+      window.clearInterval(timer);
+    };
+  }, [currentUser?.id, currentUser?.session_token]);
+
+  useEffect(() => {
+    if (currentUser?.session_token) {
+      sessionStorage.setItem("isdlCurrentUser", JSON.stringify(currentUser));
+    }
+  }, [currentUser]);
 
   const handleRegister = () => {
     if (!registerName.trim() || !registerPassword.trim()) {
@@ -104,6 +158,7 @@ function App() {
     })
       .then((data) => {
         setCurrentUser(data.user);
+        sessionStorage.setItem("isdlCurrentUser", JSON.stringify(data.user));
         setMessage(
           data.added_point > 0
             ? `${data.user.name}でログインしました。本日初ログイン +${data.added_point}pt`
@@ -120,11 +175,23 @@ function App() {
   };
 
   const handleLogout = () => {
-    setCurrentUser(null);
-    setRoom(null);
-    setViewingRoomUserId(null);
-    setPage("home");
-    setMessage("ログアウトしました");
+    if (!currentUser) return;
+
+    requestJson("/logout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: currentUser.id,
+        session_token: currentUser.session_token,
+      }),
+    }).finally(() => {
+      sessionStorage.removeItem("isdlCurrentUser");
+      setCurrentUser(null);
+      setRoom(null);
+      setViewingRoomUserId(null);
+      setPage("home");
+      setMessage("ログアウトしました");
+    });
   };
 
   const fetchVillageSlots = () => {
@@ -160,7 +227,7 @@ function App() {
 
     setViewingRoomUserId(userId);
     fetchRoom(userId);
-    setPage("room");
+    setPage("roomLoading");
   };
 
   const handleOpenMyRoom = () => {
@@ -168,7 +235,7 @@ function App() {
 
     setViewingRoomUserId(null);
     fetchRoom(currentUser.id);
-    setPage("room");
+    setPage("roomLoading");
   };
   
   const handleCheckin = () => {
@@ -218,6 +285,26 @@ function App() {
         setMessage(`${data.item.name} を購入しました -${data.item.price}pt`);
       })
       .catch((err) => setMessage(err.message));
+  };
+
+  const handlePurchaseGachaCoin = () => {
+    if (!currentUser) return;
+    requestJson("/shop/gacha-coins/purchase", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: currentUser.id }),
+    })
+      .then((data) => {
+        setCurrentUser((current) => ({ ...current, ...data.user }));
+        fetchRoom(currentUser.id);
+        setMessage("\u30ac\u30c1\u30e3\u30b3\u30a4\u30f3\u30921\u679a\u8cfc\u5165\u3057\u307e\u3057\u305f -10pt");
+      })
+      .catch((err) => setMessage(err.message));
+  };
+
+  const handleAvatarChanged = (user) => {
+    setCurrentUser((current) => ({ ...current, ...user }));
+    fetchRoom(currentUser.id);
   };
 
   const handleSaveRoomLayout = (roomState) => {
@@ -311,11 +398,36 @@ function App() {
       {currentUser && page === "room" && (
         <RoomPage
           onOpenBulletinBoard={() => setPage("bulletinLoading")}
+          onOpenGameSelect={() => setPage("gameLoading")}
           onSaveRoomLayout={handleSaveRoomLayout}
           readonly={viewingRoomUserId !== null}
           room={room}
           setPage={setPage}
         />
+      )}
+
+      {currentUser && page === "roomLoading" && (
+        <RoomLoadingPage onComplete={() => setPage("room")} />
+      )}
+
+      {currentUser && page === "gameLoading" && (
+        <GameLoadingPage onComplete={() => setPage("gameSelect")} />
+      )}
+
+      {currentUser && page === "gameSelect" && (
+        <GameSelectPage setPage={setPage} />
+      )}
+
+      {currentUser && page === "cpuBattle" && (
+        <CpuBattlePage currentUser={currentUser} setPage={setPage} />
+      )}
+
+      {currentUser && page === "onlineBattle" && (
+        <OnlineBattlePage currentUser={currentUser} setCurrentUser={setCurrentUser} setPage={setPage} />
+      )}
+
+      {currentUser && page === "mahjongSupport" && (
+        <MahjongSupportPage currentUser={currentUser} setCurrentUser={setCurrentUser} setPage={setPage} />
       )}
 
       {currentUser && page === "bulletinLoading" && (
@@ -329,9 +441,18 @@ function App() {
       {currentUser && page === "shop" && (
         <ShopPage
           onPurchaseFurniture={handlePurchaseFurniture}
+          onPurchaseGachaCoin={handlePurchaseGachaCoin}
           room={room}
           setPage={setPage}
         />
+      )}
+
+      {currentUser && page === "gacha" && (
+        <GachaPage currentUser={currentUser} setCurrentUser={setCurrentUser} setPage={setPage} />
+      )}
+
+      {currentUser && page === "settings" && (
+        <SettingsPage currentUser={currentUser} onAvatarChanged={handleAvatarChanged} setPage={setPage} />
       )}
 
       {message && <p className="message">{message}</p>}

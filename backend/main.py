@@ -4,9 +4,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from database import (
     add_activity,
     add_login_point_if_first_today,
+    cancel_battle_queue,
+    cancel_battle_room,
+    create_battle_room,
+    create_login_session,
     create_user,
     create_bulletin_post,
     get_bulletin_posts,
+    get_battle_snapshot,
     toggle_bulletin_follow,
     toggle_bulletin_like,
     get_ranking,
@@ -15,10 +20,35 @@ from database import (
     get_user_village_slot_id,
     get_village_slots,
     get_village_status,
+    heartbeat_login_session,
     init_db,
+    join_battle_room,
+    list_battle_rooms,
+    create_mahjong_room,
+    cancel_mahjong_riichi,
+    declare_mahjong_riichi,
+    get_current_mahjong_room,
+    finish_mahjong_room,
+    get_mahjong_room,
+    join_mahjong_room,
+    join_mahjong_room_by_id,
+    leave_mahjong_room,
+    list_open_mahjong_rooms,
+    roll_mahjong_dice,
+    start_mahjong_room,
+    submit_mahjong_hand,
+    matchmake_battle,
     purchase_furniture,
+    get_avatar_status,
+    purchase_gacha_coin,
+    pull_gacha,
+    select_avatar,
     save_room_layout,
     save_user_village_position,
+    set_user_online,
+    submit_battle_move,
+    end_login_session,
+    forfeit_battle,
     verify_password,
 )
 from messages import (
@@ -36,11 +66,25 @@ from messages import (
 )
 from schemas import (
     ActivityRequest,
+    BattleForfeitRequest,
+    BattleMoveRequest,
+    BattleRoomCreateRequest,
+    BattleRoomUserRequest,
+    BattleUserRequest,
     BulletinPostRequest,
     BulletinFollowRequest,
     BulletinLikeRequest,
     FurniturePurchaseRequest,
+    GachaUserRequest,
+    AvatarSelectRequest,
     LoginRequest,
+    LogoutRequest,
+    SessionHeartbeatRequest,
+    MahjongHandRequest,
+    MahjongRiichiRequest,
+    MahjongRoomCreateRequest,
+    MahjongRoomJoinRequest,
+    MahjongRoomUserRequest,
     RegisterRequest,
     RoomLayoutRequest,
     VillagePositionRequest,
@@ -66,6 +110,179 @@ def startup():
 @app.get("/")
 def root():
     return {"message": "FastAPI backend is running"}
+
+
+@app.post("/battle/matchmake")
+def battle_matchmake(request: BattleUserRequest):
+    result = matchmake_battle(request.user_id)
+    if result.get("error"):
+        raise HTTPException(status_code=result["status"], detail=result["error"])
+    return result
+
+
+@app.get("/battle/rooms")
+def battle_rooms(user_id: int):
+    result = list_battle_rooms(user_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail=USER_NOT_FOUND)
+    return result
+
+
+@app.post("/battle/rooms")
+def battle_room_create(request: BattleRoomCreateRequest):
+    result = create_battle_room(request.user_id, request.stake_type)
+    if result.get("error"):
+        raise HTTPException(status_code=result["status"], detail=result["error"])
+    return result
+
+
+@app.post("/battle/rooms/{room_id}/join")
+def battle_room_join(room_id: int, request: BattleRoomUserRequest):
+    result = join_battle_room(room_id, request.user_id)
+    if result.get("error"):
+        raise HTTPException(status_code=result["status"], detail=result["error"])
+    return result
+
+
+@app.post("/battle/rooms/{room_id}/cancel")
+def battle_room_cancel(room_id: int, request: BattleRoomUserRequest):
+    if not cancel_battle_room(room_id, request.user_id):
+        raise HTTPException(status_code=409, detail="この部屋はキャンセルできません")
+    return {"ok": True}
+
+
+@app.post("/battle/cancel")
+def battle_cancel(request: BattleUserRequest):
+    cancel_battle_queue(request.user_id)
+    return {"ok": True}
+
+
+@app.get("/battle/match/{match_id}")
+def battle_match_status(match_id: int, user_id: int):
+    match = get_battle_snapshot(match_id, user_id)
+    if match is None:
+        raise HTTPException(status_code=404, detail="対戦が見つかりません")
+    return {"match": match}
+
+
+@app.post("/battle/move")
+def battle_move(request: BattleMoveRequest):
+    result = submit_battle_move(request.match_id, request.user_id, request.action)
+    if result.get("error"):
+        raise HTTPException(status_code=result["status"], detail=result["error"])
+    return result
+
+
+@app.post("/battle/forfeit")
+def battle_forfeit(request: BattleForfeitRequest):
+    if not forfeit_battle(request.match_id, request.user_id):
+        raise HTTPException(status_code=404, detail="対戦が見つかりません")
+    return {"ok": True}
+
+
+@app.get("/mahjong/current")
+def mahjong_current(user_id: int):
+    return {"room": get_current_mahjong_room(user_id)}
+
+
+@app.post("/mahjong/rooms")
+def mahjong_room_create(request: MahjongRoomCreateRequest):
+    result = create_mahjong_room(request.user_id, request.game_type, request.stake_amount, request.starting_score)
+    if result.get("error"):
+        raise HTTPException(status_code=result["status"], detail=result["error"])
+    return result
+
+
+@app.get("/mahjong/rooms")
+def mahjong_open_rooms():
+    return list_open_mahjong_rooms()
+
+
+@app.post("/mahjong/rooms/join")
+def mahjong_room_join(request: MahjongRoomJoinRequest):
+    result = join_mahjong_room(request.user_id, request.room_code)
+    if result.get("error"):
+        raise HTTPException(status_code=result["status"], detail=result["error"])
+    return result
+
+
+@app.post("/mahjong/rooms/{room_id}/join")
+def mahjong_room_join_by_id(room_id: int, request: MahjongRoomUserRequest):
+    result = join_mahjong_room_by_id(request.user_id, room_id)
+    if result.get("error"):
+        raise HTTPException(status_code=result["status"], detail=result["error"])
+    return result
+
+
+@app.post("/mahjong/rooms/{room_id}/leave")
+def mahjong_room_leave(room_id: int, request: MahjongRoomUserRequest):
+    result = leave_mahjong_room(room_id, request.user_id)
+    if result.get("error"):
+        raise HTTPException(status_code=result["status"], detail=result["error"])
+    return result
+
+
+@app.get("/mahjong/rooms/{room_id}")
+def mahjong_room_status(room_id: int, user_id: int):
+    room = get_mahjong_room(room_id, user_id)
+    if room is None:
+        raise HTTPException(status_code=404, detail="麻雀部屋が見つかりません")
+    return {"room": room}
+
+
+@app.post("/mahjong/rooms/{room_id}/start")
+def mahjong_room_start(room_id: int, request: MahjongRoomUserRequest):
+    result = start_mahjong_room(room_id, request.user_id)
+    if result.get("error"):
+        raise HTTPException(status_code=result["status"], detail=result["error"])
+    return result
+
+
+@app.post("/mahjong/rooms/{room_id}/dice")
+def mahjong_dice(room_id: int, request: MahjongRoomUserRequest):
+    if not roll_mahjong_dice(room_id, request.user_id):
+        raise HTTPException(status_code=403, detail="サイコロを振れません")
+    room = get_mahjong_room(room_id, request.user_id)
+    return {"room": room}
+
+
+@app.post("/mahjong/rooms/{room_id}/riichi")
+def mahjong_riichi(room_id: int, request: MahjongRiichiRequest):
+    result = declare_mahjong_riichi(room_id, request.user_id, request.target_user_id)
+    if result.get("error"):
+        raise HTTPException(status_code=result["status"], detail=result["error"])
+    return result
+
+
+@app.post("/mahjong/rooms/{room_id}/riichi/cancel")
+def mahjong_riichi_cancel(room_id: int, request: MahjongRiichiRequest):
+    result = cancel_mahjong_riichi(room_id, request.user_id, request.target_user_id)
+    if result.get("error"):
+        raise HTTPException(status_code=result["status"], detail=result["error"])
+    return result
+
+
+@app.post("/mahjong/rooms/{room_id}/finish")
+def mahjong_room_finish(room_id: int, request: MahjongRoomUserRequest):
+    result = finish_mahjong_room(room_id, request.user_id)
+    if result is None:
+        raise HTTPException(status_code=403, detail="ゲームを終了できません")
+    return result
+
+
+@app.post("/mahjong/rooms/{room_id}/hand")
+def mahjong_hand(room_id: int, request: MahjongHandRequest):
+    result = submit_mahjong_hand(
+        room_id,
+        request.user_id,
+        request.adjustments,
+        request.dealer_continues,
+        request.riichi_winner_id,
+        request.note,
+    )
+    if result.get("error"):
+        raise HTTPException(status_code=result["status"], detail=result["error"])
+    return result
 
 
 @app.post("/register")
@@ -95,7 +312,12 @@ def login(request: LoginRequest):
     if not verify_password(request.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail=WRONG_PASSWORD)
 
+    session_token = create_login_session(user["id"])
+    if session_token is None:
+        raise HTTPException(status_code=409, detail="このアカウントは別の端末でログイン中です")
+
     added_point = add_login_point_if_first_today(user["id"])
+    set_user_online(user["id"], True)
 
     return {
         "message": LOGIN_SUCCESS,
@@ -106,8 +328,24 @@ def login(request: LoginRequest):
             "grade": user["grade"],
             "point": user["point"] + added_point,
             "total_point": user["total_point"] + added_point,
+            "gacha_coins": user["gacha_coins"],
+            "selected_avatar": user["selected_avatar"],
             "village_slot_id": get_user_village_slot_id(user["id"]),
+            "session_token": session_token,
         },
+    }
+
+
+@app.post("/logout")
+def logout(request: LogoutRequest):
+    end_login_session(request.user_id, request.session_token)
+    return {"ok": True}
+
+
+@app.post("/session/heartbeat")
+def session_heartbeat(request: SessionHeartbeatRequest):
+    return {
+        "active": heartbeat_login_session(request.user_id, request.session_token),
     }
 
 
@@ -194,6 +432,40 @@ def furniture_purchase(request: FurniturePurchaseRequest):
     }
     status_code, detail = errors.get(result["reason"], (400, PURCHASE_FAILED))
     raise HTTPException(status_code=status_code, detail=detail)
+
+
+@app.get("/gacha/status/{user_id}")
+def gacha_status(user_id: int):
+    status = get_avatar_status(user_id)
+    if status is None:
+        raise HTTPException(status_code=404, detail=USER_NOT_FOUND)
+    return status
+
+
+@app.post("/shop/gacha-coins/purchase")
+def gacha_coin_purchase(request: GachaUserRequest):
+    result = purchase_gacha_coin(request.user_id)
+    if result["ok"]:
+        return result
+    detail = USER_NOT_FOUND if result["reason"] == "user_not_found" else NOT_ENOUGH_POINT
+    raise HTTPException(status_code=404 if result["reason"] == "user_not_found" else 400, detail=detail)
+
+
+@app.post("/gacha/pull")
+def gacha_pull(request: GachaUserRequest):
+    result = pull_gacha(request.user_id)
+    if result["ok"]:
+        return result
+    detail = USER_NOT_FOUND if result["reason"] == "user_not_found" else "ガチャコインがありません"
+    raise HTTPException(status_code=404 if result["reason"] == "user_not_found" else 400, detail=detail)
+
+
+@app.post("/gacha/avatar/select")
+def gacha_avatar_select(request: AvatarSelectRequest):
+    result = select_avatar(request.user_id, request.avatar_id)
+    if result["ok"]:
+        return result
+    raise HTTPException(status_code=400, detail="未所持のアバターは選択できません")
 
 
 @app.get("/village/status")
