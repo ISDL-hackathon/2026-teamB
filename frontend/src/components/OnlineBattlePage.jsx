@@ -7,6 +7,8 @@ import cpuLowImg from "../assets/game/cpu-low.gif";
 import cpuJumpImg from "../assets/game/cpu-jump.gif";
 import cpuCrouchImg from "../assets/game/cpu-crouch.gif";
 import cpuCriticalImg from "../assets/game/cpu-critical.gif";
+import cpuVictoryImg from "../assets/game/cpu-victory.gif";
+import cpuDefeatImg from "../assets/game/cpu-defeat.gif";
 import criticalGuardImg from "../assets/game/critical-guard.gif";
 import "./CpuBattlePage.css";
 
@@ -364,8 +366,8 @@ function OnlineBattlePage({ currentUser, setCurrentUser, setPage }) {
               <span className={`battleRoleMark playerRoleMark ${match.my_role === "attack" ? "isAttack" : "isDefense"}`}>
                 {match.my_role === "attack" ? "攻" : "守"}
               </span>
-              <img alt={currentUser.name} className="playerCharacterImage" key={`${myVisual.action}-${myVisual.key}`} src={actionImages[myVisual.action]} />
-              {myVisual.action === "critical_guard" && <img alt="クリティカル防御" className="playerGuardImage" src={criticalGuardImg} />}
+              <img alt={currentUser.name} className="playerCharacterImage" key={`${finished ? "result" : myVisual.action}-${myVisual.key}`} src={finished ? (match.winner_id === currentUser.id ? cpuVictoryImg : cpuDefeatImg) : actionImages[myVisual.action]} />
+              {!finished && myVisual.action === "critical_guard" && <img alt="クリティカル防御" className="playerGuardImage" src={criticalGuardImg} />}
             </div>
             <span>ゲージ {match.my_gauge}/{MAX_GAUGE}</span>
             <p className="fighterLog">{match.my_submitted ? "選択済み・相手を待っています" : actionLabel(match.last_my_action)}</p>
@@ -380,8 +382,8 @@ function OnlineBattlePage({ currentUser, setCurrentUser, setPage }) {
               <span className={`battleRoleMark cpuRoleMark ${match.my_role === "attack" ? "isDefense" : "isAttack"}`}>
                 {match.my_role === "attack" ? "守" : "攻"}
               </span>
-              <img alt={match.opponent.name} className="cpuCharacterImage" key={`${opponentVisual.action}-${opponentVisual.key}`} src={actionImages[opponentVisual.action]} />
-              {opponentVisual.action === "critical_guard" && <img alt="クリティカル防御" className="cpuGuardImage" src={criticalGuardImg} />}
+              <img alt={match.opponent.name} className="cpuCharacterImage" key={`${finished ? "result" : opponentVisual.action}-${opponentVisual.key}`} src={finished ? (match.winner_id === currentUser.id ? cpuDefeatImg : cpuVictoryImg) : actionImages[opponentVisual.action]} />
+              {!finished && opponentVisual.action === "critical_guard" && <img alt="クリティカル防御" className="cpuGuardImage" src={criticalGuardImg} />}
             </div>
             <span>ゲージ {match.opponent.gauge}/{MAX_GAUGE}</span>
             <p className="fighterLog">{match.opponent_submitted ? "選択済み" : actionLabel(match.last_opponent_action)}</p>

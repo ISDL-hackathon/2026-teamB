@@ -6,6 +6,8 @@ import cpuLowImg from "../assets/game/cpu-low.gif";
 import cpuJumpImg from "../assets/game/cpu-jump.gif";
 import cpuCrouchImg from "../assets/game/cpu-crouch.gif";
 import cpuCriticalImg from "../assets/game/cpu-critical.gif";
+import cpuVictoryImg from "../assets/game/cpu-victory.gif";
+import cpuDefeatImg from "../assets/game/cpu-defeat.gif";
 import criticalGuardImg from "../assets/game/critical-guard.gif";
 import "./CpuBattlePage.css";
 
@@ -216,10 +218,10 @@ function CpuBattlePage({ currentUser, setPage }) {
               <img
                 alt="プレイヤー"
                 className="playerCharacterImage"
-                key={`${playerVisual.action}-${playerVisual.key}`}
-                src={cpuActionImages[playerVisual.action]}
+                key={`${winner ?? playerVisual.action}-${playerVisual.key}`}
+                src={winner ? (winner === "player" ? cpuVictoryImg : cpuDefeatImg) : cpuActionImages[playerVisual.action]}
               />
-              {playerVisual.action === "critical_guard" && (
+              {!winner && playerVisual.action === "critical_guard" && (
                 <img alt="クリティカル防御" className="playerGuardImage" src={criticalGuardImg} />
               )}
             </div>
@@ -237,10 +239,10 @@ function CpuBattlePage({ currentUser, setPage }) {
               <img
                 alt="CPU"
                 className="cpuCharacterImage"
-                key={`${cpuVisual.action}-${cpuVisual.key}`}
-                src={cpuActionImages[cpuVisual.action]}
+                key={`${winner ?? cpuVisual.action}-${cpuVisual.key}`}
+                src={winner ? (winner === "cpu" ? cpuVictoryImg : cpuDefeatImg) : cpuActionImages[cpuVisual.action]}
               />
-              {cpuVisual.action === "critical_guard" && (
+              {!winner && cpuVisual.action === "critical_guard" && (
                 <img alt="クリティカル防御" className="cpuGuardImage" src={criticalGuardImg} />
               )}
             </div>
