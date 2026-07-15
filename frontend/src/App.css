@@ -1191,6 +1191,84 @@ tr:last-child td {
   object-fit: contain;
 }
 
+.gachaJackpotAnimation {
+  position: absolute;
+  left: 24%;
+  top: 28%;
+  width: 52%;
+  height: 52%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.gachaSecretAnimation {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  image-rendering: pixelated;
+  background: #000;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.gachaSkipOverlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  padding: 0 20px 28px;
+  color: #ffffff;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  font-size: 14px;
+  text-shadow: 0 2px 4px #000000, 0 0 8px #000000;
+  cursor: pointer;
+  z-index: 10000;
+}
+
+.gachaSkipOverlay:hover,
+.gachaSkipOverlay:focus-visible {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.gachaPrizeCharacter {
+  position: absolute;
+  left: 50%;
+  top: 69%;
+  width: 30%;
+  height: 30%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  pointer-events: none;
+  z-index: 4;
+  animation: gachaPrizeRise 0.55s ease-out both;
+  transform-origin: center bottom;
+}
+
+@keyframes gachaPrizeRise {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.12);
+  }
+  35% { opacity: 1; }
+  75% {
+    transform: translate(-50%, -165%) scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -155%) scale(1);
+  }
+}
+
 .gachaPullButton {
   display: block;
   min-width: 220px;
@@ -1256,6 +1334,20 @@ tr:last-child td {
   height: 64px;
   object-fit: contain;
   image-rendering: pixelated;
+}
+
+.shopGachaLink {
+  color: #3d2800;
+  background: linear-gradient(180deg, #ffe98a, #e5aa2c);
+  border-color: #fff2ab #9b650d #9b650d #fff2ab;
+}
+
+.gachaCoinShopItem .gachaCoinGoButton {
+  grid-column: 1 / -1;
+  width: 100%;
+  color: #ffffff;
+  background: #75511a;
+  border-color: #bc8a37;
 }
 
 .gachaCoinBalance {
