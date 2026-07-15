@@ -21,6 +21,7 @@ FURNITURE_CATALOG = [
     {"id": "bookshelf", "name": "Bookshelf", "price": 80, "min_level": 3, "category": "western", "surface": "floor"},
     {"id": "shelf", "name": "Shelf", "price": 100, "min_level": 4, "category": "western", "surface": "floor"},
     {"id": "bed", "name": "Bed", "price": 150, "min_level": 5, "category": "western", "surface": "floor"},
+    {"id": "retro_tv", "name": "Retro TV", "price": 80, "min_level": 2, "category": "western", "surface": "floor"},
 ]
 
 VILLAGE_LEVELS = [

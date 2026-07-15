@@ -13,6 +13,7 @@ import roundTableImg from "../assets/furniture/round_table.png";
 import shelfImg from "../assets/furniture/shelf.png";
 import stoveImg from "../assets/furniture/suto-bu.png";
 import windowImg from "../assets/furniture/window.png";
+import retroTVImg from "../assets/furniture/retro_tv.png";
 
 export const SHOW_GRID = false;
 
@@ -197,6 +198,24 @@ export const roomItems = [
     z: 7,
     anchor: "bottomLeft",
   },
+
+  {
+  id: "retro_tv",
+  name: "Retro TV ",
+  price: 80,
+  category: "western",
+  surface: "floor",
+  minLevel: 2,
+  src: retroTVImg,
+  alt: "retro television",
+  col: 7,
+  row: 4,
+  colSpan: 1,
+  rowSpan: 1,
+  z: 8,
+  anchor: "bottomLeft",
+},
+
   {
     id: "chara",
     name: "Character",
@@ -213,5 +232,6 @@ export const roomItems = [
     anchor: "bottomLeft",
     isFixed: true,
   },
+  
 ];
 
