@@ -334,7 +334,7 @@ function App() {
   };
 
   return (
-    <div className="app">
+    <div className={`app${!currentUser ? " login-mode" : ""}`}>
       <header className="appHeader">
         <h1>ISDL ハッカソン</h1>
         <p>研究室活動ポイント</p>

@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import charaImg from "../assets/izumi.gif";
 import floorGreyImg from "../assets/town/floor_grey.png";
 import ventImg from "../assets/town/vent.png";
@@ -10,6 +10,12 @@ const SHOW_GRID = false;
 
 const TOWN_COLS = 20;
 const TOWN_ROWS = 24;
+
+const TILE = 32;
+const BORDER = 6; // .town の border 幅(片側)
+// 街全体の実寸(枠込み)。scale の基準に使う
+const TOWN_WIDTH = TOWN_COLS * TILE + BORDER * 2; // 640 + 12 = 652
+const TOWN_HEIGHT = TOWN_ROWS * TILE + BORDER * 2; // 768 + 12 = 780
 
 // 換気扇を何マスおきに置くか
 const VENT_INTERVAL_COL = 2.5;
@@ -95,168 +101,195 @@ function getDirection(slot) {
   return slot.desk_direction ?? "down";
 }
 
-
-function PixelTown({ 
-  weather = "weatherRainy", 
-  level = 1, 
+function PixelTown({
+  weather = "weatherRainy",
+  level = 1,
   mode = "view",
   slots = [],
   onSlotSelect,
   onPcClick,
-  }) {
+}) {
   const vents = createVents();
   const visibleItems = townItems.filter(
-  (item) =>
-    level >= item.minLevel &&
-    (item.maxLevel == null || level <= item.maxLevel),
+    (item) =>
+      level >= item.minLevel &&
+      (item.maxLevel == null || level <= item.maxLevel),
   );
 
+  // 画面幅に合わせて街全体を縮小(はみ出し防止)
+  const wrapRef = useRef(null);
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const fit = () => {
+      const avail = wrapRef.current?.clientWidth ?? TOWN_WIDTH;
+      // 収まるなら等倍(1)、狭ければ画面幅に合わせて縮小
+      setScale(Math.min(1, avail / TOWN_WIDTH));
+    };
+    fit();
+    window.addEventListener("resize", fit);
+    return () => window.removeEventListener("resize", fit);
+  }, []);
+
   return (
-    <div
-      className={`pixelTown ${weather}`}
-      aria-label="共用街"
-      style={{
-        backgroundImage: `url(${floorGreyImg})`,
-        backgroundRepeat: "repeat",
-        backgroundSize: "32px 32px",
-      }}
-    >
-      {/* 換気扇レイヤー(等間隔で自動配置) */}
-      {vents.map((vent) => (
-        <img
-          key={vent.key}
-          src={ventImg}
-          className="townVent"
-          alt="換気扇"
-          style={getItemStyle(vent)}
-        />
-      ))}
-
-      {/* 家具レイヤー(壁・机・ロッカーなど、レベルで絞り込み) */}
-      {visibleItems.map((item) => (
-        <img
-          key={item.id}
-          src={item.src}
-          className="townItem"
-          alt={item.alt}
-          style={getItemStyle(item)}
-        />
-      ))}
-
-      {slots.map((slot) => {
-        const occupied = Boolean(slot.user);
-        const isOnline = Boolean(slot.user?.is_online);
-        const isSelectMode = mode === "select";
-        const direction = getDirection(slot);
-        const seatType = slot.seat_type ?? "chair";
-        const seatPosition = getSeatPosition(slot);
-        const shouldShowPc = occupied || isSelectMode;
-
-        const pcImg = pcImages[direction] ?? pcImages.down;
-        const seatImg =
-          seatImages[seatType]?.[direction] ?? seatImages.chair.down;
-        
-        const charaImgForSeat =
-          charaImages[seatType]?.[direction] ??
-          charaImages.chair?.[direction] ??
-          charaImg;
-        
-        return (
-          <Fragment key={slot.id}>
-          <button
-            key={slot.id}
-            className={`townSlot ${
-              occupied ? "townSlotOccupied" : "townSlotEmpty"
-            } ${isSelectMode && !occupied ? "townSlotPcPreview" : ""}`}
-            style={getItemStyle({
-              col: slot.col,
-              row: slot.row,
-              z: 40,
-            })}
-            disabled={isSelectMode && occupied}
-            onClick={() => {
-              if (isSelectMode) {
-                if (!occupied) {
-                  onSlotSelect?.(slot.id);
-                }
-                return;
-              }
-
-              if (occupied) {
-                onPcClick?.(slot.user.id);
-              }
-            }}
-            type="button"
-            title={occupied ? `${slot.user.name} のPC` : slot.label}
-          >
-            {shouldShowPc && (
-              <img
-                src={pcImg}
-                alt=""
-                className={`townPersonalPc ${
-                  occupied ? "townPersonalPcOccupied" : "townPersonalPcPreview"
-                }`}
-              />
-            )}
-          </button>
-
-          {occupied && !isOnline && (
-              <img
-                src={seatImg}
-                alt=""
-                className="townPersonalSeat"
-                style={getItemStyle({
-                  col: seatPosition.col,
-                  row: seatPosition.row,
-                  colSpan: 1,
-                  rowSpan: 1,
-                  z: 40,
-                })}
-              />
-          )}
-
-          {occupied && isOnline && (
-            <>
-              <img
-                src={charaImgForSeat}
-                alt=""
-                className={`townPersonalChara townPersonalChara-${direction}`}
-                style={getItemStyle({
-                  col: seatPosition.col,
-                  row: seatPosition.row,
-                  z: 45,
-                })}
-              />
-
-              <span
-                className="townUserName"
-                style={getItemStyle({
-                  col: seatPosition.col,
-                  row: seatPosition.row,
-                  z: 60,
-                })}
-              >
-                {slot.user.name}
-              </span>
-            </>
-          )}
-          </Fragment>
-        );
-      })}
-
-      {/* キャラクター */}
-      <img
-        src={charaImg}
-        className="townChara"
-        alt="街のキャラクター"
+    <div className="townWrap" ref={wrapRef}>
+      <div
+        className="townScale"
         style={{
-          ...getItemStyle({ col: 11, row: 7 }),
-          transform: "translateY(-10px) scale(2.5)",
-          transformOrigin: "center bottom",
+          width: TOWN_WIDTH * scale,
+          height: TOWN_HEIGHT * scale,
         }}
-      />
+      >
+        <div
+          className={`pixelTown ${weather}`}
+          aria-label="共用街"
+          style={{
+            backgroundImage: `url(${floorGreyImg})`,
+            backgroundRepeat: "repeat",
+            backgroundSize: "32px 32px",
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
+          }}
+        >
+          {/* 換気扇レイヤー(等間隔で自動配置) */}
+          {vents.map((vent) => (
+            <img
+              key={vent.key}
+              src={ventImg}
+              className="townVent"
+              alt="換気扇"
+              style={getItemStyle(vent)}
+            />
+          ))}
 
-      {SHOW_GRID && <TownGridOverlay />}
+          {/* 家具レイヤー(壁・机・ロッカーなど、レベルで絞り込み) */}
+          {visibleItems.map((item) => (
+            <img
+              key={item.id}
+              src={item.src}
+              className="townItem"
+              alt={item.alt}
+              style={getItemStyle(item)}
+            />
+          ))}
+
+          {slots.map((slot) => {
+            const occupied = Boolean(slot.user);
+            const isSelectMode = mode === "select";
+            const direction = getDirection(slot);
+            const seatType = slot.seat_type ?? "chair";
+            const seatPosition = getSeatPosition(slot);
+            const isOnline = Boolean(slot.user?.is_online);
+            const shouldShowPc = occupied || isSelectMode;
+
+            const pcImg = pcImages[direction] ?? pcImages.down;
+            const seatImg =
+              seatImages[seatType]?.[direction] ?? seatImages.chair.down;
+
+            const charaImgForSeat =
+              charaImages[seatType]?.[direction] ??
+              charaImages.chair?.[direction] ??
+              charaImg;
+
+            return (
+              <Fragment key={slot.id}>
+                <button
+                  key={slot.id}
+                  className={`townSlot ${
+                    occupied ? "townSlotOccupied" : "townSlotEmpty"
+                  } ${isSelectMode && !occupied ? "townSlotPcPreview" : ""}`}
+                  style={getItemStyle({
+                    col: slot.col,
+                    row: slot.row,
+                    z: 47,
+                  })}
+                  disabled={isSelectMode && occupied}
+                  onClick={() => {
+                    if (isSelectMode) {
+                      if (!occupied) {
+                        onSlotSelect?.(slot.id);
+                      }
+                      return;
+                    }
+
+                    if (occupied) {
+                      onPcClick?.(slot.user.id);
+                    }
+                  }}
+                  type="button"
+                  title={occupied ? `${slot.user.name} のPC` : slot.label}
+                >
+                  {shouldShowPc && (
+                    <img
+                      src={pcImg}
+                      alt=""
+                      className={`townPersonalPc ${
+                        occupied ? "townPersonalPcOccupied" : "townPersonalPcPreview"
+                      }`}
+                    />
+                  )}
+                </button>
+
+                {occupied &&
+                  (isOnline ? (
+                    // ログイン中:キャラ + 名前
+                    <>
+                      <img
+                        src={charaImgForSeat}
+                        alt=""
+                        className={`townPersonalChara townPersonalChara-${direction}`}
+                        style={getItemStyle({
+                          col: seatPosition.col + 0.05,
+                          row: seatPosition.row + 0.2,
+                          z: 45,
+                        })}
+                      />
+                      <span
+                        className="townUserName"
+                        style={getItemStyle({
+                          col: seatPosition.col,
+                          row: seatPosition.row,
+                          z: 60,
+                        })}
+                      >
+                        {slot.user.name}
+                      </span>
+                    </>
+                  ) : (
+                    // 未ログイン:椅子だけ
+                    <img
+                      src={seatImg}
+                      alt=""
+                      className="townPersonalSeat"
+                      style={getItemStyle({
+                        col: seatPosition.col,
+                        row: seatPosition.row,
+                        colSpan: 1,
+                        rowSpan: 1.2,
+                        z: 40,
+                      })}
+                    />
+                  ))}
+                  
+              </Fragment>
+            );
+          })}
+
+          {/* キャラクター */}
+          {/* <img
+            src={charaImg}
+            className="townChara"
+            alt="街のキャラクター"
+            style={{
+              ...getItemStyle({ col: 11, row: 7 }),
+              transform: "translateY(-10px) scale(2.5)",
+              transformOrigin: "center bottom",
+            }}
+          /> */}
+
+          {SHOW_GRID && <TownGridOverlay />}
+        </div>
+      </div>
     </div>
   );
 }

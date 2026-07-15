@@ -273,7 +273,10 @@ tr:last-child td {
 
 .villageCard {
   border-color: #4ba7c8;
-  max-width: none;
+  width: fit-content;      /* 中身(街=約640px)ぴったりの幅にする */
+  max-width: 100%;         /* 画面より大きくはならない(スマホで縮小と両立) */
+  margin-left: auto;       /* 中央寄せ */
+  margin-right: auto;
 }
 
 .roomCard {
