@@ -213,3 +213,20 @@
   white-space: nowrap;
   z-index: 60;
 }
+
+/* 街を画面幅に合わせて縮小するためのラッパー */
+.townWrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  overflow-x: hidden;
+}
+/* scale 後の実寸を確保する箱(高さ潰れ防止) */
+.townScale {
+  position: relative;
+  margin: 24px auto;
+}
+/* 元の .pixelTown の margin は townScale 側に移すので0に */
+.pixelTown {
+  margin: 0 !important;
+}

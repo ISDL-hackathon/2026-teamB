@@ -84,11 +84,21 @@ function HomePage({
       {village && (
         <div className="card villageSummary">
           <h2>今日のISDL</h2>
-          <p>今日の活動人数: {village.active_users}人</p>
-          <p>天気: {village.weather}</p>
-          <p>
-            共有街 Lv.{village.level}: {village.title}
-          </p>
+          <div className="statGrid">
+            <div className="statBlock">
+              <span className="statLabel">活動人数</span>
+              <span className="statValue">{village.active_users}<small>人</small></span>
+            </div>
+            <div className="statBlock">
+              <span className="statLabel">天気</span>
+              <span className="statValue">{village.weather}</span>
+            </div>
+            <div className="statBlock">
+              <span className="statLabel">共有街</span>
+              <span className="statValue">Lv.{village.level}</span>
+              <span className="statSub">{village.title}</span>
+            </div>
+          </div>
         </div>
       )}
 
