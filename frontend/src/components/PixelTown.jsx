@@ -201,7 +201,7 @@ function PixelTown({
                   style={getItemStyle({
                     col: slot.col,
                     row: slot.row,
-                    z: 6,
+                    z: 47,
                   })}
                   disabled={isSelectMode && occupied}
                   onClick={() => {
@@ -276,7 +276,7 @@ function PixelTown({
           })}
 
           {/* キャラクター */}
-          <img
+          {/* <img
             src={charaImg}
             className="townChara"
             alt="街のキャラクター"
@@ -285,7 +285,7 @@ function PixelTown({
               transform: "translateY(-10px) scale(2.5)",
               transformOrigin: "center bottom",
             }}
-          />
+          /> */}
 
           {SHOW_GRID && <TownGridOverlay />}
         </div>

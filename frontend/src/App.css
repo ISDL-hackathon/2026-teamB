@@ -1088,3 +1088,56 @@ tr:last-child td {
 @media (max-width: 560px) {
   .statusGrid { grid-template-columns: 1fr; }
 }
+
+/* ホーム:上段2カラムグリッド */
+.homeTopGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  max-width: 980px;
+  margin: 20px auto;
+}
+/* グリッド内のカードは幅いっぱいに(既存の max-width/margin を打ち消す) */
+.homeTopGrid > .card {
+  max-width: none;
+  margin: 0;
+}
+@media (max-width: 760px) {
+  .homeTopGrid { grid-template-columns: 1fr; }
+}
+
+/* 自分のポイントの説明 */
+.pointCaption {
+  display: block;
+  margin-top: 2px;
+  color: #9fb0c8;
+  font-size: 12px;
+}
+
+/* 街レベル進捗バー */
+.levelProgress {
+  margin-top: 16px;
+}
+.levelProgressHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+.levelRemaining {
+  color: #ffd76a;
+  font-weight: 800;
+  font-size: 14px;
+}
+.levelBar {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.10);
+  overflow: hidden;
+}
+.levelBarFill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #37957c, #4bd1a8);
+  transition: width 0.5s ease;
+}

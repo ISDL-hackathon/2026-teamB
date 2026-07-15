@@ -254,7 +254,7 @@ function PixelTown({
         );
       })}
 
-      {/* キャラクター */}
+      {/* キャラクター
       <img
         src={charaImg}
         className="townChara"
@@ -264,7 +264,7 @@ function PixelTown({
           transform: "translateY(-10px) scale(2.5)",
           transformOrigin: "center bottom",
         }}
-      />
+      /> */}
 
       {SHOW_GRID && <TownGridOverlay />}
     </div>

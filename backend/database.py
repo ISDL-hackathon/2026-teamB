@@ -1148,7 +1148,7 @@ def seed_village_slots(cur):
 	    ("pc5", 6, 7, "right", "chair", "机2", 5),
 	    ("pc6", 7, 4, "left", "chair", "机2", 6),
 	    ("pc7", 1, 6, "left", "chair", "机2", 7),
-	    ("pc8", 17, 3, "down", "chair", "机3", 8),
+	    ("pc8", 17, 3, "down", "fl_chair", "机3", 8),
 	    ("pc9", 19, 3, "down", "chair", "机3", 9),
 	    ("pc10", 18, 6, "down", "chair", "机4", 10),
 	    ("pc11", 16, 6, "up", "chair", "机4", 11),
