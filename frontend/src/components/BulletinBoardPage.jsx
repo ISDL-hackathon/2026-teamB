@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { requestBulletinJson } from "../api";
 import bulletinLogo from "../assets/bulletin-logo.png";
 import userIcon from "../assets/chara.png";
@@ -54,6 +54,12 @@ function BulletinBoardPage({ currentUser, setPage }) {
   const visiblePosts = feedMode === "following"
     ? posts.filter((post) => post.is_following)
     : posts;
+
+  const getPostDate = (createdAt) => createdAt.slice(0, 10);
+  const formatPostDate = (createdAt) => {
+    const [year, month, day] = getPostDate(createdAt).split("-").map(Number);
+    return `${year}年${month}月${day}日`;
+  };
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -121,8 +127,12 @@ function BulletinBoardPage({ currentUser, setPage }) {
               {feedMode === "following" ? "フォロー中の投稿はありません" : "まだ投稿はありません"}
             </p>
           )}
-          {visiblePosts.map((post) => (
-            <article className="bulletinPost" key={post.id}>
+          {visiblePosts.map((post, index) => (
+            <Fragment key={post.id}>
+              {index > 0 && getPostDate(post.created_at) !== getPostDate(visiblePosts[index - 1].created_at) && (
+                <div className="bulletinDateDivider"><span>{formatPostDate(post.created_at)}</span></div>
+              )}
+            <article className="bulletinPost">
               <div className="bulletinAvatarArea">
                 <button
                   aria-label={`${post.user_name}のフォローメニュー`}
@@ -165,6 +175,7 @@ function BulletinBoardPage({ currentUser, setPage }) {
                 </span>
               </div>
             </article>
+            </Fragment>
           ))}
         </div>
 

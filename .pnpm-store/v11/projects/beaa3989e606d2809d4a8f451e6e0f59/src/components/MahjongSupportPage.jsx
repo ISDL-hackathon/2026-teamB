@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { requestJson } from "../api";
+import { requestBulletinJson, requestJson } from "../api";
 import "./MahjongSupportPage.css";
 
 const eventLabels = {
@@ -187,12 +187,25 @@ function MahjongSupportPage({ currentUser, setCurrentUser, setPage }) {
     }
   };
 
-  const createRoom = (gameType) => post("/mahjong/rooms", {
-    user_id: currentUser.id,
-    game_type: gameType,
-    stake_amount: stakeAmount,
-    starting_score: startingScore,
-  });
+  const createRoom = async (gameType) => {
+    const data = await post("/mahjong/rooms", {
+      user_id: currentUser.id,
+      game_type: gameType,
+      stake_amount: stakeAmount,
+      starting_score: startingScore,
+    });
+    if (!data?.room) return;
+    const gameLabel = gameType === "tonpu" ? "東風戦" : "半荘戦";
+    void requestBulletinJson("/bulletin/posts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: currentUser.id,
+        content: `🀄 麻雀サポートの部屋を作りました！\n${gameLabel}・${startingScore.toLocaleString()}点開始・参加料${stakeAmount}pt\nゲームセレクトから参加できます。`,
+        image_data: null,
+      }),
+    }).catch(() => {});
+  };
 
   const joinRoom = (roomId) => post(`/mahjong/rooms/${roomId}/join`, {
     user_id: currentUser.id,

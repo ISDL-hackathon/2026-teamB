@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import magicStreetImg from "../assets/shop/magic-street.png";
 import robotImg from "../assets/shop/dopamine-robot.gif";
+import gachaCoinImg from "../assets/gacha/coin128.png";
 import { roomItems } from "./pixelRoomConfig";
 
 const furnitureById = new Map(roomItems.map((item) => [item.id, item]));
@@ -129,7 +130,7 @@ function FilterGroup({ label, filters, value, onChange }) {
   );
 }
 
-function ShopPage({ onPurchaseFurniture, room, setPage }) {
+function ShopPage({ onPurchaseFurniture, onPurchaseGachaCoin, room, setPage }) {
   const [shopTab, setShopTab] = useState("furniture");
   const [styleFilter, setStyleFilter] = useState("all");
   const [surfaceFilter, setSurfaceFilter] = useState("all");
@@ -222,10 +223,23 @@ function ShopPage({ onPurchaseFurniture, room, setPage }) {
               />
             </>
           ) : (
-            <div className="shopEmptyShelf">
+            <>
+            <div className="gachaCoinShopItem">
+              <img alt="" className="gachaCoinIcon" src={gachaCoinImg} />
+              <div>
+                <strong>{"\u30ac\u30c1\u30e3\u30b3\u30a4\u30f3"}</strong>
+                <p>{"\u30ac\u30c1\u30e3\u30921\u56de\u56de\u305b\u308b\u30b3\u30a4\u30f3"}</p>
+                <span className="furnitureShopPrice">10 pt</span>
+              </div>
+              <button disabled={currentPoint < 10} onClick={onPurchaseGachaCoin} type="button">
+                {"\u8cfc\u5165"}
+              </button>
+            </div>
+            <div className="shopEmptyShelf" hidden>
               <strong>Coming soon</strong>
               <span>アイテムは次に追加予定です。</span>
             </div>
+            </>
           )}
         </div>
       </section>

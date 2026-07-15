@@ -25,6 +25,13 @@ FURNITURE_CATALOG = [
     {"id": "bed", "name": "Bed", "price": 150, "min_level": 5, "category": "western", "surface": "floor"},
 ]
 
+GACHA_COIN_PRICE = 10
+AVATAR_CATALOG = {
+    "izumi": {"id": "izumi", "name": "いずみ", "rarity": "ノーマル"},
+    "nagano": {"id": "nagano", "name": "ながの", "rarity": "レア"},
+    "abe": {"id": "abe", "name": "あべ", "rarity": "レア"},
+}
+
 VILLAGE_LEVELS = [
     (2000, 5, "ISDL研究都市", "研究室全体が活発に動いています。みんなの活動で街が大きく発展しました。"),
     (1000, 4, "にぎやかな研究室", "人が集まり、研究や交流も活発になってきました。"),
@@ -1225,6 +1232,27 @@ def init_db():
     if "is_online" not in user_columns:
         cur.execute("ALTER TABLE users ADD COLUMN is_online INTEGER NOT NULL DEFAULT 0")
 
+    if "gacha_coins" not in user_columns:
+        cur.execute("ALTER TABLE users ADD COLUMN gacha_coins INTEGER NOT NULL DEFAULT 0")
+
+    if "selected_avatar" not in user_columns:
+        cur.execute("ALTER TABLE users ADD COLUMN selected_avatar TEXT NOT NULL DEFAULT 'izumi'")
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS user_avatars (
+        user_id INTEGER NOT NULL,
+        avatar_id TEXT NOT NULL,
+        acquired_at TEXT NOT NULL,
+        PRIMARY KEY (user_id, avatar_id),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+    """)
+
+    cur.execute("""
+    INSERT OR IGNORE INTO user_avatars (user_id, avatar_id, acquired_at)
+    SELECT id, 'izumi', ? FROM users
+    """, (get_now(),))
+
     cur.execute("""
     CREATE TABLE IF NOT EXISTS login_sessions (
         user_id INTEGER PRIMARY KEY,
@@ -1735,8 +1763,12 @@ def create_user(name: str, grade: str, password: str):
         (name, grade, hash_password(password)),
     )
 
-    conn.commit()
     user_id = cur.lastrowid
+    cur.execute(
+        "INSERT INTO user_avatars (user_id, avatar_id, acquired_at) VALUES (?, 'izumi', ?)",
+        (user_id, get_now()),
+    )
+    conn.commit()
     conn.close()
 
     return {
@@ -1745,6 +1777,8 @@ def create_user(name: str, grade: str, password: str):
         "grade": grade,
         "point": 0,
         "total_point": 0,
+        "gacha_coins": 0,
+        "selected_avatar": "izumi",
     }
 
 
@@ -1754,7 +1788,8 @@ def get_user_by_name(name: str):
 
     cur.execute(
         """
-        SELECT id, name, grade, password_hash, point, total_point
+        SELECT id, name, grade, password_hash, point, total_point,
+               gacha_coins, selected_avatar
         FROM users
         WHERE name = ?
         """,
@@ -1772,7 +1807,7 @@ def get_user_by_id(user_id: int):
 
     cur.execute(
         """
-        SELECT id, name, grade, point, total_point
+        SELECT id, name, grade, point, total_point, gacha_coins, selected_avatar
         FROM users
         WHERE id = ?
         """,
@@ -1868,7 +1903,7 @@ def get_ranking():
     cur = conn.cursor()
 
     cur.execute("""
-    SELECT id, name, grade, point, total_point
+    SELECT id, name, grade, point, total_point, selected_avatar
     FROM users
     ORDER BY total_point DESC
     """)
@@ -2162,6 +2197,106 @@ def purchase_furniture(user_id: int, furniture_id: str):
         "user": get_user_by_id(user_id),
         "owned_furniture": get_owned_furniture_ids(user_id),
     }
+
+
+def get_avatar_status(user_id: int):
+    user = get_user_by_id(user_id)
+    if user is None:
+        return None
+
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT avatar_id FROM user_avatars WHERE user_id = ? ORDER BY acquired_at, avatar_id",
+        (user_id,),
+    )
+    owned_ids = [row["avatar_id"] for row in cur.fetchall()]
+    conn.close()
+    return {
+        "coins": user["gacha_coins"],
+        "selected_avatar": user["selected_avatar"],
+        "avatars": [
+            {**avatar, "owned": avatar_id in owned_ids}
+            for avatar_id, avatar in AVATAR_CATALOG.items()
+        ],
+    }
+
+
+def purchase_gacha_coin(user_id: int):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT point FROM users WHERE id = ?", (user_id,))
+    user = cur.fetchone()
+    if user is None:
+        conn.close()
+        return {"ok": False, "reason": "user_not_found"}
+    if user["point"] < GACHA_COIN_PRICE:
+        conn.close()
+        return {"ok": False, "reason": "not_enough_point"}
+
+    cur.execute(
+        "UPDATE users SET point = point - ?, gacha_coins = gacha_coins + 1 WHERE id = ?",
+        (GACHA_COIN_PRICE, user_id),
+    )
+    conn.commit()
+    conn.close()
+    return {"ok": True, "price": GACHA_COIN_PRICE, "user": get_user_by_id(user_id)}
+
+
+def pull_gacha(user_id: int):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT gacha_coins FROM users WHERE id = ?", (user_id,))
+    user = cur.fetchone()
+    if user is None:
+        conn.close()
+        return {"ok": False, "reason": "user_not_found"}
+    if user["gacha_coins"] < 1:
+        conn.close()
+        return {"ok": False, "reason": "not_enough_coin"}
+
+    avatar = AVATAR_CATALOG[secrets.choice(("nagano", "abe"))]
+    cur.execute(
+        "SELECT 1 FROM user_avatars WHERE user_id = ? AND avatar_id = ?",
+        (user_id, avatar["id"]),
+    )
+    duplicate = cur.fetchone() is not None
+    cur.execute("UPDATE users SET gacha_coins = gacha_coins - 1 WHERE id = ?", (user_id,))
+    if duplicate:
+        cur.execute("UPDATE users SET point = point + 5 WHERE id = ?", (user_id,))
+    else:
+        cur.execute(
+            "INSERT INTO user_avatars (user_id, avatar_id, acquired_at) VALUES (?, ?, ?)",
+            (user_id, avatar["id"], get_now()),
+        )
+    conn.commit()
+    conn.close()
+    return {
+        "ok": True,
+        "avatar": avatar,
+        "duplicate": duplicate,
+        "duplicate_point": 5 if duplicate else 0,
+        "user": get_user_by_id(user_id),
+        "status": get_avatar_status(user_id),
+    }
+
+
+def select_avatar(user_id: int, avatar_id: str):
+    if avatar_id not in AVATAR_CATALOG:
+        return {"ok": False, "reason": "not_found"}
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT 1 FROM user_avatars WHERE user_id = ? AND avatar_id = ?",
+        (user_id, avatar_id),
+    )
+    if cur.fetchone() is None:
+        conn.close()
+        return {"ok": False, "reason": "not_owned"}
+    cur.execute("UPDATE users SET selected_avatar = ? WHERE id = ?", (avatar_id, user_id))
+    conn.commit()
+    conn.close()
+    return {"ok": True, "user": get_user_by_id(user_id)}
 
 
 def save_room_layout(user_id: int, items, theme=None):

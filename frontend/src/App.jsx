@@ -12,6 +12,8 @@ import LoginArea from "./components/LoginArea";
 import RoomLoadingPage from "./components/RoomLoadingPage";
 import RoomPage from "./components/RoomPage";
 import ShopPage from "./components/ShopPage";
+import GachaPage from "./components/GachaPage";
+import SettingsPage from "./components/SettingsPage";
 import VillagePage from "./components/VillagePage";
 import VillageSlotSelectPage from "./components/VillageSlotSelectPage";
 import "./App.css";
@@ -284,6 +286,26 @@ function App() {
       .catch((err) => setMessage(err.message));
   };
 
+  const handlePurchaseGachaCoin = () => {
+    if (!currentUser) return;
+    requestJson("/shop/gacha-coins/purchase", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: currentUser.id }),
+    })
+      .then((data) => {
+        setCurrentUser((current) => ({ ...current, ...data.user }));
+        fetchRoom(currentUser.id);
+        setMessage("\u30ac\u30c1\u30e3\u30b3\u30a4\u30f3\u30921\u679a\u8cfc\u5165\u3057\u307e\u3057\u305f -10pt");
+      })
+      .catch((err) => setMessage(err.message));
+  };
+
+  const handleAvatarChanged = (user) => {
+    setCurrentUser((current) => ({ ...current, ...user }));
+    fetchRoom(currentUser.id);
+  };
+
   const handleSaveRoomLayout = (roomState) => {
     if (!currentUser) {
       return;
@@ -414,9 +436,18 @@ function App() {
       {currentUser && page === "shop" && (
         <ShopPage
           onPurchaseFurniture={handlePurchaseFurniture}
+          onPurchaseGachaCoin={handlePurchaseGachaCoin}
           room={room}
           setPage={setPage}
         />
+      )}
+
+      {currentUser && page === "gacha" && (
+        <GachaPage currentUser={currentUser} setCurrentUser={setCurrentUser} setPage={setPage} />
+      )}
+
+      {currentUser && page === "settings" && (
+        <SettingsPage currentUser={currentUser} onAvatarChanged={handleAvatarChanged} setPage={setPage} />
       )}
 
       {message && <p className="message">{message}</p>}
