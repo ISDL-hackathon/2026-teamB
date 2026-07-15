@@ -30,6 +30,7 @@ AVATAR_CATALOG = {
     "izumi": {"id": "izumi", "name": "いずみ", "rarity": "ノーマル"},
     "nagano": {"id": "nagano", "name": "ながの", "rarity": "レア"},
     "abe": {"id": "abe", "name": "あべ", "rarity": "レア"},
+    "daiki": {"id": "daiki", "name": "だいき", "rarity": "シークレット"},
 }
 
 VILLAGE_LEVELS = [
@@ -2255,7 +2256,8 @@ def pull_gacha(user_id: int):
         conn.close()
         return {"ok": False, "reason": "not_enough_coin"}
 
-    avatar = AVATAR_CATALOG[secrets.choice(("nagano", "abe"))]
+    avatar_id = "daiki" if secrets.randbelow(100) < 5 else secrets.choice(("nagano", "abe"))
+    avatar = AVATAR_CATALOG[avatar_id]
     cur.execute(
         "SELECT 1 FROM user_avatars WHERE user_id = ? AND avatar_id = ?",
         (user_id, avatar["id"]),

@@ -155,6 +155,9 @@ function ShopPage({ onPurchaseFurniture, onPurchaseGachaCoin, room, setPage }) {
   return (
     <>
       <div className="pageHeader shopPageHeader">
+        <button className="shopGachaLink" onClick={() => setPage("gacha")} type="button">
+          {"\u30ac\u30c1\u30e3\u3078"}
+        </button>
         <button className="secondaryButton" onClick={() => setPage("home")}>
           ホームへ
         </button>
@@ -233,6 +236,9 @@ function ShopPage({ onPurchaseFurniture, onPurchaseGachaCoin, room, setPage }) {
               </div>
               <button disabled={currentPoint < 10} onClick={onPurchaseGachaCoin} type="button">
                 {"\u8cfc\u5165"}
+              </button>
+              <button className="gachaCoinGoButton" onClick={() => setPage("gacha")} type="button">
+                {"\u30ac\u30c1\u30e3\u3092\u56de\u3057\u306b\u884c\u304f"}
               </button>
             </div>
             <div className="shopEmptyShelf" hidden>
