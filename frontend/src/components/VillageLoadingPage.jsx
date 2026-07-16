@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import villageLoading from "../assets/village_load.gif";
 import "./VillageLoadingPage.css";
 
-const LOADING_DURATION_MS = 3600;
+const LOADING_DURATION_MS = 3100;
 
 function VillageLoadingPage({ onComplete }) {
   useEffect(() => {
