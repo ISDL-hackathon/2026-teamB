@@ -48,6 +48,10 @@ function App() {
   const [room, setRoom] = useState(null);
   const [message, setMessage] = useState("");
 
+  useEffect(() => {
+    setMessage("");
+  }, [page]);
+
   const fetchRanking = () => {
     requestJson("/ranking")
       .then(setRanking)
