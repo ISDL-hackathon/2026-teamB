@@ -26,7 +26,7 @@ const weatherBackgrounds = {
   雷雨: { overlay: "linear-gradient(rgba(17, 19, 26, 0.48), rgba(17, 19, 26, 0.68))", image: "url('/weather/kaminari_2.gif')" },
 };
 
-const LEVEL_THRESHOLDS = [0, 100, 300, 600, 1000]; // ★要確認:database.pyのVILLAGE_LEVELSに合わせる
+const LEVEL_THRESHOLDS = [0, 100, 500, 1000, 2000]; // ★要確認:database.pyのVILLAGE_LEVELSに合わせる
 
 function getWeatherBackground(weather) {
   const background = weatherBackgrounds[weather] || weatherBackgrounds.雷雨;
@@ -113,7 +113,7 @@ function HomePage({
             {progress && (
               <div className="levelProgress">
                 <div className="levelProgressHead">
-                  <span className="statLabel">次のレベルまで</span>
+                  <span className="statLabel">レベルまで</span>
                   <span className="levelRemaining">
                     {progress.isMax ? "最大レベル" : `あと ${progress.remaining} pt`}
                   </span>

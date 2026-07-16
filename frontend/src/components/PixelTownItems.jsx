@@ -46,6 +46,9 @@ import monitorFrontImg from "../assets/town/monitor_front.png";
 import monitorBackImg from "../assets/town/monitor_back.png";
 import monitorLeftImg from "../assets/town/monitor_left.png";
 import monitorRightImg from "../assets/town/monitor_right.png";
+import benchFutureImg from "../assets/town/bench_future.png";
+import deskDualPrintersImg from "../assets/town/desk_dual_printers.png";
+import hologramDocGif from "../assets/town/hologram_doc.gif";
 
 // 白い縦長机(各机の col と、天面の行リスト・側面の行)
 const WHITE_DESKS = [
@@ -245,14 +248,14 @@ export const townItems = [
   { id: "glass-htop-20-10", src: glassHframeImg, alt: "ガラス枠", minLevel: 1, col: 20, row: 10, z: 2},
 
   // ガラス下の横枠(row=18〜19, col=17〜20)
-  { id: "glass-hbot-17-18", src: glassHframeImg, alt: "ガラス枠", minLevel: 1, col: 17, row: 18, z: 9 },
-  { id: "glass-hbot-18-18", src: glassHframeImg, alt: "ガラス枠", minLevel: 1, col: 18, row: 18, z: 9 },
-  { id: "glass-hbot-19-18", src: glassHframeImg, alt: "ガラス枠", minLevel: 1, col: 19, row: 18, z: 9 },
-  { id: "glass-hbot-20-18", src: glassHframeImg, alt: "ガラス枠", minLevel: 1, col: 20, row: 18, z: 9 },
-  { id: "glass-hbot-17-19", src: glassHframeImg, alt: "ガラス枠", minLevel: 1, col: 17, row: 19, z: 9 },
-  { id: "glass-hbot-18-19", src: glassHframeImg, alt: "ガラス枠", minLevel: 1, col: 18, row: 19, z: 9 },
-  { id: "glass-hbot-19-19", src: glassHframeImg, alt: "ガラス枠", minLevel: 1, col: 19, row: 19, z: 9 },
-  { id: "glass-hbot-20-19", src: glassHframeImg, alt: "ガラス枠", minLevel: 1, col: 20, row: 19, z: 9 },
+  { id: "glass-hbot-17-18", src: glassHframeImg, alt: "ガラス枠", minLevel: 1, col: 17, row: 18, z: 51 },
+  { id: "glass-hbot-18-18", src: glassHframeImg, alt: "ガラス枠", minLevel: 1, col: 18, row: 18, z: 51 },
+  { id: "glass-hbot-19-18", src: glassHframeImg, alt: "ガラス枠", minLevel: 1, col: 19, row: 18, z: 51 },
+  { id: "glass-hbot-20-18", src: glassHframeImg, alt: "ガラス枠", minLevel: 1, col: 20, row: 18, z: 51 },
+  { id: "glass-hbot-17-19", src: glassHframeImg, alt: "ガラス枠", minLevel: 1, col: 17, row: 19, z: 51 },
+  { id: "glass-hbot-18-19", src: glassHframeImg, alt: "ガラス枠", minLevel: 1, col: 18, row: 19, z: 51 },
+  { id: "glass-hbot-19-19", src: glassHframeImg, alt: "ガラス枠", minLevel: 1, col: 19, row: 19, z: 51 },
+  { id: "glass-hbot-20-19", src: glassHframeImg, alt: "ガラス枠", minLevel: 1, col: 20, row: 19, z: 51 },
 
   // ガラス左の縦枠(col=17, row=9〜19)
   { id: "glass-vleft-17-9", src: glassVframeImg, alt: "ガラス枠", minLevel: 1, col: 17, row: 9, z: 9 },
@@ -308,12 +311,9 @@ export const townItems = [
   { id: "plant-4-22-lv1", src: plant_lv1Img, alt: "観葉植物", minLevel: 1, maxLevel: 3, col: 4, row: 22, z: 2 },
   { id: "plant-16-13-lv1", src: plant_lv1Img, alt: "観葉植物", minLevel: 1, maxLevel: 3, col: 16, row: 13, z: 2 },
   { id: "plant-16-15-lv1", src: plant_lv1Img, alt: "観葉植物", minLevel: 1, maxLevel: 3, col: 16, row: 15, z: 2 },
-  
-
   // 土台
   { id: "desk-low-10-1", src: deskLowWhitebrownImg, alt: "机", minLevel: 1, col: 10, row: 1, z: 5 },
   { id: "fridge-12-1", src: fridgeImg, alt: "冷蔵庫", minLevel: 1, col: 12, row: 1, z: 5 },
-
 
   // === Lv.2 で追加する家具は、ここに minLevel: 2 で書いていく ===
 
@@ -328,7 +328,7 @@ export const townItems = [
   { id: "fridge-brown-11-1", src: fridgeBrownImg, alt: "冷蔵庫", minLevel: 2, maxLevel: 3, col: 11, row: 1, z: 5 },
   // ロボット(2×2エリアの中央に約8割サイズ)
   { id: "dopa-10-20", src: dopaGif, alt: "ロボット", minLevel: 2, col: 10.1, row: 20.1, colSpan: 1.8, rowSpan: 1.8, z: 5 },
-  { id: "bench-4-2", src: benchWoodImg, alt: "ベンチ", minLevel: 2, col: 4.4, row: 1.5, colSpan: 3.4, rowSpan: 1.2, z: 5 },
+ { id: "bench-4-2", src: benchWoodImg, alt: "ベンチ", minLevel: 2, maxLevel: 3, col: 4.4, row: 1.5, colSpan: 3.4, rowSpan: 1.2, z: 5 },
   // 9マス机の中央にモニター(向きは机ごとに変える)
   { id: "monitor-sq1", src: monitorFrontImg, alt: "モニター", minLevel: 2, col: 5.9,  row: 11.5, z: 8 },
   { id: "monitor-sq2", src: monitorBackImg,  alt: "モニター", minLevel: 2, col: 6.1,  row: 11, z: 7 },
@@ -342,7 +342,7 @@ export const townItems = [
   { id: "monitor-sq10", src: monitorBackImg,  alt: "モニター", minLevel: 2, col: 13.9,  row: 17, z: 7 },
 
   { id: "monitor-sq11", src: monitorLeftImg, alt: "モニター", minLevel: 2, col: 20,  row: 5.8, z: 8 },
-
+  { id: "desk-dual-printers-1-10", src: deskDualPrintersImg, alt: "机とプリンター", minLevel: 2, maxLevel: 4, col: 1, row: 9.4, rowSpan: 2.6, z: 5 },
 
   // === Lv.3 で追加する家具は、ここに minLevel: 3 で書いていく ===
 
@@ -387,6 +387,8 @@ export const townItems = [
   { id: "wall-right", src: wallFuture8Img, alt: "壁", minLevel: 4, col: 13, row: 1, colSpan: 8, z: 1 },
   // Lv4:冷水機(ハイテク)に置き換え
 { id: "water-dispenser-11-1", src: waterDispenserGif, alt: "冷水機", minLevel: 4, col: 11, row: 1, z: 5 },
+{ id: "bench-future-4-2", src: benchFutureImg, alt: "ベンチ", minLevel: 4, col: 4.4, row: 1.5, colSpan: 3.4, rowSpan: 1.2, z: 5 },
+
 
   // === Lv.5 で追加する家具は、ここに minLevel: 5 で書いていく ===
   // === Lv.5(最終形態:発光する栽培ドーム)===
@@ -399,4 +401,5 @@ export const townItems = [
   { id: "locker-future-h", src: lockerTopFutureImg, alt: "ロッカー", minLevel: 5, col: 5, row: 22, colSpan: 16, z: 4 },
   { id: "locker-future-v", src: lockerTopFutureVImg, alt: "ロッカー", minLevel: 5, col: 1, row: 22, rowSpan: 2, z: 4 },
 
+  { id: "hologram-doc-1-10", src: hologramDocGif, alt: "ホログラム", minLevel: 5, col: 1, row: 9.4, rowSpan: 2.6, z: 5 },
 ];
