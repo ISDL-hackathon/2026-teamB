@@ -33,8 +33,8 @@ function LunchQuestPage({ currentUser, setCurrentUser, setPage }) {
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    if (!["image/png", "image/jpeg", "image/gif", "image/webp"].includes(file.type) || file.size > 2 * 1024 * 1024) {
-      setError("画像はPNG・JPEG・GIF・WebPの2MB以下にしてください");
+    if (!["image/png", "image/jpeg", "image/gif", "image/webp"].includes(file.type) || file.size > 1024 * 1024) {
+      setError("画像はPNG・JPEG・GIF・WebPの1MB以下にしてください");
       event.target.value = "";
       return;
     }

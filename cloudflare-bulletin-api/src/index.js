@@ -17,10 +17,29 @@ async function readBody(request) {
   }
 }
 
+async function ensureSchema(env) {
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS daily_quest_completions (
+      quest_id TEXT NOT NULL, quest_date TEXT NOT NULL, user_id INTEGER NOT NULL,
+      reward INTEGER NOT NULL DEFAULT 0, completed_at TEXT NOT NULL,
+      PRIMARY KEY (quest_id, quest_date, user_id)
+    )
+  `).run();
+  const columns = await env.DB.prepare("PRAGMA table_info(bulletin_posts)").all();
+  const names = new Set((columns.results || []).map((column) => column.name));
+  if (!names.has("image_data")) {
+    await env.DB.prepare("ALTER TABLE bulletin_posts ADD COLUMN image_data TEXT").run();
+  }
+  if (!names.has("quest_type")) {
+    await env.DB.prepare("ALTER TABLE bulletin_posts ADD COLUMN quest_type TEXT").run();
+  }
+}
+
 async function listPosts(env, viewerId) {
+  await ensureSchema(env);
   const { results } = await env.DB.prepare(`
-    SELECT p.id, p.user_id, p.content, p.image_key, p.created_at,
-           u.name AS user_name, u.grade AS user_grade,
+    SELECT p.id, p.user_id, p.content, p.image_key, p.image_data, p.quest_type, p.created_at,
+           u.name AS user_name, u.grade AS user_grade, u.selected_icon AS user_icon,
            EXISTS(
              SELECT 1 FROM bulletin_follows f
              WHERE f.follower_id = ? AND f.followed_id = p.user_id
@@ -40,7 +59,6 @@ async function listPosts(env, viewerId) {
     ...post,
     is_following: Boolean(post.is_following),
     is_liked: Boolean(post.is_liked),
-    image_data: null,
   }));
 }
 
@@ -48,7 +66,8 @@ async function createPost(request, env) {
   const body = await readBody(request);
   const userId = Number(body?.user_id);
   const content = String(body?.content ?? "").trim();
-  if (!Number.isInteger(userId) || !content || content.length > 500) {
+  const imageData = body?.image_data ? String(body.image_data) : null;
+  if (!Number.isInteger(userId) || (!content && !imageData) || content.length > 500) {
     return json({ detail: "投稿は1〜500文字で入力してください" }, 400);
   }
 
@@ -56,20 +75,10 @@ async function createPost(request, env) {
   if (!user) return json({ detail: "ユーザーが見つかりません" }, 404);
 
   const createdAt = new Date().toISOString().slice(0, 19);
+  await ensureSchema(env);
   const result = await env.DB.prepare(
-    "INSERT INTO bulletin_posts (user_id, content, image_key, created_at) VALUES (?, ?, NULL, ?)",
-  ).bind(userId, content, createdAt).run();
-  await env.DB.prepare(`
-    CREATE TABLE IF NOT EXISTS daily_quest_completions (
-      quest_id TEXT NOT NULL,
-      quest_date TEXT NOT NULL,
-      user_id INTEGER NOT NULL,
-      reward INTEGER NOT NULL DEFAULT 0,
-      completed_at TEXT NOT NULL,
-      PRIMARY KEY (quest_id, quest_date, user_id),
-      FOREIGN KEY (user_id) REFERENCES users(id)
-    )
-  `).run();
+    "INSERT INTO bulletin_posts (user_id, content, image_key, image_data, created_at) VALUES (?, ?, NULL, ?, ?)",
+  ).bind(userId, content, imageData, createdAt).run();
   const questDate = new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const questResult = await env.DB.prepare(`
     INSERT OR IGNORE INTO daily_quest_completions

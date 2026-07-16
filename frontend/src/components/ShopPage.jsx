@@ -5,18 +5,28 @@ import gachaCoinImg from "../assets/gacha/coin128.png";
 import { roomItems } from "./pixelRoomConfig";
 
 const furnitureById = new Map(roomItems.map((item) => [item.id, item]));
+const functionalFurnitureIds = new Set([
+  "bulletin_board",
+  "quest_board",
+  "game_cabinet",
+]);
 
 const furnitureStyleFilters = [
-  { id: "all", label: "All" },
+  { id: "all", label: "すべて" },
   { id: "lab", label: "研究室家具" },
   { id: "western", label: "洋風家具" },
 ];
 
 const furnitureSurfaceFilters = [
-  { id: "all", label: "All" },
-  { id: "floor", label: "Floor" },
-  { id: "wall", label: "Wall" },
+  { id: "all", label: "すべて" },
+  { id: "floor", label: "床置き" },
+  { id: "wall", label: "壁掛け" },
 ];
+
+const furnitureSurfaceLabels = {
+  floor: "床置き",
+  wall: "壁掛け",
+};
 
 function ShopFilterButton({ active, children, onClick }) {
   return (
@@ -56,6 +66,7 @@ function FurnitureShelf({ currentPoint, items, onPurchaseFurniture }) {
     <div className="furnitureShopGrid">
       {items.map((item) => {
         const furniture = furnitureById.get(item.id);
+        const isFunctional = functionalFurnitureIds.has(item.id);
         const canBuy =
           item.unlocked && !item.owned && currentPoint >= item.price;
         const buttonLabel = item.owned
@@ -67,17 +78,21 @@ function FurnitureShelf({ currentPoint, items, onPurchaseFurniture }) {
           (item.category ?? furniture?.category) === "lab"
             ? "研究室家具"
             : "洋風家具";
+        const surface = item.surface ?? furniture?.surface;
 
         return (
           <div
             className={`furnitureShopItem ${
               !item.unlocked ? "furnitureShopItemLocked" : ""
-            }`}
+            } ${isFunctional ? "furnitureShopItemFunctional" : ""}`}
             key={item.id}
           >
             <div className="furnitureShopPreview">
               {furniture && (
                 <img alt="" className="furnitureShopImage" src={furniture.src} />
+              )}
+              {isFunctional && (
+                <span className="furnitureRecommendedBadge">{"\u63a8\u5968"}</span>
               )}
             </div>
 
@@ -87,9 +102,11 @@ function FurnitureShelf({ currentPoint, items, onPurchaseFurniture }) {
                 <span className="furnitureShopLevel">Lv.{item.min_level}</span>
               </div>
               <span className="furnitureShopMeta">
-                {categoryLabel} /{" "}
-                {item.surface ?? furniture?.surface}
+                {categoryLabel} / {furnitureSurfaceLabels[surface] ?? surface}
               </span>
+              {isFunctional && (
+                <span className="furnitureFeatureBadge">{"\u6a5f\u80fd\u89e3\u7981"}</span>
+              )}
               <span className="furnitureShopStatus">
                 {getFurnitureStatus(item, currentPoint)}
               </span>
@@ -134,6 +151,7 @@ function ShopPage({ onPurchaseFurniture, onPurchaseGachaCoin, room, setPage }) {
   const [shopTab, setShopTab] = useState("furniture");
   const [styleFilter, setStyleFilter] = useState("all");
   const [surfaceFilter, setSurfaceFilter] = useState("all");
+  const [coinQuantity, setCoinQuantity] = useState(1);
   const shopItems = room?.shop_items ?? [];
   const currentPoint = room?.user?.point ?? 0;
 
@@ -231,9 +249,30 @@ function ShopPage({ onPurchaseFurniture, onPurchaseGachaCoin, room, setPage }) {
                 <p>{"\u30ac\u30c1\u30e3\u30921\u56de\u56de\u305b\u308b\u30b3\u30a4\u30f3"}</p>
                 <span className="furnitureShopPrice">10 pt</span>
               </div>
-              <button disabled={currentPoint < 10} onClick={onPurchaseGachaCoin} type="button">
-                {"\u8cfc\u5165"}
-              </button>
+              <div className="gachaCoinPurchaseControls">
+                <label>
+                  <span>購入枚数</span>
+                  <input
+                    max="99"
+                    min="1"
+                    onChange={(event) => {
+                      const value = Number(event.target.value);
+                      setCoinQuantity(Math.max(1, Math.min(99, Number.isFinite(value) ? Math.floor(value) : 1)));
+                    }}
+                    step="1"
+                    type="number"
+                    value={coinQuantity}
+                  />
+                </label>
+                <small>合計 {coinQuantity * 10} pt</small>
+                <button
+                  disabled={currentPoint < coinQuantity * 10}
+                  onClick={() => onPurchaseGachaCoin(coinQuantity)}
+                  type="button"
+                >
+                  {"\u8cfc\u5165"}
+                </button>
+              </div>
               <button className="gachaCoinGoButton" onClick={() => setPage("gacha")} type="button">
                 <span>ガチャマシンへ</span>
                 <strong>ガチャを回しに行く　▶</strong>

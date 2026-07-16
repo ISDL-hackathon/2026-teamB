@@ -54,6 +54,11 @@ class GachaUserRequest(BaseModel):
     user_id: int
 
 
+class GachaCoinPurchaseRequest(BaseModel):
+    user_id: int
+    quantity: int = 1
+
+
 class AvatarSelectRequest(BaseModel):
     user_id: int
     avatar_id: str

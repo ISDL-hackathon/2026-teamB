@@ -65,7 +65,7 @@ const FURNITURE_CATALOG = [
   },
   {
     id: "round_table",
-    name: "Round Table",
+    name: "丸テーブル",
     price: 50,
     min_level: 1,
     category: "lab",
@@ -73,7 +73,7 @@ const FURNITURE_CATALOG = [
   },
   {
     id: "office_chair",
-    name: "Office Chair",
+    name: "オフィスチェア",
     price: 35,
     min_level: 1,
     category: "lab",
@@ -81,7 +81,7 @@ const FURNITURE_CATALOG = [
   },
   {
     id: "bulletin_board",
-    name: "Bulletin Board",
+    name: "掲示板",
     price: 15,
     min_level: 1,
     category: "lab",
@@ -89,7 +89,7 @@ const FURNITURE_CATALOG = [
   },
   {
     id: "quest_board",
-    name: "Quest Board",
+    name: "クエストボード",
     price: 15,
     min_level: 1,
     category: "lab",
@@ -97,7 +97,7 @@ const FURNITURE_CATALOG = [
   },
   {
     id: "game_cabinet",
-    name: "Game Cabinet",
+    name: "ゲーム機",
     price: 15,
     min_level: 2,
     category: "lab",
@@ -105,7 +105,7 @@ const FURNITURE_CATALOG = [
   },
   {
     id: "window",
-    name: "Window",
+    name: "窓",
     price: 30,
     min_level: 2,
     category: "western",
@@ -113,7 +113,7 @@ const FURNITURE_CATALOG = [
   },
   {
     id: "clock",
-    name: "Clock",
+    name: "時計",
     price: 30,
     min_level: 2,
     category: "western",
@@ -121,7 +121,7 @@ const FURNITURE_CATALOG = [
   },
   {
     id: "stove",
-    name: "Stove",
+    name: "ストーブ",
     price: 50,
     min_level: 2,
     category: "western",
@@ -129,7 +129,7 @@ const FURNITURE_CATALOG = [
   },
   {
     id: "bookshelf",
-    name: "Bookshelf",
+    name: "本棚",
     price: 80,
     min_level: 3,
     category: "western",
@@ -137,7 +137,7 @@ const FURNITURE_CATALOG = [
   },
   {
     id: "shelf",
-    name: "Shelf",
+    name: "棚",
     price: 100,
     min_level: 4,
     category: "western",
@@ -145,7 +145,7 @@ const FURNITURE_CATALOG = [
   },
   {
     id: "bed",
-    name: "Bed",
+    name: "ベッド",
     price: 150,
     min_level: 5,
     category: "western",
@@ -153,13 +153,31 @@ const FURNITURE_CATALOG = [
   },
   {
   id: "retro_tv",
-  name: "Retro TV",
+  name: "レトロテレビ",
   price: 80,
   min_level: 2,
   category: "western",
   surface: "floor",
 },
 ];
+
+const GACHA_COIN_PRICE = 10;
+const AVATAR_CATALOG = {
+  izumi: { id: "izumi", name: "いずみ", rarity: "ノーマル", kind: "avatar" },
+  nagano: { id: "nagano", name: "ながの", rarity: "中当たり", kind: "avatar" },
+  abe: { id: "abe", name: "あべ", rarity: "中当たり", kind: "avatar" },
+  daiki: { id: "daiki", name: "だいき", rarity: "シークレット", kind: "avatar" },
+  maie: { id: "maie", name: "まいえ", rarity: "大当たり", kind: "avatar" },
+  giant_robot: { id: "giant_robot", name: "白い機体", rarity: "シークレット", kind: "avatar" },
+};
+const ICON_CATALOG = {
+  hero: { id: "hero", name: "勇者", rarity: "ノーマル", kind: "icon" },
+  icon1: { id: "icon1", name: "屋根のねずみ", rarity: "中当たり", kind: "icon" },
+  icon2: { id: "icon2", name: "白猫アイコン", rarity: "中当たり", kind: "icon" },
+  icon3: { id: "icon3", name: "イービィ", rarity: "中当たり", kind: "icon" },
+  icon4: { id: "icon4", name: "もふもふ", rarity: "大当たり", kind: "icon" },
+  icon5: { id: "icon5", name: "かっぱ", rarity: "中当たり", kind: "icon" },
+};
 
 const VILLAGE_LEVELS = [
   [2000, 5, "ISDL研究都市", "研究室全体が活発に動いています。みんなの活動で街が大きく発展しました。"],
@@ -296,7 +314,8 @@ function getRoomLevelFromPoint(point) {
 async function getUserByName(env, name) {
   return await env.DB.prepare(
     `
-    SELECT id, name, grade, password_hash, point, total_point
+    SELECT id, name, grade, password_hash, point, total_point,
+           gacha_coins, selected_avatar, selected_icon
     FROM users
     WHERE name = ?
     `,
@@ -308,7 +327,8 @@ async function getUserByName(env, name) {
 async function getUserById(env, userId) {
   return await env.DB.prepare(
     `
-    SELECT id, name, grade, point, total_point
+    SELECT id, name, grade, point, total_point,
+           gacha_coins, selected_avatar, selected_icon
     FROM users
     WHERE id = ?
     `,
@@ -524,12 +544,17 @@ async function getVillageSlots(env) {
       vs.row,
       vs.col_span,
       vs.row_span,
+      vs.desk_direction,
+      vs.seat_type,
       vs.label,
       vs.is_active,
       vs.sort_order,
       u.id AS user_id,
       u.name AS user_name,
-      u.grade AS user_grade
+      u.grade AS user_grade,
+      u.is_online AS user_is_online,
+      u.selected_avatar AS user_avatar,
+      u.selected_icon AS user_icon
     FROM village_slots AS vs
     LEFT JOIN user_village_positions AS uvp
       ON uvp.slot_id = vs.id
@@ -547,6 +572,9 @@ async function getVillageSlots(env) {
             id: row.user_id,
             name: row.user_name,
             grade: row.user_grade,
+            is_online: Boolean(row.user_is_online),
+            selected_avatar: row.user_avatar,
+            selected_icon: row.user_icon,
           }
         : null;
 
@@ -556,6 +584,8 @@ async function getVillageSlots(env) {
       row: row.row,
       col_span: row.col_span,
       row_span: row.row_span,
+      desk_direction: row.desk_direction,
+      seat_type: row.seat_type,
       label: row.label,
       occupied: user !== null,
       user,
@@ -756,6 +786,12 @@ function resolveBattleAttack(attack, defense) {
 
 async function createLoginSession(env, userId) {
   const cutoff = new Date(Date.now() - LOGIN_SESSION_TTL_MS).toISOString();
+  await env.DB.prepare(`
+    UPDATE users SET is_online = 0
+    WHERE id IN (
+      SELECT user_id FROM login_sessions WHERE last_seen < ?
+    )
+  `).bind(cutoff).run();
   await env.DB.prepare("DELETE FROM login_sessions WHERE last_seen < ?")
     .bind(cutoff).run();
 
@@ -782,13 +818,26 @@ async function heartbeatLoginSession(env, userId, sessionToken) {
     UPDATE login_sessions SET last_seen = ?
     WHERE user_id = ? AND session_token = ?
   `).bind(new Date().toISOString(), userId, sessionToken).run();
-  return Number(result.meta?.changes || 0) > 0;
+  const active = Number(result.meta?.changes || 0) > 0;
+  if (active) {
+    await env.DB.prepare(
+      "UPDATE users SET is_online = 1 WHERE id = ?",
+    ).bind(userId).run();
+  }
+  return active;
 }
 
 async function endLoginSession(env, userId, sessionToken) {
-  await env.DB.prepare(`
+  const result = await env.DB.prepare(`
     DELETE FROM login_sessions WHERE user_id = ? AND session_token = ?
   `).bind(userId, sessionToken).run();
+  const ended = Number(result.meta?.changes || 0) > 0;
+  if (ended) {
+    await env.DB.prepare(
+      "UPDATE users SET is_online = 0 WHERE id = ?",
+    ).bind(userId).run();
+  }
+  return ended;
 }
 
 async function getBattleMatch(env, matchId) {
@@ -1092,7 +1141,691 @@ async function submitBattleMove(env, matchId, userId, action) {
     match.id, match.turn,
   ).run();
 
+  if (winnerId) {
+    await completeDailyQuest(env, match.player1_id, "play_together");
+    await completeDailyQuest(env, match.player2_id, "play_together");
+  }
+
   return { match: await battleSnapshot(env, match.id, userId) };
+}
+
+const DAILY_QUEST_REWARDS = {
+  visit_village: 40,
+  lab_photo: 10,
+  "bulletin-post": 10,
+  play_together: 20,
+};
+
+let userPresenceSchemaReady = false;
+async function ensureUserPresenceSchema(env) {
+  if (userPresenceSchemaReady) return;
+
+  const columns = await env.DB.prepare("PRAGMA table_info(users)").all();
+  const names = new Set((columns.results || []).map((column) => column.name));
+  if (!names.has("is_online")) {
+    await env.DB.prepare(
+      "ALTER TABLE users ADD COLUMN is_online INTEGER NOT NULL DEFAULT 0",
+    ).run();
+  }
+
+  const cutoff = new Date(Date.now() - LOGIN_SESSION_TTL_MS).toISOString();
+  await env.DB.prepare(`
+    UPDATE users
+    SET is_online = CASE
+      WHEN id IN (
+        SELECT user_id FROM login_sessions WHERE last_seen >= ?
+      ) THEN 1
+      ELSE 0
+    END
+  `).bind(cutoff).run();
+
+  userPresenceSchemaReady = true;
+}
+
+let gachaSchemaReady = false;
+async function ensureGachaSchema(env) {
+  if (gachaSchemaReady) return;
+  const columns = await env.DB.prepare("PRAGMA table_info(users)").all();
+  const names = new Set((columns.results || []).map((column) => column.name));
+  if (!names.has("gacha_coins")) {
+    await env.DB.prepare("ALTER TABLE users ADD COLUMN gacha_coins INTEGER NOT NULL DEFAULT 0").run();
+  }
+  if (!names.has("selected_avatar")) {
+    await env.DB.prepare("ALTER TABLE users ADD COLUMN selected_avatar TEXT NOT NULL DEFAULT 'izumi'").run();
+  }
+  if (!names.has("selected_icon")) {
+    await env.DB.prepare("ALTER TABLE users ADD COLUMN selected_icon TEXT NOT NULL DEFAULT 'hero'").run();
+  }
+  await env.DB.batch([
+    env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS user_avatars (
+        user_id INTEGER NOT NULL, avatar_id TEXT NOT NULL, acquired_at TEXT NOT NULL,
+        PRIMARY KEY (user_id, avatar_id)
+      )
+    `),
+    env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS user_icons (
+        user_id INTEGER NOT NULL, icon_id TEXT NOT NULL, acquired_at TEXT NOT NULL,
+        PRIMARY KEY (user_id, icon_id)
+      )
+    `),
+    env.DB.prepare(`
+      INSERT OR IGNORE INTO user_avatars (user_id, avatar_id, acquired_at)
+      SELECT id, 'izumi', ? FROM users
+    `).bind(nowJstIso()),
+    env.DB.prepare(`
+      INSERT OR IGNORE INTO user_icons (user_id, icon_id, acquired_at)
+      SELECT id, 'hero', ? FROM users
+    `).bind(nowJstIso()),
+  ]);
+  gachaSchemaReady = true;
+}
+
+async function getGachaStatus(env, userId) {
+  const user = await getUserById(env, userId);
+  if (!user) return null;
+  const avatars = await env.DB.prepare(
+    "SELECT avatar_id FROM user_avatars WHERE user_id = ?",
+  ).bind(userId).all();
+  const icons = await env.DB.prepare(
+    "SELECT icon_id FROM user_icons WHERE user_id = ?",
+  ).bind(userId).all();
+  const ownedAvatars = new Set((avatars.results || []).map((row) => row.avatar_id));
+  const ownedIcons = new Set((icons.results || []).map((row) => row.icon_id));
+  return {
+    coins: user.gacha_coins,
+    selected_avatar: user.selected_avatar,
+    selected_icon: user.selected_icon,
+    avatars: Object.values(AVATAR_CATALOG).map((avatar) => ({ ...avatar, owned: ownedAvatars.has(avatar.id) })),
+    icons: Object.values(ICON_CATALOG).map((icon) => ({ ...icon, owned: ownedIcons.has(icon.id) })),
+  };
+}
+
+async function purchaseGachaCoin(env, userId, quantity = 1) {
+  if (!Number.isInteger(quantity) || quantity < 1 || quantity > 99) {
+    return { ok: false, reason: "invalid_quantity" };
+  }
+  const totalPrice = GACHA_COIN_PRICE * quantity;
+  const user = await getUserById(env, userId);
+  if (!user) return { ok: false, reason: "user_not_found" };
+  if (user.point < totalPrice) return { ok: false, reason: "not_enough_point" };
+  await env.DB.prepare(`
+    UPDATE users SET point = point - ?, gacha_coins = gacha_coins + ? WHERE id = ?
+  `).bind(totalPrice, quantity, userId).run();
+  return {
+    ok: true,
+    price: totalPrice,
+    unit_price: GACHA_COIN_PRICE,
+    quantity,
+    user: await getUserById(env, userId),
+  };
+}
+
+function randomChoice(values) {
+  return values[crypto.getRandomValues(new Uint32Array(1))[0] % values.length];
+}
+
+async function pullGacha(env, userId) {
+  const user = await getUserById(env, userId);
+  if (!user) return { ok: false, reason: "user_not_found" };
+  if (user.gacha_coins < 1) return { ok: false, reason: "not_enough_coin" };
+  const roll = crypto.getRandomValues(new Uint32Array(1))[0] % 100;
+  let kind = "avatar";
+  let prizeId;
+  if (roll < 5) prizeId = randomChoice(["daiki", "giant_robot"]);
+  else if (roll < 15) {
+    prizeId = randomChoice(["maie", "icon4"]);
+    if (prizeId === "icon4") kind = "icon";
+  }
+  else {
+    prizeId = randomChoice(["icon1", "icon2", "icon3", "icon5", "nagano", "abe"]);
+    if (prizeId.startsWith("icon")) kind = "icon";
+  }
+  const prize = kind === "icon" ? ICON_CATALOG[prizeId] : AVATAR_CATALOG[prizeId];
+  const table = kind === "icon" ? "user_icons" : "user_avatars";
+  const column = kind === "icon" ? "icon_id" : "avatar_id";
+  const owned = await env.DB.prepare(
+    `SELECT 1 FROM ${table} WHERE user_id = ? AND ${column} = ?`,
+  ).bind(userId, prizeId).first();
+  const statements = [
+    env.DB.prepare("UPDATE users SET gacha_coins = gacha_coins - 1 WHERE id = ?").bind(userId),
+  ];
+  if (owned) {
+    statements.push(env.DB.prepare("UPDATE users SET point = point + 5 WHERE id = ?").bind(userId));
+  } else {
+    statements.push(env.DB.prepare(
+      `INSERT INTO ${table} (user_id, ${column}, acquired_at) VALUES (?, ?, ?)`,
+    ).bind(userId, prizeId, nowJstIso()));
+  }
+  await env.DB.batch(statements);
+  return {
+    ok: true,
+    avatar: prize,
+    duplicate: Boolean(owned),
+    duplicate_point: owned ? 5 : 0,
+    user: await getUserById(env, userId),
+    status: await getGachaStatus(env, userId),
+  };
+}
+
+async function selectGachaItem(env, userId, kind, itemId) {
+  const catalog = kind === "avatar" ? AVATAR_CATALOG : ICON_CATALOG;
+  const table = kind === "avatar" ? "user_avatars" : "user_icons";
+  const itemColumn = kind === "avatar" ? "avatar_id" : "icon_id";
+  const selectedColumn = kind === "avatar" ? "selected_avatar" : "selected_icon";
+  if (!catalog[itemId]) return { ok: false, reason: "not_found" };
+  const owned = await env.DB.prepare(
+    `SELECT 1 FROM ${table} WHERE user_id = ? AND ${itemColumn} = ?`,
+  ).bind(userId, itemId).first();
+  if (!owned) return { ok: false, reason: "not_owned" };
+  await env.DB.prepare(`UPDATE users SET ${selectedColumn} = ? WHERE id = ?`).bind(itemId, userId).run();
+  return { ok: true, user: await getUserById(env, userId) };
+}
+
+const MAHJONG_WINDS = ["東", "南", "西", "北"];
+
+let mahjongSchemaReady = false;
+async function ensureMahjongSchema(env) {
+  if (mahjongSchemaReady) return;
+  await env.DB.batch([
+    env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS mahjong_rooms (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, room_code TEXT NOT NULL UNIQUE,
+        host_id INTEGER NOT NULL, game_type TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'waiting',
+        round_wind TEXT NOT NULL DEFAULT 'east', round_number INTEGER NOT NULL DEFAULT 1,
+        honba INTEGER NOT NULL DEFAULT 0, riichi_sticks INTEGER NOT NULL DEFAULT 0,
+        dealer_seat INTEGER NOT NULL DEFAULT 0, dice1 INTEGER NOT NULL DEFAULT 1,
+        dice2 INTEGER NOT NULL DEFAULT 1, stake_amount INTEGER NOT NULL DEFAULT 0,
+        starting_score INTEGER NOT NULL DEFAULT 25000, points_settled INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL, updated_at TEXT NOT NULL
+      )
+    `),
+    env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS mahjong_players (
+        room_id INTEGER NOT NULL, user_id INTEGER NOT NULL, join_order INTEGER NOT NULL,
+        seat_index INTEGER, score INTEGER NOT NULL DEFAULT 25000,
+        riichi_declared INTEGER NOT NULL DEFAULT 0, app_point_reward INTEGER NOT NULL DEFAULT 0,
+        joined_at TEXT NOT NULL, PRIMARY KEY (room_id, user_id), UNIQUE (room_id, seat_index)
+      )
+    `),
+    env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS mahjong_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, room_id INTEGER NOT NULL,
+        event_type TEXT NOT NULL, payload_json TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL
+      )
+    `),
+  ]);
+  mahjongSchemaReady = true;
+}
+
+async function addMahjongEvent(env, roomId, eventType, payload = {}) {
+  await env.DB.prepare(`
+    INSERT INTO mahjong_events (room_id, event_type, payload_json, created_at)
+    VALUES (?, ?, ?, ?)
+  `).bind(roomId, eventType, JSON.stringify(payload), nowJstIso()).run();
+}
+
+async function mahjongSnapshot(env, roomId, userId) {
+  const room = await env.DB.prepare("SELECT * FROM mahjong_rooms WHERE id = ?").bind(roomId).first();
+  if (!room) return null;
+  const playerRows = await env.DB.prepare(`
+    SELECT mp.user_id, u.name, mp.join_order, mp.seat_index, mp.score,
+           mp.riichi_declared, mp.app_point_reward,
+           u.point AS app_point, u.total_point AS app_total_point
+    FROM mahjong_players mp JOIN users u ON u.id = mp.user_id
+    WHERE mp.room_id = ? ORDER BY COALESCE(mp.seat_index, mp.join_order), mp.join_order
+  `).bind(roomId).all();
+  const players = playerRows.results || [];
+  if (!players.some((player) => player.user_id === userId)) return null;
+  for (const player of players) {
+    if (player.seat_index == null) {
+      player.wind = null;
+      player.is_dealer = false;
+    } else {
+      player.wind = MAHJONG_WINDS[(player.seat_index - room.dealer_seat + 4) % 4];
+      player.is_dealer = player.seat_index === room.dealer_seat;
+    }
+    player.riichi_declared = Boolean(player.riichi_declared);
+  }
+  const eventRows = await env.DB.prepare(`
+    SELECT event_type, payload_json, created_at FROM mahjong_events
+    WHERE room_id = ? ORDER BY id DESC LIMIT 12
+  `).bind(roomId).all();
+  const history = (eventRows.results || []).map((event) => {
+    try { return { event_type: event.event_type, payload: JSON.parse(event.payload_json), created_at: event.created_at }; }
+    catch { return { event_type: event.event_type, payload: {}, created_at: event.created_at }; }
+  });
+  const ranking = [...players].sort((a, b) => b.score - a.score || a.join_order - b.join_order);
+  return {
+    ...room,
+    players,
+    ranking,
+    history,
+    is_host: room.host_id === userId,
+    current_user_id: userId,
+    round_label: `${room.round_wind === "east" ? "東" : "南"}${room.round_number}局`,
+  };
+}
+
+async function getCurrentMahjongRoom(env, userId) {
+  const row = await env.DB.prepare(`
+    SELECT r.id FROM mahjong_rooms r JOIN mahjong_players p ON p.room_id = r.id
+    WHERE p.user_id = ? AND r.status IN ('waiting', 'playing') ORDER BY r.id DESC LIMIT 1
+  `).bind(userId).first();
+  return row ? mahjongSnapshot(env, row.id, userId) : null;
+}
+
+async function listMahjongRooms(env) {
+  const rows = await env.DB.prepare(`
+    SELECT r.id, r.host_id, u.name AS host_name, r.game_type, r.stake_amount,
+           r.starting_score, r.created_at, COUNT(p.user_id) AS player_count
+    FROM mahjong_rooms r JOIN users u ON u.id = r.host_id
+    JOIN mahjong_players p ON p.room_id = r.id WHERE r.status = 'waiting'
+    GROUP BY r.id HAVING COUNT(p.user_id) < 4 ORDER BY r.created_at DESC, r.id DESC
+  `).all();
+  return rows.results || [];
+}
+
+async function createMahjongRoom(env, body) {
+  const userId = Number(body?.user_id);
+  const gameType = body?.game_type;
+  const stake = Number(body?.stake_amount || 0);
+  const startingScore = Number(body?.starting_score || 25000);
+  if (!["tonpu", "hanchan"].includes(gameType) || ![0, 10, 50].includes(stake) || ![25000, 35000].includes(startingScore)) {
+    return { error: "部屋の設定が不正です", status: 400 };
+  }
+  if (await getCurrentMahjongRoom(env, userId)) return { error: "すでに参加中の麻雀部屋があります", status: 409 };
+  const user = await getUserById(env, userId);
+  if (!user) return { error: messages.USER_NOT_FOUND, status: 404 };
+  if (user.point < stake) return { error: messages.NOT_ENOUGH_POINT, status: 400 };
+  let code;
+  for (let index = 0; index < 20; index += 1) {
+    const candidate = String(crypto.getRandomValues(new Uint32Array(1))[0] % 1000000).padStart(6, "0");
+    if (!(await env.DB.prepare("SELECT 1 FROM mahjong_rooms WHERE room_code = ?").bind(candidate).first())) { code = candidate; break; }
+  }
+  if (!code) return { error: "部屋番号を作成できませんでした", status: 500 };
+  const now = nowJstIso();
+  const dice = [1 + crypto.getRandomValues(new Uint32Array(1))[0] % 6, 1 + crypto.getRandomValues(new Uint32Array(1))[0] % 6];
+  const created = await env.DB.prepare(`
+    INSERT INTO mahjong_rooms
+      (room_code, host_id, game_type, dice1, dice2, stake_amount, starting_score, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).bind(code, userId, gameType, dice[0], dice[1], stake, startingScore, now, now).run();
+  const roomId = created.meta.last_row_id;
+  await env.DB.batch([
+    env.DB.prepare(`INSERT INTO mahjong_players (room_id, user_id, join_order, score, joined_at) VALUES (?, ?, 0, ?, ?)`).bind(roomId, userId, startingScore, now),
+    env.DB.prepare("UPDATE users SET point = point - ?, total_point = total_point - ? WHERE id = ?").bind(stake, stake, userId),
+  ]);
+  await addMahjongEvent(env, roomId, "room_created", { user_id: userId });
+  return { room: await mahjongSnapshot(env, roomId, userId) };
+}
+
+async function joinMahjongRoom(env, userId, roomId) {
+  if (await getCurrentMahjongRoom(env, userId)) return { error: "すでに参加中の麻雀部屋があります", status: 409 };
+  const room = await env.DB.prepare(`
+    SELECT id, stake_amount, starting_score FROM mahjong_rooms WHERE id = ? AND status = 'waiting'
+  `).bind(roomId).first();
+  if (!room) return { error: "参加できる部屋が見つかりません", status: 404 };
+  const user = await getUserById(env, userId);
+  if (!user || user.point < room.stake_amount) return { error: messages.NOT_ENOUGH_POINT, status: 400 };
+  const count = await env.DB.prepare("SELECT COUNT(*) AS count FROM mahjong_players WHERE room_id = ?").bind(roomId).first();
+  if (Number(count.count) >= 4) return { error: "この部屋は満員です", status: 409 };
+  try {
+    await env.DB.batch([
+      env.DB.prepare(`INSERT INTO mahjong_players (room_id, user_id, join_order, score, joined_at) VALUES (?, ?, ?, ?, ?)`).bind(roomId, userId, Number(count.count), room.starting_score, nowJstIso()),
+      env.DB.prepare("UPDATE users SET point = point - ?, total_point = total_point - ? WHERE id = ?").bind(room.stake_amount, room.stake_amount, userId),
+    ]);
+  } catch {
+    return { error: "この部屋には参加できません", status: 409 };
+  }
+  await addMahjongEvent(env, roomId, "player_joined", { user_id: userId });
+  return { room: await mahjongSnapshot(env, roomId, userId) };
+}
+
+async function leaveMahjongRoom(env, roomId, userId) {
+  const room = await env.DB.prepare("SELECT host_id, status, stake_amount FROM mahjong_rooms WHERE id = ?").bind(roomId).first();
+  if (!room || room.status !== "waiting") return { error: "参加待ちの部屋からのみ退出できます", status: 403 };
+  const member = await env.DB.prepare("SELECT 1 FROM mahjong_players WHERE room_id = ? AND user_id = ?").bind(roomId, userId).first();
+  if (!member) return { error: "この部屋に参加していません", status: 404 };
+  if (room.host_id === userId) {
+    const players = await env.DB.prepare("SELECT user_id FROM mahjong_players WHERE room_id = ?").bind(roomId).all();
+    const statements = [];
+    for (const player of players.results || []) {
+      statements.push(env.DB.prepare("UPDATE users SET point = point + ?, total_point = total_point + ? WHERE id = ?").bind(room.stake_amount, room.stake_amount, player.user_id));
+    }
+    statements.push(env.DB.prepare("DELETE FROM mahjong_events WHERE room_id = ?").bind(roomId));
+    statements.push(env.DB.prepare("DELETE FROM mahjong_players WHERE room_id = ?").bind(roomId));
+    statements.push(env.DB.prepare("DELETE FROM mahjong_rooms WHERE id = ?").bind(roomId));
+    await env.DB.batch(statements);
+    return { room: null, closed: true };
+  }
+  await env.DB.batch([
+    env.DB.prepare("DELETE FROM mahjong_players WHERE room_id = ? AND user_id = ?").bind(roomId, userId),
+    env.DB.prepare("UPDATE users SET point = point + ?, total_point = total_point + ? WHERE id = ?").bind(room.stake_amount, room.stake_amount, userId),
+  ]);
+  const remaining = await env.DB.prepare("SELECT user_id FROM mahjong_players WHERE room_id = ? ORDER BY join_order, user_id").bind(roomId).all();
+  for (let index = 0; index < (remaining.results || []).length; index += 1) {
+    await env.DB.prepare("UPDATE mahjong_players SET join_order = ? WHERE room_id = ? AND user_id = ?").bind(index, roomId, remaining.results[index].user_id).run();
+  }
+  return { room: null, closed: false };
+}
+
+async function startMahjongRoom(env, roomId, userId) {
+  const room = await env.DB.prepare("SELECT host_id, status FROM mahjong_rooms WHERE id = ?").bind(roomId).first();
+  if (!room || room.host_id !== userId || room.status !== "waiting") return { error: "対局を開始できません", status: 403 };
+  const rows = await env.DB.prepare("SELECT user_id FROM mahjong_players WHERE room_id = ?").bind(roomId).all();
+  const playerIds = (rows.results || []).map((row) => row.user_id);
+  if (playerIds.length !== 4) return { error: "4人揃うまで開始できません", status: 400 };
+  for (let index = playerIds.length - 1; index > 0; index -= 1) {
+    const target = crypto.getRandomValues(new Uint32Array(1))[0] % (index + 1);
+    [playerIds[index], playerIds[target]] = [playerIds[target], playerIds[index]];
+  }
+  for (let index = 0; index < playerIds.length; index += 1) {
+    await env.DB.prepare("UPDATE mahjong_players SET seat_index = ? WHERE room_id = ? AND user_id = ?").bind(index, roomId, playerIds[index]).run();
+  }
+  const dice1 = 1 + crypto.getRandomValues(new Uint32Array(1))[0] % 6;
+  const dice2 = 1 + crypto.getRandomValues(new Uint32Array(1))[0] % 6;
+  await env.DB.prepare(`UPDATE mahjong_rooms SET status = 'playing', dealer_seat = 0, dice1 = ?, dice2 = ?, updated_at = ? WHERE id = ?`).bind(dice1, dice2, nowJstIso(), roomId).run();
+  await addMahjongEvent(env, roomId, "game_started", { seat_order: playerIds });
+  return { room: await mahjongSnapshot(env, roomId, userId) };
+}
+
+async function rollMahjongDice(env, roomId, userId) {
+  const room = await env.DB.prepare("SELECT host_id, status FROM mahjong_rooms WHERE id = ?").bind(roomId).first();
+  if (!room || room.host_id !== userId || room.status !== "playing") return { error: "サイコロを振れません", status: 403 };
+  const dice1 = 1 + crypto.getRandomValues(new Uint32Array(1))[0] % 6;
+  const dice2 = 1 + crypto.getRandomValues(new Uint32Array(1))[0] % 6;
+  await env.DB.prepare("UPDATE mahjong_rooms SET dice1 = ?, dice2 = ?, updated_at = ? WHERE id = ?").bind(dice1, dice2, nowJstIso(), roomId).run();
+  await addMahjongEvent(env, roomId, "dice", { dice1, dice2 });
+  return { room: await mahjongSnapshot(env, roomId, userId) };
+}
+
+async function setMahjongRiichi(env, roomId, userId, targetUserId, cancel = false) {
+  const room = await env.DB.prepare("SELECT host_id, status, riichi_sticks FROM mahjong_rooms WHERE id = ?").bind(roomId).first();
+  if (!room || room.host_id !== userId || room.status !== "playing") return { error: "リーチを変更できません", status: 403 };
+  const player = await env.DB.prepare("SELECT score, riichi_declared FROM mahjong_players WHERE room_id = ? AND user_id = ?").bind(roomId, targetUserId).first();
+  if (!player) return { error: "プレイヤーが見つかりません", status: 404 };
+  if (!cancel) {
+    if (player.riichi_declared || player.score < 1000) return { error: "リーチできません", status: 400 };
+    await env.DB.batch([
+      env.DB.prepare("UPDATE mahjong_players SET score = score - 1000, riichi_declared = 1 WHERE room_id = ? AND user_id = ?").bind(roomId, targetUserId),
+      env.DB.prepare("UPDATE mahjong_rooms SET riichi_sticks = riichi_sticks + 1, updated_at = ? WHERE id = ?").bind(nowJstIso(), roomId),
+    ]);
+    await addMahjongEvent(env, roomId, "riichi", { user_id: targetUserId });
+  } else {
+    if (!player.riichi_declared || room.riichi_sticks <= 0) return { error: "このプレイヤーはリーチしていません", status: 409 };
+    await env.DB.batch([
+      env.DB.prepare("UPDATE mahjong_players SET score = score + 1000, riichi_declared = 0 WHERE room_id = ? AND user_id = ?").bind(roomId, targetUserId),
+      env.DB.prepare("UPDATE mahjong_rooms SET riichi_sticks = riichi_sticks - 1, updated_at = ? WHERE id = ?").bind(nowJstIso(), roomId),
+    ]);
+    await addMahjongEvent(env, roomId, "riichi_cancelled", { user_id: targetUserId });
+  }
+  return { room: await mahjongSnapshot(env, roomId, userId) };
+}
+
+async function settleMahjongPoints(env, roomId) {
+  const room = await env.DB.prepare("SELECT stake_amount, points_settled, status FROM mahjong_rooms WHERE id = ?").bind(roomId).first();
+  if (!room || room.status !== "finished" || room.points_settled) return;
+  const rows = await env.DB.prepare("SELECT user_id, score FROM mahjong_players WHERE room_id = ?").bind(roomId).all();
+  const players = rows.results || [];
+  const pot = room.stake_amount * players.length;
+  const positiveTotal = players.reduce((sum, player) => sum + Math.max(0, player.score), 0);
+  const rewards = Object.fromEntries(players.map((player) => [player.user_id, 0]));
+  let distributed = 0;
+  const fractions = [];
+  if (pot > 0 && positiveTotal > 0) {
+    for (const player of players) {
+      const numerator = pot * Math.max(0, player.score);
+      const reward = Math.floor(numerator / positiveTotal);
+      rewards[player.user_id] = reward;
+      distributed += reward;
+      fractions.push({ remainder: numerator % positiveTotal, score: player.score, userId: player.user_id });
+    }
+    fractions.sort((a, b) => b.remainder - a.remainder || b.score - a.score || a.userId - b.userId);
+    for (let index = 0; index < pot - distributed; index += 1) rewards[fractions[index].userId] += 1;
+  }
+  const statements = [];
+  for (const player of players) {
+    statements.push(env.DB.prepare("UPDATE users SET point = point + ?, total_point = total_point + ? WHERE id = ?").bind(rewards[player.user_id], rewards[player.user_id], player.user_id));
+    statements.push(env.DB.prepare("UPDATE mahjong_players SET app_point_reward = ? WHERE room_id = ? AND user_id = ?").bind(rewards[player.user_id], roomId, player.user_id));
+  }
+  statements.push(env.DB.prepare("UPDATE mahjong_rooms SET points_settled = 1 WHERE id = ?").bind(roomId));
+  await env.DB.batch(statements);
+  await addMahjongEvent(env, roomId, "point_distribution", { pot, rewards });
+}
+
+async function finishMahjongRoom(env, roomId, userId) {
+  const changed = await env.DB.prepare(`
+    UPDATE mahjong_rooms SET status = 'finished', updated_at = ?
+    WHERE id = ? AND host_id = ? AND status = 'playing'
+  `).bind(nowJstIso(), roomId, userId).run();
+  if (!Number(changed.meta?.changes || 0)) return { error: "ゲームを終了できません", status: 403 };
+  await addMahjongEvent(env, roomId, "game_finished", { reason: "manual" });
+  await settleMahjongPoints(env, roomId);
+  const players = await env.DB.prepare("SELECT user_id FROM mahjong_players WHERE room_id = ?").bind(roomId).all();
+  for (const player of players.results || []) await completeDailyQuest(env, player.user_id, "play_together");
+  return { room: await mahjongSnapshot(env, roomId, userId) };
+}
+
+async function submitMahjongHand(env, roomId, body) {
+  const userId = Number(body?.user_id);
+  const room = await env.DB.prepare("SELECT * FROM mahjong_rooms WHERE id = ?").bind(roomId).first();
+  if (!room || room.host_id !== userId || room.status !== "playing") return { error: "局結果を登録できません", status: 403 };
+  const rows = await env.DB.prepare("SELECT user_id FROM mahjong_players WHERE room_id = ?").bind(roomId).all();
+  const playerIds = (rows.results || []).map((row) => row.user_id);
+  const adjustments = {};
+  for (const [key, value] of Object.entries(body?.adjustments || {})) adjustments[Number(key)] = Number(value);
+  if (Object.keys(adjustments).some((key) => !playerIds.includes(Number(key))) || Object.values(adjustments).some((value) => !Number.isInteger(value)) || Object.values(adjustments).reduce((sum, value) => sum + value, 0) !== 0) {
+    return { error: "点数変動の合計を0にしてください", status: 400 };
+  }
+  for (const playerId of playerIds) {
+    await env.DB.prepare("UPDATE mahjong_players SET score = score + ? WHERE room_id = ? AND user_id = ?").bind(adjustments[playerId] || 0, roomId, playerId).run();
+  }
+  const winnerId = body?.riichi_winner_id == null ? null : Number(body.riichi_winner_id);
+  if (winnerId != null) {
+    if (!playerIds.includes(winnerId)) return { error: "供託の受取人が不正です", status: 400 };
+    await env.DB.prepare("UPDATE mahjong_players SET score = score + ? WHERE room_id = ? AND user_id = ?").bind(room.riichi_sticks * 1000, roomId, winnerId).run();
+  }
+  const dealerContinues = Boolean(body?.dealer_continues);
+  let nextStatus = "playing";
+  let nextWind = room.round_wind;
+  let nextRound = room.round_number;
+  let nextDealer = room.dealer_seat;
+  const nextHonba = dealerContinues ? room.honba + 1 : 0;
+  if (!dealerContinues) {
+    nextDealer = (room.dealer_seat + 1) % 4;
+    nextRound += 1;
+    if (nextRound > 4) {
+      if (room.round_wind === "east" && room.game_type === "hanchan") { nextWind = "south"; nextRound = 1; }
+      else nextStatus = "finished";
+    }
+  }
+  const dice1 = 1 + crypto.getRandomValues(new Uint32Array(1))[0] % 6;
+  const dice2 = 1 + crypto.getRandomValues(new Uint32Array(1))[0] % 6;
+  await env.DB.batch([
+    env.DB.prepare(`
+      UPDATE mahjong_rooms SET status = ?, round_wind = ?, round_number = ?, dealer_seat = ?,
+        honba = ?, riichi_sticks = ?, dice1 = ?, dice2 = ?, updated_at = ? WHERE id = ?
+    `).bind(nextStatus, nextWind, nextRound, nextDealer, nextHonba, winnerId == null ? room.riichi_sticks : 0, dice1, dice2, nowJstIso(), roomId),
+    env.DB.prepare("UPDATE mahjong_players SET riichi_declared = 0 WHERE room_id = ?").bind(roomId),
+  ]);
+  await addMahjongEvent(env, roomId, "hand_result", { adjustments, dealer_continues: dealerContinues, riichi_winner_id: winnerId, note: String(body?.note || "").slice(0, 100) });
+  if (nextStatus === "finished") {
+    await settleMahjongPoints(env, roomId);
+    for (const playerId of playerIds) await completeDailyQuest(env, playerId, "play_together");
+  }
+  return { room: await mahjongSnapshot(env, roomId, userId) };
+}
+
+async function ensureQuestSchema(env) {
+  await env.DB.batch([
+    env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS daily_quest_completions (
+        quest_id TEXT NOT NULL, quest_date TEXT NOT NULL, user_id INTEGER NOT NULL,
+        reward INTEGER NOT NULL, completed_at TEXT NOT NULL,
+        PRIMARY KEY (quest_id, quest_date, user_id)
+      )
+    `),
+    env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS lunch_quest_rooms (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, quest_date TEXT NOT NULL,
+        host_id INTEGER NOT NULL, status TEXT NOT NULL DEFAULT 'waiting',
+        post_id INTEGER, created_at TEXT NOT NULL, completed_at TEXT
+      )
+    `),
+    env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS lunch_quest_members (
+        room_id INTEGER NOT NULL, user_id INTEGER NOT NULL, joined_at TEXT NOT NULL,
+        PRIMARY KEY (room_id, user_id)
+      )
+    `),
+  ]);
+  const columns = await env.DB.prepare("PRAGMA table_info(bulletin_posts)").all();
+  const names = new Set((columns.results || []).map((column) => column.name));
+  if (!names.has("image_data")) {
+    await env.DB.prepare("ALTER TABLE bulletin_posts ADD COLUMN image_data TEXT").run();
+  }
+  if (!names.has("quest_type")) {
+    await env.DB.prepare("ALTER TABLE bulletin_posts ADD COLUMN quest_type TEXT").run();
+  }
+}
+
+async function completeDailyQuest(env, userId, questId) {
+  await ensureQuestSchema(env);
+  const reward = DAILY_QUEST_REWARDS[questId];
+  if (reward == null || !(await getUserById(env, userId))) return null;
+  const completedAt = nowJstIso();
+  const questDate = completedAt.slice(0, 10);
+  const inserted = await env.DB.prepare(`
+    INSERT OR IGNORE INTO daily_quest_completions
+      (quest_id, quest_date, user_id, reward, completed_at)
+    VALUES (?, ?, ?, ?, ?)
+  `).bind(questId, questDate, userId, reward, completedAt).run();
+  const awarded = Number(inserted.meta?.changes || 0) > 0;
+  if (awarded) await addActivity(env, userId, `quest_${questId}`, reward);
+  return {
+    ok: true,
+    awarded,
+    reward: awarded ? reward : 0,
+    user: await getUserById(env, userId),
+  };
+}
+
+async function getDailyQuestStatus(env, userId) {
+  await ensureQuestSchema(env);
+  if (!(await getUserById(env, userId))) return null;
+  const result = await env.DB.prepare(`
+    SELECT quest_id, reward, completed_at FROM daily_quest_completions
+    WHERE user_id = ? AND quest_date = ? ORDER BY completed_at
+  `).bind(userId, nowJstIso().slice(0, 10)).all();
+  return { completed_quests: result.results || [] };
+}
+
+async function getLunchQuest(env, userId) {
+  await ensureQuestSchema(env);
+  if (!(await getUserById(env, userId))) return null;
+  const questDate = nowJstIso().slice(0, 10);
+  const roomRows = await env.DB.prepare(`
+    SELECT r.id, r.host_id, r.status, r.post_id, r.created_at, r.completed_at,
+           u.name AS host_name
+    FROM lunch_quest_rooms r JOIN users u ON u.id = r.host_id
+    WHERE r.quest_date = ?
+    ORDER BY CASE r.status WHEN 'waiting' THEN 0 ELSE 1 END, r.id DESC
+  `).bind(questDate).all();
+  const rooms = [];
+  let myRoomId = null;
+  for (const room of roomRows.results || []) {
+    const members = await env.DB.prepare(`
+      SELECT u.id, u.name, u.grade FROM lunch_quest_members m
+      JOIN users u ON u.id = m.user_id WHERE m.room_id = ? ORDER BY m.joined_at
+    `).bind(room.id).all();
+    room.participants = members.results || [];
+    if (room.participants.some((player) => player.id === userId)) myRoomId = room.id;
+    rooms.push(room);
+  }
+  return { quest_id: "lunch", quest_date: questDate, reward: 20, rooms, my_room_id: myRoomId };
+}
+
+async function createLunchQuestRoom(env, userId) {
+  const status = await getLunchQuest(env, userId);
+  if (!status) return null;
+  if (status.my_room_id) return { ok: false, reason: "already_joined" };
+  const now = nowJstIso();
+  const created = await env.DB.prepare(`
+    INSERT INTO lunch_quest_rooms (quest_date, host_id, created_at) VALUES (?, ?, ?)
+  `).bind(now.slice(0, 10), userId, now).run();
+  const roomId = created.meta.last_row_id;
+  await env.DB.prepare(`
+    INSERT INTO lunch_quest_members (room_id, user_id, joined_at) VALUES (?, ?, ?)
+  `).bind(roomId, userId, now).run();
+  return { ok: true, room_id: roomId, status: await getLunchQuest(env, userId) };
+}
+
+async function joinLunchQuest(env, userId, roomId) {
+  const status = await getLunchQuest(env, userId);
+  if (!status) return null;
+  if (status.my_room_id) return { ok: false, reason: "already_joined" };
+  const room = await env.DB.prepare(`
+    SELECT id FROM lunch_quest_rooms WHERE id = ? AND quest_date = ? AND status = 'waiting'
+  `).bind(roomId, nowJstIso().slice(0, 10)).first();
+  if (!room) return { ok: false, reason: "room_not_found" };
+  await env.DB.prepare(`
+    INSERT INTO lunch_quest_members (room_id, user_id, joined_at) VALUES (?, ?, ?)
+  `).bind(roomId, userId, nowJstIso()).run();
+  return { ok: true, status: await getLunchQuest(env, userId) };
+}
+
+async function completeLunchQuest(env, body) {
+  await ensureQuestSchema(env);
+  const userId = Number(body?.user_id);
+  const roomId = Number(body?.room_id);
+  const member = await env.DB.prepare(`
+    SELECT 1 FROM lunch_quest_rooms r JOIN lunch_quest_members m ON m.room_id = r.id
+    WHERE r.id = ? AND r.quest_date = ? AND r.status = 'waiting' AND m.user_id = ?
+  `).bind(roomId, nowJstIso().slice(0, 10), userId).first();
+  if (!member) return { ok: false, reason: "not_participant" };
+  const members = await env.DB.prepare(
+    "SELECT user_id FROM lunch_quest_members WHERE room_id = ?",
+  ).bind(roomId).all();
+  if ((members.results || []).length < 2) return { ok: false, reason: "not_enough_members" };
+  const now = nowJstIso();
+  const content = String(body?.content || "").trim() || "みんなで昼飯クエストを達成しました！";
+  const imageData = String(body?.image_data || "");
+  const post = await env.DB.prepare(`
+    INSERT INTO bulletin_posts (user_id, content, image_data, quest_type, created_at)
+    VALUES (?, ?, ?, 'lunch', ?)
+  `).bind(userId, content, imageData, now).run();
+  for (const participant of members.results || []) {
+    await addActivity(env, participant.user_id, "lunch_quest", 20);
+  }
+  await env.DB.prepare(`
+    UPDATE lunch_quest_rooms SET status = 'completed', post_id = ?, completed_at = ? WHERE id = ?
+  `).bind(post.meta.last_row_id, now, roomId).run();
+  return {
+    ok: true,
+    awarded_user_ids: (members.results || []).map((item) => item.user_id),
+    user: await getUserById(env, userId),
+    status: await getLunchQuest(env, userId),
+  };
+}
+
+async function completePhotoQuest(env, body) {
+  const userId = Number(body?.user_id);
+  await ensureQuestSchema(env);
+  const already = await env.DB.prepare(`
+    SELECT 1 FROM daily_quest_completions
+    WHERE quest_id = 'lab_photo' AND quest_date = ? AND user_id = ?
+  `).bind(nowJstIso().slice(0, 10), userId).first();
+  if (already) return { ok: false, reason: "completed" };
+  if (!(await getUserById(env, userId))) return null;
+  const now = nowJstIso();
+  const content = String(body?.content || "").trim() || "今日の研究室の風景を共有しました！";
+  await env.DB.prepare(`
+    INSERT INTO bulletin_posts (user_id, content, image_data, quest_type, created_at)
+    VALUES (?, ?, ?, 'lab_photo', ?)
+  `).bind(userId, content, String(body?.image_data || ""), now).run();
+  const quest = await completeDailyQuest(env, userId, "lab_photo");
+  return { ok: true, user: quest.user, status: await getDailyQuestStatus(env, userId) };
 }
 
 export default {
@@ -1104,8 +1837,198 @@ export default {
       return new Response(null, { headers: corsHeaders });
     }
 
+    await ensureUserPresenceSchema(env);
+    await ensureGachaSchema(env);
+    await ensureMahjongSchema(env);
+
     if (path === "/") {
       return json({ message: "Cloudflare Worker API is running" });
+    }
+
+    const gachaStatus = path.match(/^\/gacha\/status\/(\d+)$/);
+    if (gachaStatus && request.method === "GET") {
+      const result = await getGachaStatus(env, Number(gachaStatus[1]));
+      if (!result) return json({ detail: messages.USER_NOT_FOUND }, 404);
+      return json(result);
+    }
+
+    if (path === "/shop/gacha-coins/purchase" && request.method === "POST") {
+      const body = await readJson(request);
+      const quantity = body?.quantity == null ? 1 : Number(body.quantity);
+      const result = await purchaseGachaCoin(env, Number(body?.user_id), quantity);
+      if (!result.ok) {
+        const detail = result.reason === "user_not_found"
+          ? messages.USER_NOT_FOUND
+          : result.reason === "invalid_quantity"
+            ? "購入枚数は1〜99枚で指定してください"
+            : messages.NOT_ENOUGH_POINT;
+        return json({ detail }, result.reason === "user_not_found" ? 404 : 400);
+      }
+      return json(result);
+    }
+
+    if (path === "/gacha/pull" && request.method === "POST") {
+      const body = await readJson(request);
+      const result = await pullGacha(env, Number(body?.user_id));
+      if (!result.ok) return json({ detail: result.reason === "user_not_found" ? messages.USER_NOT_FOUND : "ガチャコインがありません" }, result.reason === "user_not_found" ? 404 : 400);
+      return json(result);
+    }
+
+    if (path === "/gacha/avatar/select" && request.method === "POST") {
+      const body = await readJson(request);
+      const result = await selectGachaItem(env, Number(body?.user_id), "avatar", body?.avatar_id);
+      if (!result.ok) return json({ detail: "未所持のアバターは選択できません" }, 400);
+      return json(result);
+    }
+
+    if (path === "/gacha/icon/select" && request.method === "POST") {
+      const body = await readJson(request);
+      const result = await selectGachaItem(env, Number(body?.user_id), "icon", body?.icon_id);
+      if (!result.ok) return json({ detail: "未所持のアイコンは選択できません" }, 400);
+      return json(result);
+    }
+
+    if (path === "/mahjong/current" && request.method === "GET") {
+      return json({ room: await getCurrentMahjongRoom(env, Number(url.searchParams.get("user_id"))) });
+    }
+
+    if (path === "/mahjong/rooms" && request.method === "GET") {
+      return json(await listMahjongRooms(env));
+    }
+
+    if (path === "/mahjong/rooms" && request.method === "POST") {
+      const result = await createMahjongRoom(env, await readJson(request));
+      if (result.error) return json({ detail: result.error }, result.status);
+      return json(result);
+    }
+
+    const mahjongRoom = path.match(/^\/mahjong\/rooms\/(\d+)$/);
+    if (mahjongRoom && request.method === "GET") {
+      const room = await mahjongSnapshot(env, Number(mahjongRoom[1]), Number(url.searchParams.get("user_id")));
+      if (!room) return json({ detail: "麻雀部屋が見つかりません" }, 404);
+      return json({ room });
+    }
+
+    const mahjongJoin = path.match(/^\/mahjong\/rooms\/(\d+)\/join$/);
+    if (mahjongJoin && request.method === "POST") {
+      const body = await readJson(request);
+      const result = await joinMahjongRoom(env, Number(body?.user_id), Number(mahjongJoin[1]));
+      if (result.error) return json({ detail: result.error }, result.status);
+      return json(result);
+    }
+
+    const mahjongLeave = path.match(/^\/mahjong\/rooms\/(\d+)\/leave$/);
+    if (mahjongLeave && request.method === "POST") {
+      const body = await readJson(request);
+      const result = await leaveMahjongRoom(env, Number(mahjongLeave[1]), Number(body?.user_id));
+      if (result.error) return json({ detail: result.error }, result.status);
+      return json(result);
+    }
+
+    const mahjongStart = path.match(/^\/mahjong\/rooms\/(\d+)\/start$/);
+    if (mahjongStart && request.method === "POST") {
+      const body = await readJson(request);
+      const result = await startMahjongRoom(env, Number(mahjongStart[1]), Number(body?.user_id));
+      if (result.error) return json({ detail: result.error }, result.status);
+      return json(result);
+    }
+
+    const mahjongDice = path.match(/^\/mahjong\/rooms\/(\d+)\/dice$/);
+    if (mahjongDice && request.method === "POST") {
+      const body = await readJson(request);
+      const result = await rollMahjongDice(env, Number(mahjongDice[1]), Number(body?.user_id));
+      if (result.error) return json({ detail: result.error }, result.status);
+      return json(result);
+    }
+
+    const mahjongRiichi = path.match(/^\/mahjong\/rooms\/(\d+)\/riichi$/);
+    if (mahjongRiichi && request.method === "POST") {
+      const body = await readJson(request);
+      const result = await setMahjongRiichi(env, Number(mahjongRiichi[1]), Number(body?.user_id), Number(body?.target_user_id));
+      if (result.error) return json({ detail: result.error }, result.status);
+      return json(result);
+    }
+
+    const mahjongRiichiCancel = path.match(/^\/mahjong\/rooms\/(\d+)\/riichi\/cancel$/);
+    if (mahjongRiichiCancel && request.method === "POST") {
+      const body = await readJson(request);
+      const result = await setMahjongRiichi(env, Number(mahjongRiichiCancel[1]), Number(body?.user_id), Number(body?.target_user_id), true);
+      if (result.error) return json({ detail: result.error }, result.status);
+      return json(result);
+    }
+
+    const mahjongFinish = path.match(/^\/mahjong\/rooms\/(\d+)\/finish$/);
+    if (mahjongFinish && request.method === "POST") {
+      const body = await readJson(request);
+      const result = await finishMahjongRoom(env, Number(mahjongFinish[1]), Number(body?.user_id));
+      if (result.error) return json({ detail: result.error }, result.status);
+      return json(result);
+    }
+
+    const mahjongHand = path.match(/^\/mahjong\/rooms\/(\d+)\/hand$/);
+    if (mahjongHand && request.method === "POST") {
+      const result = await submitMahjongHand(env, Number(mahjongHand[1]), await readJson(request));
+      if (result.error) return json({ detail: result.error }, result.status);
+      return json(result);
+    }
+
+    const questStatus = path.match(/^\/quests\/status\/(\d+)$/);
+    if (questStatus && request.method === "GET") {
+      const result = await getDailyQuestStatus(env, Number(questStatus[1]));
+      if (!result) return json({ detail: messages.USER_NOT_FOUND }, 404);
+      return json(result);
+    }
+
+    if (path === "/quests/visit-village" && request.method === "POST") {
+      const body = await readJson(request);
+      const result = await completeDailyQuest(env, Number(body?.user_id), "visit_village");
+      if (!result) return json({ detail: messages.USER_NOT_FOUND }, 404);
+      return json(result);
+    }
+
+    if (path === "/quests/lunch" && request.method === "GET") {
+      const result = await getLunchQuest(env, Number(url.searchParams.get("user_id")));
+      if (!result) return json({ detail: messages.USER_NOT_FOUND }, 404);
+      return json(result);
+    }
+
+    if (path === "/quests/lunch/rooms" && request.method === "POST") {
+      const body = await readJson(request);
+      const result = await createLunchQuestRoom(env, Number(body?.user_id));
+      if (!result) return json({ detail: messages.USER_NOT_FOUND }, 404);
+      if (!result.ok) return json({ detail: "本日はすでに昼飯グループへ参加しています" }, 400);
+      return json(result);
+    }
+
+    if (path === "/quests/lunch/join" && request.method === "POST") {
+      const body = await readJson(request);
+      const result = await joinLunchQuest(env, Number(body?.user_id), Number(body?.room_id));
+      if (!result) return json({ detail: messages.USER_NOT_FOUND }, 404);
+      if (!result.ok) return json({ detail: result.reason === "already_joined" ? "本日はすでに別のグループへ参加しています" : "このグループには参加できません" }, 400);
+      return json(result);
+    }
+
+    if (path === "/quests/lunch/complete" && request.method === "POST") {
+      const body = await readJson(request);
+      const imageData = String(body?.image_data || "");
+      if (!imageData.startsWith("data:image/") || imageData.length > 1500000) {
+        return json({ detail: "画像は1MB以下のPNG・JPEG・GIF・WebPにしてください" }, 400);
+      }
+      const result = await completeLunchQuest(env, body);
+      if (!result.ok) return json({ detail: result.reason === "not_enough_members" ? "2人以上参加すると完了できます" : "先に昼飯グループへ参加してください" }, 400);
+      return json(result);
+    }
+
+    if (path === "/quests/photo/complete" && request.method === "POST") {
+      const body = await readJson(request);
+      const imageData = String(body?.image_data || "");
+      if (!imageData.startsWith("data:image/") || imageData.length > 1500000) {
+        return json({ detail: "画像は1MB以下のPNG・JPEG・GIF・WebPにしてください" }, 400);
+      }
+      const result = await completePhotoQuest(env, body);
+      if (!result) return json({ detail: messages.USER_NOT_FOUND }, 404);
+      if (!result.ok) return json({ detail: "本日の写真クエストは達成済みです" }, 400);
+      return json(result);
     }
 
     if (path === "/battle/matchmake" && request.method === "POST") {
@@ -1174,6 +2097,8 @@ export default {
           SET status = 'finished', winner_id = ?, result_text = '相手が退出しました', updated_at = ?
           WHERE id = ? AND status = 'active'
         `).bind(winnerId, new Date().toISOString(), matchId).run();
+        await completeDailyQuest(env, match.player1_id, "play_together");
+        await completeDailyQuest(env, match.player2_id, "play_together");
       }
       return json({ ok: true });
     }
@@ -1222,7 +2147,18 @@ export default {
         .bind(body.name, body.grade, passwordHash)
         .run();
 
+      await ensureGachaSchema(env);
+
       const user = await getUserByName(env, body.name);
+      const acquiredAt = nowJstIso();
+      await env.DB.batch([
+        env.DB.prepare(
+          "INSERT OR IGNORE INTO user_avatars (user_id, avatar_id, acquired_at) VALUES (?, 'izumi', ?)",
+        ).bind(user.id, acquiredAt),
+        env.DB.prepare(
+          "INSERT OR IGNORE INTO user_icons (user_id, icon_id, acquired_at) VALUES (?, 'hero', ?)",
+        ).bind(user.id, acquiredAt),
+      ]);
 
       return json({
         message: messages.REGISTERED,
@@ -1232,6 +2168,9 @@ export default {
           grade: user.grade,
           point: user.point,
           total_point: user.total_point,
+          gacha_coins: user.gacha_coins,
+          selected_avatar: user.selected_avatar,
+          selected_icon: user.selected_icon,
         },
       });
     }
@@ -1269,6 +2208,9 @@ export default {
           grade: user.grade,
           point: user.point + addedPoint,
           total_point: user.total_point + addedPoint,
+          gacha_coins: user.gacha_coins,
+          selected_avatar: user.selected_avatar,
+          selected_icon: user.selected_icon,
           village_slot_id: await getUserVillageSlotId(env, user.id),
           session_token: sessionToken,
         },
@@ -1294,7 +2236,7 @@ export default {
     if (path === "/ranking" && request.method === "GET") {
       const result = await env.DB.prepare(
         `
-        SELECT id, name, grade, point, total_point
+        SELECT id, name, grade, point, total_point, selected_avatar, selected_icon
         FROM users
         ORDER BY total_point DESC
         `,

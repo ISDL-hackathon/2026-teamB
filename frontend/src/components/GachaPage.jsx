@@ -69,9 +69,11 @@ function GachaPage({ currentUser, setCurrentUser, setPage }) {
     skipRequestedRef.current = false;
   };
 
-  const getHitType = (data) => data.avatar.id === "daiki"
+  const getHitType = (data) => data.avatar.rarity === "シークレット"
     ? "secret"
-    : data.avatar.kind === "icon" || data.duplicate ? "middle" : "jackpot";
+    : data.avatar.rarity === "大当たり"
+      ? "jackpot"
+      : "middle";
 
   const getPrizeImage = (prize) => prize.kind === "icon"
     ? getIconImage(prize.id)
@@ -112,6 +114,7 @@ function GachaPage({ currentUser, setCurrentUser, setPage }) {
 
   const skipAnimation = () => {
     if (!spinning) return;
+    if (showingJackpot && hitType === "secret") return;
     if (showingPrize) {
       if (pendingResultRef.current) finishPull(pendingResultRef.current);
       return;
@@ -173,8 +176,12 @@ function GachaPage({ currentUser, setCurrentUser, setPage }) {
 
   return (
     <section className="gachaPage">
-      {spinning && (
-        <button className="gachaSkipOverlay" onClick={skipAnimation} type="button">
+      {spinning && !(showingJackpot && hitType === "secret") && (
+        <button
+          className="gachaSkipOverlay"
+          onClick={skipAnimation}
+          type="button"
+        >
           {showingPrize
             ? "\u30af\u30ea\u30c3\u30af\u3067\u7d50\u679c\u3078"
             : showingJackpot
@@ -208,7 +215,6 @@ function GachaPage({ currentUser, setCurrentUser, setPage }) {
             <article className={!avatar.owned ? "avatarPrize avatarPrizeLocked" : "avatarPrize"} key={avatar.id}>
               <img alt={avatar.name} src={getAvatarImage(avatar.id)} />
               <strong>{avatar.owned ? avatar.name : "???"}</strong>
-              <span>{avatar.rarity}</span>
               <span>{avatar.owned ? text.owned : text.locked}</span>
             </article>
           ))}
@@ -221,7 +227,6 @@ function GachaPage({ currentUser, setCurrentUser, setPage }) {
             <article className={!icon.owned ? "avatarPrize avatarPrizeLocked" : "avatarPrize"} key={icon.id}>
               <img alt={icon.name} src={getIconImage(icon.id)} />
               <strong>{icon.owned ? icon.name : "???"}</strong>
-              <span>{icon.rarity}</span>
               <span>{icon.owned ? text.owned : text.locked}</span>
             </article>
           ))}

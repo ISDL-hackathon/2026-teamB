@@ -62,7 +62,7 @@ export const floorTextureOptions = [
 export const roomItems = [
   {
     id: "round_table",
-    name: "Round Table",
+    name: "丸テーブル",
     price: 50,
     category: "lab",
     surface: "floor",
@@ -78,7 +78,7 @@ export const roomItems = [
   },
   {
     id: "office_chair",
-    name: "Office Chair",
+    name: "オフィスチェア",
     price: 35,
     category: "lab",
     surface: "floor",
@@ -94,7 +94,7 @@ export const roomItems = [
   },
   {
     id: "bulletin_board",
-    name: "Bulletin Board",
+    name: "掲示板",
     price: 50,
     category: "lab",
     surface: "wall",
@@ -110,7 +110,7 @@ export const roomItems = [
   },
   {
     id: "quest_board",
-    name: "Quest Board",
+    name: "クエストボード",
     price: 50,
     category: "lab",
     surface: "floor",
@@ -126,7 +126,7 @@ export const roomItems = [
   },
   {
     id: "window",
-    name: "Window",
+    name: "窓",
     price: 30,
     category: "western",
     surface: "wall",
@@ -142,7 +142,7 @@ export const roomItems = [
   },
   {
     id: "clock",
-    name: "Clock",
+    name: "時計",
     price: 30,
     category: "western",
     surface: "wall",
@@ -158,7 +158,7 @@ export const roomItems = [
   },
   {
     id: "stove",
-    name: "Stove",
+    name: "ストーブ",
     price: 50,
     category: "western",
     surface: "wall",
@@ -174,7 +174,7 @@ export const roomItems = [
   },
   {
     id: "bookshelf",
-    name: "Bookshelf",
+    name: "本棚",
     price: 80,
     category: "western",
     surface: "floor",
@@ -191,7 +191,7 @@ export const roomItems = [
   },
   {
     id: "shelf",
-    name: "Shelf",
+    name: "棚",
     price: 100,
     category: "western",
     surface: "floor",
@@ -207,7 +207,7 @@ export const roomItems = [
   },
   {
     id: "bed",
-    name: "Bed",
+    name: "ベッド",
     price: 150,
     category: "western",
     surface: "floor",
@@ -224,7 +224,7 @@ export const roomItems = [
 
   {
   id: "retro_tv",
-  name: "Retro TV ",
+  name: "レトロテレビ",
   price: 80,
   category: "western",
   surface: "floor",
@@ -241,7 +241,7 @@ export const roomItems = [
 
   {
     id: "game_cabinet",
-    name: "Game Cabinet",
+    name: "ゲーム機",
     price: 100,
     category: "lab",
     surface: "floor",
@@ -337,7 +337,7 @@ export const roomItems = [
   },
   {
     id: "chara",
-    name: "Character",
+    name: "キャラクター",
     surface: "floor",
     minLevel: 1,
     src: charaImg,

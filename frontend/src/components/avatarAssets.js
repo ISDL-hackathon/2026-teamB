@@ -3,6 +3,7 @@ import naganoAvatar from "../assets/avatars/nagano256.gif";
 import abeAvatar from "../assets/avatars/abe256.gif";
 import daikiAvatar from "../assets/avatars/daiki256.gif";
 import maieAvatar from "../assets/avatars/maie256.gif";
+import giantRobotAvatar from "../assets/avatars/giant-robot256.gif";
 
 export const avatarAssets = {
   izumi: izumiAvatar,
@@ -10,6 +11,7 @@ export const avatarAssets = {
   abe: abeAvatar,
   daiki: daikiAvatar,
   maie: maieAvatar,
+  giant_robot: giantRobotAvatar,
 };
 
 export function getAvatarImage(avatarId) {

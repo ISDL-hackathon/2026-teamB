@@ -13,37 +13,42 @@ CHECKIN_POINT = 20
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 FURNITURE_CATALOG = [
-    {"id": "fan", "name": "Fan", "price": 40, "min_level": 1, "category": "western", "surface": "floor"},
-    {"id": "cactus", "name": "Cactus", "price": 30, "min_level": 1, "category": "western", "surface": "floor"},
-    {"id": "flowering_cactus", "name": "Flowering Cactus", "price": 45, "min_level": 2, "category": "western", "surface": "floor"},
-    {"id": "sofa", "name": "Sofa", "price": 120, "min_level": 3, "category": "western", "surface": "floor"},
-    {"id": "sunflower", "name": "Sunflower", "price": 50, "min_level": 2, "category": "western", "surface": "floor"},
-    {"id": "round_table", "name": "Round Table", "price": 50, "min_level": 1, "category": "lab", "surface": "floor"},
-    {"id": "office_chair", "name": "Office Chair", "price": 35, "min_level": 1, "category": "lab", "surface": "floor"},
-    {"id": "bulletin_board", "name": "Bulletin Board", "price": 15, "min_level": 1, "category": "lab", "surface": "wall"},
-    {"id": "quest_board", "name": "Quest Board", "price": 15, "min_level": 1, "category": "lab", "surface": "floor"},
-    {"id": "game_cabinet", "name": "Game Cabinet", "price": 15, "min_level": 2, "category": "lab", "surface": "floor"},
-    {"id": "window", "name": "Window", "price": 30, "min_level": 2, "category": "western", "surface": "wall"},
-    {"id": "clock", "name": "Clock", "price": 30, "min_level": 2, "category": "western", "surface": "wall"},
-    {"id": "stove", "name": "Stove", "price": 50, "min_level": 2, "category": "western", "surface": "wall"},
-    {"id": "bookshelf", "name": "Bookshelf", "price": 80, "min_level": 3, "category": "western", "surface": "floor"},
-    {"id": "shelf", "name": "Shelf", "price": 100, "min_level": 4, "category": "western", "surface": "floor"},
-    {"id": "bed", "name": "Bed", "price": 150, "min_level": 5, "category": "western", "surface": "floor"},
-    {"id": "retro_tv", "name": "Retro TV", "price": 80, "min_level": 2, "category": "western", "surface": "floor"},
+    {"id": "fan", "name": "扇風機", "price": 40, "min_level": 1, "category": "western", "surface": "floor"},
+    {"id": "cactus", "name": "サボテン", "price": 30, "min_level": 1, "category": "western", "surface": "floor"},
+    {"id": "flowering_cactus", "name": "花付きサボテン", "price": 45, "min_level": 2, "category": "western", "surface": "floor"},
+    {"id": "sofa", "name": "ソファ", "price": 120, "min_level": 3, "category": "western", "surface": "floor"},
+    {"id": "sunflower", "name": "ひまわり", "price": 50, "min_level": 2, "category": "western", "surface": "floor"},
+    {"id": "round_table", "name": "丸テーブル", "price": 50, "min_level": 1, "category": "lab", "surface": "floor"},
+    {"id": "office_chair", "name": "オフィスチェア", "price": 35, "min_level": 1, "category": "lab", "surface": "floor"},
+    {"id": "bulletin_board", "name": "掲示板", "price": 15, "min_level": 1, "category": "lab", "surface": "wall"},
+    {"id": "quest_board", "name": "クエストボード", "price": 15, "min_level": 1, "category": "lab", "surface": "floor"},
+    {"id": "game_cabinet", "name": "ゲーム機", "price": 15, "min_level": 2, "category": "lab", "surface": "floor"},
+    {"id": "window", "name": "窓", "price": 30, "min_level": 2, "category": "western", "surface": "wall"},
+    {"id": "clock", "name": "時計", "price": 30, "min_level": 2, "category": "western", "surface": "wall"},
+    {"id": "stove", "name": "ストーブ", "price": 50, "min_level": 2, "category": "western", "surface": "wall"},
+    {"id": "bookshelf", "name": "本棚", "price": 80, "min_level": 3, "category": "western", "surface": "floor"},
+    {"id": "shelf", "name": "棚", "price": 100, "min_level": 4, "category": "western", "surface": "floor"},
+    {"id": "bed", "name": "ベッド", "price": 150, "min_level": 5, "category": "western", "surface": "floor"},
+    {"id": "retro_tv", "name": "レトロテレビ", "price": 80, "min_level": 2, "category": "western", "surface": "floor"},
 ]
 
 GACHA_COIN_PRICE = 10
 AVATAR_CATALOG = {
     "izumi": {"id": "izumi", "name": "いずみ", "rarity": "ノーマル"},
-    "nagano": {"id": "nagano", "name": "ながの", "rarity": "レア"},
-    "abe": {"id": "abe", "name": "あべ", "rarity": "レア"},
+    "nagano": {"id": "nagano", "name": "ながの", "rarity": "中当たり"},
+    "abe": {"id": "abe", "name": "あべ", "rarity": "中当たり"},
     "daiki": {"id": "daiki", "name": "だいき", "rarity": "シークレット"},
     "maie": {"id": "maie", "name": "まいえ", "rarity": "大当たり"},
+    "giant_robot": {"id": "giant_robot", "name": "白い機体", "rarity": "シークレット"},
 }
 
 ICON_CATALOG = {
     "hero": {"id": "hero", "name": "勇者", "rarity": "ノーマル", "kind": "icon"},
     "icon1": {"id": "icon1", "name": "屋根のねずみ", "rarity": "中当たり", "kind": "icon"},
+    "icon2": {"id": "icon2", "name": "白猫アイコン", "rarity": "中当たり", "kind": "icon"},
+    "icon3": {"id": "icon3", "name": "イービィ", "rarity": "中当たり", "kind": "icon"},
+    "icon4": {"id": "icon4", "name": "もふもふ", "rarity": "大当たり", "kind": "icon"},
+    "icon5": {"id": "icon5", "name": "かっぱ", "rarity": "中当たり", "kind": "icon"},
 }
 
 VILLAGE_LEVELS = [
@@ -2648,7 +2653,10 @@ def get_avatar_status(user_id: int):
     }
 
 
-def purchase_gacha_coin(user_id: int):
+def purchase_gacha_coin(user_id: int, quantity: int = 1):
+    if quantity < 1 or quantity > 99:
+        return {"ok": False, "reason": "invalid_quantity"}
+    total_price = GACHA_COIN_PRICE * quantity
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("SELECT point FROM users WHERE id = ?", (user_id,))
@@ -2656,17 +2664,23 @@ def purchase_gacha_coin(user_id: int):
     if user is None:
         conn.close()
         return {"ok": False, "reason": "user_not_found"}
-    if user["point"] < GACHA_COIN_PRICE:
+    if user["point"] < total_price:
         conn.close()
         return {"ok": False, "reason": "not_enough_point"}
 
     cur.execute(
-        "UPDATE users SET point = point - ?, gacha_coins = gacha_coins + 1 WHERE id = ?",
-        (GACHA_COIN_PRICE, user_id),
+        "UPDATE users SET point = point - ?, gacha_coins = gacha_coins + ? WHERE id = ?",
+        (total_price, quantity, user_id),
     )
     conn.commit()
     conn.close()
-    return {"ok": True, "price": GACHA_COIN_PRICE, "user": get_user_by_id(user_id)}
+    return {
+        "ok": True,
+        "price": total_price,
+        "unit_price": GACHA_COIN_PRICE,
+        "quantity": quantity,
+        "user": get_user_by_id(user_id),
+    }
 
 
 def pull_gacha(user_id: int):
@@ -2684,14 +2698,13 @@ def pull_gacha(user_id: int):
     rarity_roll = secrets.randbelow(100)
     prize_kind = "avatar"
     if rarity_roll < 5:
-        avatar_id = "daiki"
+        avatar_id = secrets.choice(("daiki", "giant_robot"))
     elif rarity_roll < 15:
-        avatar_id = "maie"
-    elif rarity_roll < 35:
-        prize_kind = "icon"
-        avatar_id = "icon1"
+        avatar_id = secrets.choice(("maie", "icon4"))
+        prize_kind = "icon" if avatar_id == "icon4" else "avatar"
     else:
-        avatar_id = secrets.choice(("nagano", "abe"))
+        avatar_id = secrets.choice(("icon1", "icon2", "icon3", "icon5", "nagano", "abe"))
+        prize_kind = "icon" if avatar_id.startswith("icon") else "avatar"
     avatar = ICON_CATALOG[avatar_id] if prize_kind == "icon" else {**AVATAR_CATALOG[avatar_id], "kind": "avatar"}
     owned_table = "user_icons" if prize_kind == "icon" else "user_avatars"
     owned_column = "icon_id" if prize_kind == "icon" else "avatar_id"
