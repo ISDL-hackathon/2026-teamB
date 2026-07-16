@@ -63,19 +63,26 @@ function App() {
   };
 
   const refreshAll = (userId = currentUser?.id) => {
-    fetchRanking();
-    fetchVillage();
-    fetchVillageSlots();
+  fetchRanking();
+  fetchVillage();
+  fetchVillageSlots();
+  fetchWeeklyActivity();  
 
-    if (userId) {
-      fetchRoom(userId);
-    }
-  };
+  if (userId) {
+    fetchRoom(userId);
+  }
+};
 
   useEffect(() => {
     fetchRanking();
     fetchVillage();
   }, []);
+
+  useEffect(() => {
+  fetchRanking();
+  fetchVillage();
+  fetchWeeklyActivity();   // ← 追加
+}, []);
 
   useEffect(() => {
     if (!currentUser?.session_token) return undefined;
@@ -192,6 +199,14 @@ function App() {
       setMessage("ログアウトしました");
     });
   };
+
+const [weeklyActivity, setWeeklyActivity] = useState(null);
+
+const fetchWeeklyActivity = () => {
+  requestJson("/village/weekly_activity")
+    .then(setWeeklyActivity)
+    .catch((err) => setMessage(err.message));
+};
 
   const fetchVillageSlots = () => {
     requestJson("/village/slots")
@@ -362,12 +377,13 @@ function App() {
       {currentUser && page === "home" && (
         <HomePage
           currentUser={currentUser}
-          onCheckin={handleCheckin}
-          onLogout={handleLogout}
-          onOpenMyRoom={handleOpenMyRoom}
-          ranking={ranking}
-          setPage={setPage}
-          village={village}
+         onCheckin={handleCheckin}
+         onLogout={handleLogout}
+         onOpenMyRoom={handleOpenMyRoom}
+         ranking={ranking}
+         setPage={setPage}
+         village={village}
+        weeklyActivity={weeklyActivity}   
         />
       )}
 

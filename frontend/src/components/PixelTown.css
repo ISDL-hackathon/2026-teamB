@@ -36,19 +36,7 @@
   z-index: 30;
 }
 
-/*
 .townSlotEmpty {
-  
-  border-color: rgba(80, 180, 255, 0.85);
-  background: rgba(80, 180, 255, 0.18);
-}
-
-.townSlotEmpty:hover {
-  background: rgba(80, 180, 255, 0.34);
-}
-*/
-.townSlotEmpty {
-  
   border-color: transparent;
   background: transparent;
 }
@@ -66,13 +54,19 @@
   transform: translateY(-2px);
 }
 
+/* 選択モード:空席(緑=選択可能) */
 .townSlotPcPreview {
-  border-color: transparent;
-  background: transparent;
+  border: 1px solid rgba(80, 220, 120, 0.85);   /* 枠の色・太さ */
+  background: rgba(80, 220, 120, 0.16);         /* 背景の濃さ */
+}
+.townSlotPcPreview:hover {
+  background: rgba(80, 220, 120, 0.30);         /* ホバー時の濃さ */
 }
 
-.townSlotPcPreview:hover {
-  background: rgba(80, 180, 255, 0.12);
+/* 選択モード:占有済み(赤=選択不可) */
+.townSlotOccupiedPreview {
+  border: 1px solid rgba(230, 80, 80, 0.85);    /* 枠の色・太さ */
+  background: rgba(230, 80, 80, 0.16);          /* 背景の濃さ */
 }
 
 .townSlot:disabled {
@@ -168,14 +162,14 @@
   pointer-events: none;
 }
 
-.townPersonalPc{
+.townPersonalPc {
   width: 100%;
   height: 100%;
   object-fit: contain;
   image-rendering: pixelated;
   pointer-events: none;
-  transform: scale(1.1);            /* ← 追加:1.5倍。好みで 1.3〜2.0 */
-  transform-origin: center bottom;  /* 足元基準で拡大(机の上で自然) */
+  transform: scale(1.1);
+  transform-origin: center bottom;
 }
 .townPersonalSeat,
 .townPersonalChara {
@@ -184,8 +178,8 @@
   object-fit: contain;
   image-rendering: pixelated;
   pointer-events: none;
-  transform: scale(1.5);            /* ← 追加:1.5倍。好みで 1.3〜2.0 */
-  transform-origin: center bottom;  /* 足元基準で拡大(机の上で自然) */
+  transform: scale(1.5);
+  transform-origin: center bottom;
 }
 
 .townSlot {
@@ -213,12 +207,6 @@
   overflow: hidden;
   pointer-events: none;
   text-overflow: ellipsis;
-  /*
-  text-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.9),
-    1px 0 0 rgba(255, 255, 255, 0.9),
-    -1px 0 0 rgba(255, 255, 255, 0.9);
-  */
   transform: translate(-8px, -30px);
   white-space: nowrap;
   z-index: 60;

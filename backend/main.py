@@ -50,6 +50,7 @@ from database import (
     end_login_session,
     forfeit_battle,
     verify_password,
+    get_weekly_activity,
 )
 from messages import (
     FURNITURE_ALREADY_OWNED,
@@ -471,6 +472,10 @@ def gacha_avatar_select(request: AvatarSelectRequest):
 @app.get("/village/status")
 def village_status():
     return get_village_status()
+
+@app.get("/village/weekly_activity")
+def village_weekly_activity():
+    return get_weekly_activity()
 
 
 @app.get("/village/slots")

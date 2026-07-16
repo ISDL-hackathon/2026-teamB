@@ -2,6 +2,22 @@ import charaIcon from "../assets/chara.png";
 import iconBase from "../assets/icons/maru.png";
 import RankingTable from "./RankingTable";
 
+import treeStage1 from "../assets/tree/tree_stage_1.png";
+import treeStage2 from "../assets/tree/tree_stage_2.png";
+import treeStage3 from "../assets/tree/tree_stage_3.png";
+import treeStage4 from "../assets/tree/tree_stage_4.png";
+import treeStage5 from "../assets/tree/tree_stage_5.png";
+import treeStage6 from "../assets/tree/tree_stage_6.png";
+
+const TREE_STAGES = [treeStage1, treeStage2, treeStage3, treeStage4, treeStage5, treeStage6];
+const WEEKDAY_LABELS = ["月", "火", "水", "木", "金", "土", "日"];
+
+// 割合(0〜1)を6段階(0〜5)の画像に変換
+function getTreeStage(ratio) {
+  const index = Math.min(5, Math.floor((ratio ?? 0) * 6));
+  return TREE_STAGES[index];
+}
+
 const weatherBackgrounds = {
   快晴: { overlay: "linear-gradient(rgba(255, 188, 94, 0.10), rgba(41, 128, 185, 0.14))", image: "url('/weather/clear.gif')" },
   晴れ: { overlay: "linear-gradient(rgba(255, 216, 119, 0.08), rgba(38, 98, 145, 0.14))", image: "url('/weather/sunny.gif')" },
@@ -10,26 +26,20 @@ const weatherBackgrounds = {
   雷雨: { overlay: "linear-gradient(rgba(17, 19, 26, 0.48), rgba(17, 19, 26, 0.68))", image: "url('/weather/kaminari_2.gif')" },
 };
 
-// ★ここは database.py のレベル閾値に合わせてください(各レベルの開始pt)
-//   Lv1=0, Lv2=100, Lv3=300, Lv4=600, Lv5=1000 の例。Lv5の値は要確認。
-const LEVEL_THRESHOLDS = [0, 100, 500, 1000, 2000];
+const LEVEL_THRESHOLDS = [0, 100, 300, 600, 1000]; // ★要確認:database.pyのVILLAGE_LEVELSに合わせる
 
 function getWeatherBackground(weather) {
   const background = weatherBackgrounds[weather] || weatherBackgrounds.雷雨;
   return { backgroundImage: `${background.overlay}, ${background.image}` };
 }
 
-// 街レベルの進捗を計算
 function getLevelProgress(village) {
   if (!village) return null;
   const level = village.level ?? 1;
-  // ★街の合計ポイントのフィールド名。違えば変更(例: village.point / village.total_points)
   const total = village.total_point ?? 0;
   const base = LEVEL_THRESHOLDS[level - 1] ?? 0;
-  const next = LEVEL_THRESHOLDS[level]; // 次レベルの開始pt(無ければ最大)
-  if (next == null) {
-    return { isMax: true, ratio: 1, remaining: 0, total };
-  }
+  const next = LEVEL_THRESHOLDS[level];
+  if (next == null) return { isMax: true, ratio: 1, remaining: 0, total };
   const span = Math.max(1, next - base);
   const ratio = Math.max(0, Math.min(1, (total - base) / span));
   const remaining = Math.max(0, next - total);
@@ -53,13 +63,14 @@ function HomePage({
   ranking,
   setPage,
   village,
+  weeklyActivity,
 }) {
   const progress = getLevelProgress(village);
+  const todayIndex = (new Date().getDay() + 6) % 7; // 0=月 ... 6=日 に変換
 
   return (
     <div className="homeWeather" style={getWeatherBackground(village?.weather)}>
       <div className="homeTopGrid">
-        {/* 主役:ユーザーカード(ヒーロー) */}
         <div className="card homeUserCard">
           <div className="homeUserHeader">
             <div className="homeUserProfile">
@@ -80,7 +91,6 @@ function HomePage({
           <button onClick={onCheckin}>活動ポイントを追加</button>
         </div>
 
-        {/* 今日のISDL + 街レベル進捗 */}
         {village && (
           <div className="card villageSummary">
             <h2>今日のISDL</h2>
@@ -100,11 +110,10 @@ function HomePage({
               </div>
             </div>
 
-            {/* 街レベルアップまでの進捗バー */}
             {progress && (
               <div className="levelProgress">
                 <div className="levelProgressHead">
-                  <span className="statLabel">共有街レベルアップまで</span>
+                  <span className="statLabel">次のレベルまで</span>
                   <span className="levelRemaining">
                     {progress.isMax ? "最大レベル" : `あと ${progress.remaining} pt`}
                   </span>
@@ -125,8 +134,27 @@ function HomePage({
         <button onClick={() => setPage("village")}>共有街へ</button>
         <button onClick={onOpenMyRoom}>個人ルームへ</button>
         <button onClick={() => setPage("shop")}>Shop</button>
-        <button onClick={() => setPage("gacha")}>{"\u30ac\u30c1\u30e3"}</button>
       </div>
+
+      {/* 週間活動(木の成長で表現) */}
+      {weeklyActivity && (
+        <div className="card weeklyActivityCard">
+          <h2>今週の活動率</h2>
+          <div className="weeklyTreeRow">
+            {weeklyActivity.days.map((day, i) => (
+              <div
+                key={day.date}
+                className={`weeklyTreeItem ${i === todayIndex ? "weeklyTreeItemToday" : ""}`}
+              >
+                <div className="weeklyTreeImageWrap">
+                  <img src={getTreeStage(day.ratio)} alt="" className="weeklyTreeImage" />
+                </div>
+                <span className="weeklyTreeLabel">{WEEKDAY_LABELS[i]}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <section className="rankingSection">
         <h2>ランキング</h2>
