@@ -1521,6 +1521,83 @@ tr:last-child td {
   grid-column: 1 / -1;
 }
 
+.themePackagePreview {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  width: 112px;
+  height: 112px;
+  overflow: hidden;
+  border: 3px solid #705332;
+  border-radius: 8px;
+  background: #ead9b8;
+}
+
+.themePackagePreview span {
+  display: block;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.themePackagePreview span + span {
+  border-top: 3px solid #705332;
+}
+
+.themeShopItem {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.themeShopItem .themePackagePreview {
+  width: 100%;
+  height: 150px;
+}
+
+.themeShopItem .furnitureShopInfo {
+  width: 100%;
+}
+
+.roomTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.roomTitleRow h2 {
+  margin: 0;
+}
+
+.roomLevelBadge {
+  flex: 0 0 auto;
+  padding: 5px 12px;
+  color: #1a2130;
+  background: #ffd76a;
+  border: 2px solid #fff0aa;
+  border-radius: 999px;
+  font-weight: 900;
+}
+
+.roomLevelSummary {
+  margin: 14px 0 6px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 215, 106, 0.28);
+  border-radius: 8px;
+}
+
+.roomLevelSummary .levelProgressHead > span:first-child {
+  display: grid;
+  gap: 2px;
+}
+
+.roomLevelSummary small {
+  color: #aeb9cc;
+}
+
+.roomLevelBarFill {
+  background: linear-gradient(90deg, #d79b2b, #ffd76a);
+}
+
 .gachaCoinIcon {
   width: 64px;
   height: 64px;

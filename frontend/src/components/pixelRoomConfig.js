@@ -4,6 +4,22 @@ import wallLv1Img from "../assets/room/wall_lv1.png";
 import floorImg from "../assets/room/floor.png";
 import floorTileImg from "../assets/room/floor1.png";
 import floorGreyImg from "../assets/room/floor_grey_2.png";
+import japaneseFloorVerticalImg from "../assets/room/japanese/floor-vertical.png";
+import japaneseFloorHorizontalImg from "../assets/room/japanese/floor-horizontal.png";
+import japaneseWallMainImg from "../assets/room/japanese/wall-main.png";
+import japaneseWallAccentImg from "../assets/room/japanese/wall-accent.png";
+import chineseFloorOrnateImg from "../assets/room/chinese/floor-ornate.png";
+import chineseFloorSimpleImg from "../assets/room/chinese/floor-simple.png";
+import chineseWallMainImg from "../assets/room/chinese/wall-main.png";
+import chineseWallAccentImg from "../assets/room/chinese/wall-accent.png";
+import palaceFloorLightImg from "../assets/room/palace/floor-light.png";
+import palaceFloorRedImg from "../assets/room/palace/floor-red.png";
+import palaceWallMainImg from "../assets/room/palace/wall-main.png";
+import palaceWallAccentImg from "../assets/room/palace/wall-accent.png";
+import indianFloorGreenImg from "../assets/room/indian/floor-green.png";
+import indianFloorOrangeImg from "../assets/room/indian/floor-orange.png";
+import indianWallMainImg from "../assets/room/indian/wall-main.png";
+import indianWallAccentImg from "../assets/room/indian/wall-accent.png";
 import bedImg from "../assets/furniture/bed_pink.png";
 import bookshelfImg from "../assets/furniture/bookshelf.png";
 import clockImg from "../assets/furniture/clock.png";
@@ -38,9 +54,105 @@ export const roomGrids = {
 export const tileTextures = {
   labWall: wallLv1Img,
   westernWall: wallImg,
+  japaneseWall: [
+    japaneseWallMainImg,
+    japaneseWallMainImg,
+    japaneseWallAccentImg,
+    japaneseWallMainImg,
+  ],
+  chineseWall: [
+    chineseWallMainImg,
+    chineseWallMainImg,
+    chineseWallAccentImg,
+    chineseWallMainImg,
+  ],
+  palaceWall: [
+    palaceWallMainImg,
+    palaceWallMainImg,
+    palaceWallAccentImg,
+    palaceWallMainImg,
+  ],
+  indianWall: [
+    indianWallMainImg,
+    indianWallMainImg,
+    indianWallAccentImg,
+    indianWallMainImg,
+  ],
   labFloor: floorGreyImg,
   westernFloor: floorImg,
   tileFloor: floorTileImg,
+  japaneseFloor: [
+    japaneseFloorVerticalImg,
+    japaneseFloorHorizontalImg,
+    japaneseFloorVerticalImg,
+    japaneseFloorHorizontalImg,
+    japaneseFloorVerticalImg,
+    japaneseFloorHorizontalImg,
+    japaneseFloorVerticalImg,
+    japaneseFloorHorizontalImg,
+    japaneseFloorHorizontalImg,
+    japaneseFloorVerticalImg,
+    japaneseFloorHorizontalImg,
+    japaneseFloorVerticalImg,
+    japaneseFloorHorizontalImg,
+    japaneseFloorVerticalImg,
+    japaneseFloorHorizontalImg,
+    japaneseFloorVerticalImg,
+  ],
+  chineseFloor: [
+    chineseFloorOrnateImg,
+    chineseFloorSimpleImg,
+    chineseFloorOrnateImg,
+    chineseFloorSimpleImg,
+    chineseFloorSimpleImg,
+    chineseFloorOrnateImg,
+    chineseFloorSimpleImg,
+    chineseFloorOrnateImg,
+    chineseFloorOrnateImg,
+    chineseFloorSimpleImg,
+    chineseFloorOrnateImg,
+    chineseFloorSimpleImg,
+    chineseFloorSimpleImg,
+    chineseFloorOrnateImg,
+    chineseFloorSimpleImg,
+    chineseFloorOrnateImg,
+  ],
+  palaceFloor: [
+    palaceFloorLightImg,
+    palaceFloorRedImg,
+    palaceFloorLightImg,
+    palaceFloorRedImg,
+    palaceFloorRedImg,
+    palaceFloorLightImg,
+    palaceFloorRedImg,
+    palaceFloorLightImg,
+    palaceFloorLightImg,
+    palaceFloorRedImg,
+    palaceFloorLightImg,
+    palaceFloorRedImg,
+    palaceFloorRedImg,
+    palaceFloorLightImg,
+    palaceFloorRedImg,
+    palaceFloorLightImg,
+  ],
+  indianFloor: [
+    indianFloorGreenImg,
+    indianFloorOrangeImg,
+    indianFloorGreenImg,
+    indianFloorOrangeImg,
+    indianFloorOrangeImg,
+    indianFloorGreenImg,
+    indianFloorOrangeImg,
+    indianFloorGreenImg,
+    indianFloorGreenImg,
+    indianFloorOrangeImg,
+    indianFloorGreenImg,
+    indianFloorOrangeImg,
+    indianFloorOrangeImg,
+    indianFloorGreenImg,
+    indianFloorOrangeImg,
+    indianFloorGreenImg,
+  ],
 };
 
 export const defaultRoomTheme = {
@@ -48,15 +160,50 @@ export const defaultRoomTheme = {
   floor: "labFloor",
 };
 
+export const wallFrameColors = {
+  labWall: "#7a766c",
+  westernWall: "#604b38",
+  japaneseWall: "#3d2c1f",
+  chineseWall: "#6f211b",
+  palaceWall: "#725334",
+  indianWall: "#59432f",
+};
+
+export const floorFrameColors = {
+  labFloor: "#4f4f4f",
+  westernFloor: "#513d2b",
+  tileFloor: "#5f6264",
+  japaneseFloor: "#41452f",
+  chineseFloor: "#571f18",
+  palaceFloor: "#8b6132",
+  indianFloor: "#315c62",
+};
+
 export const wallTextureOptions = [
   { id: "labWall", name: "研究室", minLevel: 1 },
-  { id: "westernWall", name: "洋風", minLevel: 2 },
+  { id: "westernWall", name: "洋風", minLevel: 2, purchaseId: "theme_western" },
+  { id: "japaneseWall", name: "和風", minLevel: 3, purchaseId: "theme_japanese" },
+  { id: "chineseWall", name: "中華風", minLevel: 4, purchaseId: "theme_chinese" },
+  { id: "indianWall", name: "インド風", minLevel: 5, purchaseId: "theme_indian" },
+  { id: "palaceWall", name: "宮殿風", minLevel: 6, purchaseId: "theme_palace" },
 ];
 
 export const floorTextureOptions = [
   { id: "labFloor", name: "研究室", minLevel: 1 },
-  { id: "westernFloor", name: "洋風", minLevel: 2 },
+  { id: "westernFloor", name: "洋風", minLevel: 2, purchaseId: "theme_western" },
   { id: "tileFloor", name: "タイル", minLevel: 2 },
+  { id: "japaneseFloor", name: "和風（畳）", minLevel: 3, purchaseId: "theme_japanese" },
+  { id: "chineseFloor", name: "中華風", minLevel: 4, purchaseId: "theme_chinese" },
+  { id: "indianFloor", name: "インド風", minLevel: 5, purchaseId: "theme_indian" },
+  { id: "palaceFloor", name: "宮殿風", minLevel: 6, purchaseId: "theme_palace" },
+];
+
+export const roomThemePackages = [
+  { id: "theme_western", name: "洋風セット", wall: "westernWall", floor: "westernFloor", price: 50, minLevel: 2 },
+  { id: "theme_japanese", name: "和風セット", wall: "japaneseWall", floor: "japaneseFloor", price: 75, minLevel: 3 },
+  { id: "theme_chinese", name: "中華風セット", wall: "chineseWall", floor: "chineseFloor", price: 100, minLevel: 4 },
+  { id: "theme_indian", name: "インド風セット", wall: "indianWall", floor: "indianFloor", price: 125, minLevel: 5 },
+  { id: "theme_palace", name: "宮殿風セット", wall: "palaceWall", floor: "palaceFloor", price: 150, minLevel: 6 },
 ];
 
 export const roomItems = [

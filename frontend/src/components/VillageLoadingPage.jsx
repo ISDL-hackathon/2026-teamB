@@ -10,8 +10,19 @@ function VillageLoadingPage({ onComplete }) {
     return () => window.clearTimeout(timer);
   }, [onComplete]);
 
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter" || event.key === " ") onComplete();
+  };
+
   return (
-    <main className="villageLoadingPage" aria-label="研究室へ移動中">
+    <main
+      className="villageLoadingPage"
+      aria-label="研究室へ移動中。クリックでスキップ"
+      onClick={onComplete}
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
+    >
       <img alt="研究室へ移動中" className="villageLoadingImage" src={villageLoading} />
     </main>
   );

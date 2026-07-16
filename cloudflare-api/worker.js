@@ -152,13 +152,18 @@ const FURNITURE_CATALOG = [
     surface: "floor",
   },
   {
-  id: "retro_tv",
+    id: "retro_tv",
   name: "レトロテレビ",
   price: 80,
   min_level: 2,
   category: "western",
-  surface: "floor",
-},
+    surface: "floor",
+  },
+  { id: "theme_western", name: "洋風セット", price: 50, min_level: 2, category: "theme", surface: "set" },
+  { id: "theme_japanese", name: "和風セット", price: 75, min_level: 3, category: "theme", surface: "set" },
+  { id: "theme_chinese", name: "中華風セット", price: 100, min_level: 4, category: "theme", surface: "set" },
+  { id: "theme_indian", name: "インド風セット", price: 125, min_level: 5, category: "theme", surface: "set" },
+  { id: "theme_palace", name: "宮殿風セット", price: 150, min_level: 6, category: "theme", surface: "set" },
 ];
 
 const GACHA_COIN_PRICE = 10;
@@ -196,6 +201,7 @@ const WEATHER_BY_ACTIVE_USERS = [
 ];
 
 const ROOM_LEVELS = [
+  [1000, 6, "宮殿級ルーム", "最高級の内装も扱える、研究室を代表する個人ルームです。"],
   [600, 5, "研究室の主ルーム", "研究も交流も楽しめる、かなり豪華な個人ルームです。"],
   [300, 4, "快適作業ルーム", "作業環境が整い、集中しやすい部屋になってきました。"],
   [150, 3, "研究セット部屋", "本とPCが増えて、研究できる雰囲気が出てきました。"],

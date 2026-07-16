@@ -2,9 +2,10 @@ import { useMemo, useState } from "react";
 import magicStreetImg from "../assets/shop/magic-street.png";
 import robotImg from "../assets/shop/dopamine-robot.gif";
 import gachaCoinImg from "../assets/gacha/coin128.png";
-import { roomItems } from "./pixelRoomConfig";
+import { roomItems, roomThemePackages, tileTextures } from "./pixelRoomConfig";
 
 const furnitureById = new Map(roomItems.map((item) => [item.id, item]));
+const themePackageById = new Map(roomThemePackages.map((item) => [item.id, item]));
 const functionalFurnitureIds = new Set([
   "bulletin_board",
   "quest_board",
@@ -128,6 +129,51 @@ function FurnitureShelf({ currentPoint, items, onPurchaseFurniture }) {
   );
 }
 
+function ThemeShelf({ currentPoint, items, onPurchaseFurniture }) {
+  return (
+    <div className="furnitureShopGrid themeShopGrid">
+      {items.map((item) => {
+        const theme = themePackageById.get(item.id);
+        if (!theme) return null;
+        const wallTexture = tileTextures[theme.wall];
+        const floorTexture = tileTextures[theme.floor];
+        const wallPreview = Array.isArray(wallTexture) ? wallTexture[2] : wallTexture;
+        const floorPreview = Array.isArray(floorTexture) ? floorTexture[0] : floorTexture;
+        const canBuy = item.unlocked && !item.owned && currentPoint >= item.price;
+
+        return (
+          <div
+            className={`furnitureShopItem themeShopItem ${!item.unlocked ? "furnitureShopItemLocked" : ""}`}
+            key={item.id}
+          >
+            <div className="themePackagePreview" aria-hidden="true">
+              <span style={{ backgroundImage: `url(${wallPreview})` }} />
+              <span style={{ backgroundImage: `url(${floorPreview})` }} />
+            </div>
+            <div className="furnitureShopInfo">
+              <div className="furnitureShopTitleRow">
+                <strong>{item.name}</strong>
+                <span className="furnitureShopLevel">Lv.{item.min_level}</span>
+              </div>
+              <span className="furnitureShopMeta">壁＋床セット</span>
+              <span className="furnitureShopStatus">{getFurnitureStatus(item, currentPoint)}</span>
+              <span className="furnitureShopPrice">{item.price} pt</span>
+            </div>
+            <button
+              className="compactButton"
+              disabled={!canBuy}
+              onClick={() => onPurchaseFurniture(item.id)}
+              type="button"
+            >
+              {item.owned ? "購入済み" : item.unlocked ? "購入" : "ロック中"}
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function FilterGroup({ label, filters, value, onChange }) {
   return (
     <div className="shopFilterGroup">
@@ -163,12 +209,14 @@ function ShopPage({ onPurchaseFurniture, onPurchaseGachaCoin, room, setPage }) {
         const surface = item.surface ?? furniture?.surface;
 
         return (
+          category !== "theme" &&
           (styleFilter === "all" || category === styleFilter) &&
           (surfaceFilter === "all" || surface === surfaceFilter)
         );
       }),
     [shopItems, styleFilter, surfaceFilter],
   );
+  const themeShopItems = shopItems.filter((item) => item.category === "theme");
 
   return (
     <>
@@ -210,6 +258,12 @@ function ShopPage({ onPurchaseFurniture, onPurchaseGachaCoin, room, setPage }) {
               家具
             </ShopFilterButton>
             <ShopFilterButton
+              active={shopTab === "themes"}
+              onClick={() => setShopTab("themes")}
+            >
+              内装
+            </ShopFilterButton>
+            <ShopFilterButton
               active={shopTab === "items"}
               onClick={() => setShopTab("items")}
             >
@@ -240,6 +294,12 @@ function ShopPage({ onPurchaseFurniture, onPurchaseGachaCoin, room, setPage }) {
                 onPurchaseFurniture={onPurchaseFurniture}
               />
             </>
+          ) : shopTab === "themes" ? (
+            <ThemeShelf
+              currentPoint={currentPoint}
+              items={themeShopItems}
+              onPurchaseFurniture={onPurchaseFurniture}
+            />
           ) : (
             <>
             <div className="gachaCoinShopItem">

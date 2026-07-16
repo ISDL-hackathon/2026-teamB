@@ -6,10 +6,12 @@ import arrowUpImg from "../assets/controls/arrow-up.png";
 import {
   SHOW_GRID,
   defaultRoomTheme,
+  floorFrameColors,
   floorTextureOptions,
   roomGrids,
   roomItems,
   tileTextures,
+  wallFrameColors,
   wallTextureOptions,
 } from "./pixelRoomConfig";
 import "./PixelRoom.css";
@@ -220,17 +222,23 @@ function RoomGridOverlay({ surface }) {
 }
 
 function createTexturePanels(count, className, textureId) {
+  const texture = tileTextures[textureId];
   return Array.from({ length: count }, (_, index) => (
     <div
       className={className}
       key={`${textureId}-${index}`}
-      style={{ backgroundImage: `url(${tileTextures[textureId]})` }}
+      style={{
+        backgroundImage: `url(${Array.isArray(texture) ? texture[index % texture.length] : texture})`,
+      }}
     />
   ));
 }
 
-function MaterialSelect({ label, options, value, level, onChange }) {
-  const unlockedOptions = options.filter((option) => level >= option.minLevel);
+function MaterialSelect({ label, options, value, level, onChange, ownedItemIds = [] }) {
+  const ownedItemIdSet = new Set(ownedItemIds);
+  const unlockedOptions = options.filter(
+    (option) => level >= option.minLevel && (!option.purchaseId || ownedItemIdSet.has(option.purchaseId)),
+  );
 
   return (
     <label className="roomMaterialSelect">
@@ -493,6 +501,7 @@ function PixelRoom({
                 level={level}
                 onChange={(value) => handleChangeTheme("wall", value)}
                 options={wallTextureOptions}
+                ownedItemIds={ownedItemIds}
                 value={roomTheme.wall}
               />
               <MaterialSelect
@@ -500,6 +509,7 @@ function PixelRoom({
                 level={level}
                 onChange={(value) => handleChangeTheme("floor", value)}
                 options={floorTextureOptions}
+                ownedItemIds={ownedItemIds}
                 value={roomTheme.floor}
               />
               <ArrowButton
@@ -543,7 +553,14 @@ function PixelRoom({
         <RoomBag items={bagItems} onAddItem={handleAddItem} />
       )}
 
-      <div className="isoRoom" aria-label={`room level ${level}`}>
+      <div
+        className="isoRoom"
+        aria-label={`room level ${level}`}
+        style={{
+          "--room-wall-frame": wallFrameColors[roomTheme.wall] ?? wallFrameColors.labWall,
+          "--room-floor-frame": floorFrameColors[roomTheme.floor] ?? floorFrameColors.labFloor,
+        }}
+      >
 
         <WallSurface
           items={wallItems}

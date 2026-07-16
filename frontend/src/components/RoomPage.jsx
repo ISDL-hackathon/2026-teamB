@@ -1,6 +1,22 @@
 import PixelRoom from "./PixelRoom";
 import { getAvatarImage } from "./avatarAssets";
+
+const ROOM_LEVEL_THRESHOLDS = [0, 50, 150, 300, 600, 1000];
+
+function getRoomLevelProgress(room) {
+  if (!room) return null;
+  const level = room.room_level ?? 1;
+  const total = room.user?.total_point ?? 0;
+  const base = ROOM_LEVEL_THRESHOLDS[level - 1] ?? 0;
+  const next = ROOM_LEVEL_THRESHOLDS[level];
+  if (next == null) return { isMax: true, ratio: 1, remaining: 0 };
+  const ratio = Math.max(0, Math.min(1, (total - base) / Math.max(1, next - base)));
+  return { isMax: false, ratio, remaining: Math.max(0, next - total) };
+}
+
 function RoomPage({ onOpenBulletinBoard, onOpenGameSelect, onOpenQuestBoard, onSaveRoomLayout, readonly = false, room, setPage }) {
+  const roomProgress = getRoomLevelProgress(room);
+
   return (
     <>
       <div className="pageHeader roomPageHeader">
@@ -23,7 +39,29 @@ function RoomPage({ onOpenBulletinBoard, onOpenGameSelect, onOpenQuestBoard, onS
       </div>
 
       <div className="card roomCard">
-        <h2>個人ルーム</h2>
+        <div className="roomTitleRow">
+          <h2>個人ルーム</h2>
+          {room && <span className="roomLevelBadge">Lv.{room.room_level}</span>}
+        </div>
+        {room && roomProgress && (
+          <div className="roomLevelSummary">
+            <div className="levelProgressHead">
+              <span>
+                <strong>{room.room_description}</strong>
+                <small>累計 {room.user.total_point} pt</small>
+              </span>
+              <span className="levelRemaining">
+                {roomProgress.isMax ? "最大レベル" : `あと ${roomProgress.remaining} pt`}
+              </span>
+            </div>
+            <div className="levelBar">
+              <div
+                className="levelBarFill roomLevelBarFill"
+                style={{ width: `${Math.round(roomProgress.ratio * 100)}%` }}
+              />
+            </div>
+          </div>
+        )}
         {room ? (
           <>
             <PixelRoom
@@ -38,19 +76,7 @@ function RoomPage({ onOpenBulletinBoard, onOpenGameSelect, onOpenQuestBoard, onS
               savedLayout={room.room_layout}
               savedTheme={room.room_theme}
             />
-            <h3>
-              Lv.{room.room_level}: {room.room_name}
-            </h3>
-            <p>{room.room_description}</p>
             <div className="statusGrid">
-              <div>
-                <span>ユーザー</span>
-                <strong>{room.user.name}</strong>
-              </div>
-              <div>
-                <span>学年</span>
-                <strong>{room.user.grade}</strong>
-              </div>
               <div>
                 <span>所持ポイント</span>
                 <strong className="pointValue">{room.user.point} pt</strong>
