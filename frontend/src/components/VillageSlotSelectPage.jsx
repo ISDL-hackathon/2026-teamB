@@ -9,7 +9,7 @@ function VillageSlotSelectPage({
 }) {
     return (
         <div className="card villageCard">
-            <h2>共有街の場所を選択</h2>
+            <h2>研究室の場所を選択</h2>
 
             <PixelTown
                 level={village?.level ?? 1}

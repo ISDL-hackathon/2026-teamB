@@ -16,8 +16,8 @@ const QUESTS = [
   },
   {
     id: "visit_village",
-    title: "共用街に行こう",
-    description: "共用街へ行って、今日の研究室の様子を見てみよう。",
+    title: "研究室に行こう",
+    description: "研究室へ行って、今日の研究室の様子を見てみよう。",
     reward: 40,
     time: "1日1回",
     destination: "village",

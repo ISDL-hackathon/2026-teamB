@@ -100,7 +100,7 @@ function HomePage({
                 <span className="statValue">{village.weather}</span>
               </div>
               <div className="statBlock">
-                <span className="statLabel">共有街</span>
+                <span className="statLabel">研究室</span>
                 <span className="statValue">Lv.{village.level}</span>
                 <span className="statSub">{village.title}</span>
               </div>
@@ -110,7 +110,7 @@ function HomePage({
             {progress && (
               <div className="levelProgress">
                 <div className="levelProgressHead">
-                  <span className="statLabel">共有街レベルアップまで</span>
+                  <span className="statLabel">研究室レベルアップまで</span>
                   <span className="levelRemaining">
                     {progress.isMax ? "最大レベル" : `あと ${progress.remaining} pt`}
                   </span>
@@ -128,7 +128,7 @@ function HomePage({
       </div>
 
       <div className="menuGrid">
-        <button aria-label="共有街（研究室）へ移動" className="homeMenuButton" onClick={() => setPage("villageLoading")} type="button">
+        <button aria-label="研究室へ移動" className="homeMenuButton" onClick={() => setPage("villageLoading")} type="button">
           <img alt="" src={labButtonImage} />
         </button>
         <button aria-label="マイルームへ移動" className="homeMenuButton" onClick={onOpenMyRoom} type="button">

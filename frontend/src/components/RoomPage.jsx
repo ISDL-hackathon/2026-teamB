@@ -8,7 +8,7 @@ function RoomPage({ onOpenBulletinBoard, onOpenGameSelect, onOpenQuestBoard, onS
           className="secondaryButton"
           onClick={() => setPage(readonly ? "village" : "home")}
         >
-          {readonly ? "共有街へ" : "ホームへ"}
+          {readonly ? "研究室へ" : "ホームへ"}
         </button>
         {!readonly && (
           <button className="secondaryButton" onClick={() => setPage("shop")} type="button">

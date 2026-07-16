@@ -11,8 +11,8 @@ function VillageLoadingPage({ onComplete }) {
   }, [onComplete]);
 
   return (
-    <main className="villageLoadingPage" aria-label="共有街へ移動中">
-      <img alt="共有街へ移動中" className="villageLoadingImage" src={villageLoading} />
+    <main className="villageLoadingPage" aria-label="研究室へ移動中">
+      <img alt="研究室へ移動中" className="villageLoadingImage" src={villageLoading} />
     </main>
   );
 }
