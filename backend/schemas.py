@@ -59,10 +59,33 @@ class AvatarSelectRequest(BaseModel):
     avatar_id: str
 
 
+class IconSelectRequest(BaseModel):
+    user_id: int
+    icon_id: str
+
+
 class BulletinPostRequest(BaseModel):
     user_id: int
     content: str
     image_data: Optional[str] = None
+
+
+class LunchQuestCompleteRequest(BaseModel):
+    user_id: int
+    room_id: int
+    content: str = ""
+    image_data: str
+
+
+class LunchQuestJoinRequest(BaseModel):
+    user_id: int
+    room_id: int
+
+
+class PhotoQuestCompleteRequest(BaseModel):
+    user_id: int
+    content: str = ""
+    image_data: str
 
 
 class BulletinFollowRequest(BaseModel):

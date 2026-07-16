@@ -12,8 +12,12 @@ import LoginArea from "./components/LoginArea";
 import RoomLoadingPage from "./components/RoomLoadingPage";
 import RoomPage from "./components/RoomPage";
 import ShopPage from "./components/ShopPage";
+import VillageLoadingPage from "./components/VillageLoadingPage";
 import GachaPage from "./components/GachaPage";
 import SettingsPage from "./components/SettingsPage";
+import QuestPage from "./components/QuestPage";
+import LunchQuestPage from "./components/LunchQuestPage";
+import PhotoQuestPage from "./components/PhotoQuestPage";
 import VillagePage from "./components/VillagePage";
 import VillageSlotSelectPage from "./components/VillageSlotSelectPage";
 import "./App.css";
@@ -43,6 +47,10 @@ function App() {
   const [village, setVillage] = useState(null);
   const [room, setRoom] = useState(null);
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    setMessage("");
+  }, [page]);
 
   const fetchRanking = () => {
     requestJson("/ranking")
@@ -399,17 +407,24 @@ const fetchWeeklyActivity = () => {
 
       {currentUser && page === "village" && (
         <VillagePage
+          currentUser={currentUser}
           onPcClick={handleOpenReadonlyRoom}
+          setCurrentUser={setCurrentUser}
           setPage={setPage}
           village={village}
           villageSlots={villageSlots}
         />
       )}
 
+      {currentUser && page === "villageLoading" && (
+        <VillageLoadingPage onComplete={() => setPage("village")} />
+      )}
+
       {currentUser && page === "room" && (
         <RoomPage
           onOpenBulletinBoard={() => setPage("bulletinLoading")}
           onOpenGameSelect={() => setPage("gameLoading")}
+          onOpenQuestBoard={() => setPage("quests")}
           onSaveRoomLayout={handleSaveRoomLayout}
           readonly={viewingRoomUserId !== null}
           room={room}
@@ -423,6 +438,18 @@ const fetchWeeklyActivity = () => {
 
       {currentUser && page === "gameLoading" && (
         <GameLoadingPage onComplete={() => setPage("gameSelect")} />
+      )}
+
+      {currentUser && page === "quests" && (
+        <QuestPage currentUser={currentUser} setCurrentUser={setCurrentUser} setPage={setPage} />
+      )}
+
+      {currentUser && page === "lunchQuest" && (
+        <LunchQuestPage currentUser={currentUser} setCurrentUser={setCurrentUser} setPage={setPage} />
+      )}
+
+      {currentUser && page === "photoQuest" && (
+        <PhotoQuestPage currentUser={currentUser} setCurrentUser={setCurrentUser} setPage={setPage} />
       )}
 
       {currentUser && page === "gameSelect" && (
@@ -442,11 +469,11 @@ const fetchWeeklyActivity = () => {
       )}
 
       {currentUser && page === "bulletinLoading" && (
-        <BulletinLoadingPage onComplete={() => setPage("bulletin")} />
+        <BulletinLoadingPage currentUser={currentUser} onComplete={() => setPage("bulletin")} />
       )}
 
       {currentUser && page === "bulletin" && (
-        <BulletinBoardPage currentUser={currentUser} setPage={setPage} />
+        <BulletinBoardPage currentUser={currentUser} setCurrentUser={setCurrentUser} setPage={setPage} />
       )}
 
       {currentUser && page === "shop" && (

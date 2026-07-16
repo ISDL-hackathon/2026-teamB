@@ -2,14 +2,13 @@ body {
   margin: 0;
   background: #12141b;
   color: #e8edf5;
-  font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+  font-family: "DotGothic16", monospace;
 }
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 
@@ -181,6 +180,7 @@ select {
 }
 
 .userIconBase,
+.userIconBackground,
 .userIconImage {
   position: absolute;
   object-fit: contain;
@@ -189,16 +189,28 @@ select {
 
 .userIconBase {
   inset: 0;
+  z-index: 2;
   width: 100%;
   height: 100%;
+  pointer-events: none;
+}
+
+.userIconBackground {
+  inset: 6px;
+  z-index: 0;
+  width: calc(100% - 12px);
+  height: calc(100% - 12px);
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .userIconImage {
-  left: 50%;
-  bottom: 7px;
-  width: 72%;
-  height: 72%;
-  transform: translateX(-50%);
+  inset: 6px;
+  z-index: 1;
+  width: calc(100% - 12px);
+  height: calc(100% - 12px);
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .homeUserInfo {
@@ -225,10 +237,50 @@ select {
 }
 
 .menuGrid {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.homeMenuButton {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 0;
+  aspect-ratio: 3.65 / 1;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  transition: transform 0.12s ease, filter 0.15s ease;
+}
+
+.homeMenuButton img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+.homeMenuButton:hover {
+  background: transparent;
+  filter: brightness(1.1);
+  transform: translateY(-3px);
+}
+
+.homeMenuButton:active {
+  transform: translateY(1px);
+}
+
+.homeMenuButton:focus-visible {
+  outline: 3px solid #f7d774;
+  outline-offset: 4px;
 }
 
 .villageSummary {
@@ -269,6 +321,21 @@ tr:last-child td {
   max-width: 680px;
   margin: 0 auto;
   text-align: left;
+}
+
+.roomPageHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 900px;
+}
+
+.roomPageHeader .secondaryButton {
+  margin: 0;
+}
+
+.roomSettingsButton {
+  margin-left: auto !important;
 }
 
 .villageCard {
@@ -743,6 +810,15 @@ tr:last-child td {
 
   .roomCard { padding: 12px; }
 
+  .roomPageHeader {
+    gap: 7px;
+  }
+
+  .roomPageHeader .secondaryButton {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
   .homeUserHeader,
   .statusGrid {
     grid-template-columns: 1fr;
@@ -908,15 +984,6 @@ tr:last-child td {
   letter-spacing: 1px;
 }
 
-/* --- メニューボタン:ホバーで軽く持ち上げ --- */
-.homeWeather .menuGrid button {
-  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s;
-}
-.homeWeather .menuGrid button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.3);
-}
-
 /* --- 今日のISDL:3つの統計ブロック --- */
 .villageSummary h2,
 .rankingSection h2 {
@@ -972,6 +1039,11 @@ tr:last-child td {
 /* スマホでは統計を縦積み */
 @media (max-width: 560px) {
   .statGrid { grid-template-columns: 1fr; }
+
+  .menuGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
 }
 
 /* ===== ランキング 1〜3位を金・銀・銅でほんのり ===== */
@@ -1336,18 +1408,30 @@ tr:last-child td {
   image-rendering: pixelated;
 }
 
-.shopGachaLink {
+.gachaCoinShopItem .gachaCoinGoButton {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 2px;
+  width: 100%;
+  padding: 13px 18px;
   color: #3d2800;
   background: linear-gradient(180deg, #ffe98a, #e5aa2c);
   border-color: #fff2ab #9b650d #9b650d #fff2ab;
+  box-shadow: 0 5px 0 #8a5a10, 0 8px 16px rgba(96, 58, 0, 0.25);
 }
 
-.gachaCoinShopItem .gachaCoinGoButton {
-  grid-column: 1 / -1;
-  width: 100%;
-  color: #ffffff;
-  background: #75511a;
-  border-color: #bc8a37;
+.gachaCoinShopItem .gachaCoinGoButton span {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+}
+
+.gachaCoinShopItem .gachaCoinGoButton strong {
+  font-size: 18px;
+}
+
+.gachaCoinShopItem .gachaCoinGoButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 0 #8a5a10, 0 11px 18px rgba(96, 58, 0, 0.3);
 }
 
 .gachaCoinBalance {

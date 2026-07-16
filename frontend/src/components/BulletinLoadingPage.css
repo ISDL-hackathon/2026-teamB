@@ -1,4 +1,5 @@
 .bulletinLoadingPage {
+  cursor: pointer;
   display: grid;
   min-height: 72vh;
   padding: 18px;

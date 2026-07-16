@@ -1,12 +1,11 @@
-.roomLoadingPage {
-  cursor: pointer;
+.villageLoadingPage {
   display: grid;
   min-height: 72vh;
   padding: 18px;
   place-items: center;
 }
 
-.roomLoadingImage {
+.villageLoadingImage {
   display: block;
   width: min(512px, 100%);
   height: auto;

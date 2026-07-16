@@ -1,6 +1,11 @@
-import charaIcon from "../assets/chara.png";
 import iconBase from "../assets/icons/maru.png";
+import iconBackground from "../assets/icons/icon-background.png";
+import gachaButtonImage from "../assets/gacha_btn.png";
+import labButtonImage from "../assets/lab_btn.png";
+import myRoomButtonImage from "../assets/myroom_btn.png";
+import shopButtonImage from "../assets/shop_btn.png";
 import RankingTable from "./RankingTable";
+import { getIconImage } from "./iconAssets";
 
 import treeStage1 from "../assets/tree/tree_stage_1.png";
 import treeStage2 from "../assets/tree/tree_stage_2.png";
@@ -46,11 +51,12 @@ function getLevelProgress(village) {
   return { isMax: false, ratio, remaining, next, total };
 }
 
-function UserIcon({ icon = charaIcon }) {
+function UserIcon({ icon }) {
   return (
     <div className="userIcon" aria-hidden="true">
-      <img alt="" className="userIconBase" src={iconBase} />
+      <img alt="" className="userIconBackground" src={iconBackground} />
       <img alt="" className="userIconImage" src={icon} />
+      <img alt="" className="userIconBase" src={iconBase} />
     </div>
   );
 }
@@ -74,7 +80,7 @@ function HomePage({
         <div className="card homeUserCard">
           <div className="homeUserHeader">
             <div className="homeUserProfile">
-              <UserIcon />
+              <UserIcon icon={getIconImage(currentUser.selected_icon)} />
               <div className="homeUserInfo">
                 <span className="eyebrow">ログイン中</span>
                 <p>
@@ -104,7 +110,7 @@ function HomePage({
                 <span className="statValue">{village.weather}</span>
               </div>
               <div className="statBlock">
-                <span className="statLabel">共有街</span>
+                <span className="statLabel">研究室</span>
                 <span className="statValue">Lv.{village.level}</span>
                 <span className="statSub">{village.title}</span>
               </div>
@@ -113,7 +119,8 @@ function HomePage({
             {progress && (
               <div className="levelProgress">
                 <div className="levelProgressHead">
-                  <span className="statLabel">レベルまで</span>
+                  <span className="statLabel">研究室レベルアップまで</span>
+
                   <span className="levelRemaining">
                     {progress.isMax ? "最大レベル" : `あと ${progress.remaining} pt`}
                   </span>
@@ -131,9 +138,20 @@ function HomePage({
       </div>
 
       <div className="menuGrid">
-        <button onClick={() => setPage("village")}>共有街へ</button>
-        <button onClick={onOpenMyRoom}>個人ルームへ</button>
-        <button onClick={() => setPage("shop")}>Shop</button>
+
+        <button aria-label="研究室へ移動" className="homeMenuButton" onClick={() => setPage("villageLoading")} type="button">
+          <img alt="" src={labButtonImage} />
+        </button>
+        <button aria-label="マイルームへ移動" className="homeMenuButton" onClick={onOpenMyRoom} type="button">
+          <img alt="" src={myRoomButtonImage} />
+        </button>
+        <button aria-label="ショップへ移動" className="homeMenuButton" onClick={() => setPage("shop")} type="button">
+          <img alt="" src={shopButtonImage} />
+        </button>
+        <button aria-label="ガチャへ移動" className="homeMenuButton" onClick={() => setPage("gacha")} type="button">
+          <img alt="" src={gachaButtonImage} />
+        </button>
+
       </div>
 
       {/* 週間活動(木の成長で表現) */}

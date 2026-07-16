@@ -1,15 +1,25 @@
 import PixelRoom from "./PixelRoom";
 import { getAvatarImage } from "./avatarAssets";
-function RoomPage({ onOpenBulletinBoard, onOpenGameSelect, onSaveRoomLayout, readonly = false, room, setPage }) {
+function RoomPage({ onOpenBulletinBoard, onOpenGameSelect, onOpenQuestBoard, onSaveRoomLayout, readonly = false, room, setPage }) {
   return (
     <>
-      <div className="pageHeader">
+      <div className="pageHeader roomPageHeader">
         <button
           className="secondaryButton"
           onClick={() => setPage(readonly ? "village" : "home")}
         >
-          {readonly ? "共有街へ" : "ホームへ"}
+          {readonly ? "研究室へ" : "ホームへ"}
         </button>
+        {!readonly && (
+          <button className="secondaryButton" onClick={() => setPage("shop")} type="button">
+            ショップへ
+          </button>
+        )}
+        {!readonly && (
+          <button className="secondaryButton roomSettingsButton" onClick={() => setPage("settings")} type="button">
+            設定
+          </button>
+        )}
       </div>
 
       <div className="card roomCard">
@@ -21,22 +31,13 @@ function RoomPage({ onOpenBulletinBoard, onOpenGameSelect, onSaveRoomLayout, rea
               level={room.room_level}
               onOpenBulletinBoard={onOpenBulletinBoard}
               onOpenGameSelect={onOpenGameSelect}
+              onOpenQuestBoard={onOpenQuestBoard}
               onSaveLayout={onSaveRoomLayout}
               ownedItemIds={room.owned_furniture}
               readonly={readonly}
               savedLayout={room.room_layout}
               savedTheme={room.room_theme}
             />
-            {!readonly && (
-              <button onClick={() => setPage("settings")} type="button">
-                {"\u8a2d\u5b9a"}
-              </button>
-            )}
-            {!readonly && (
-              <button onClick={() => setPage("shop")} type="button">
-                ショップへ
-              </button>
-            )}
             <h3>
               Lv.{room.room_level}: {room.room_name}
             </h3>

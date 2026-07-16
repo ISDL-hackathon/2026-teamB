@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { requestJson } from "../api";
 import PixelTown from "./PixelTown";
 
 const weatherClassNames = {
@@ -39,7 +41,17 @@ function getWeatherBackground(weather) {
   };
 }
 
-function VillagePage({ setPage, village, villageSlots, onPcClick }) {
+function VillagePage({ currentUser, setCurrentUser, setPage, village, villageSlots, onPcClick }) {
+  useEffect(() => {
+    requestJson("/quests/visit-village", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: currentUser.id }),
+    })
+      .then((data) => setCurrentUser((current) => ({ ...current, ...data.user })))
+      .catch(() => {});
+  }, [currentUser.id, setCurrentUser]);
+
   return (
     <div
       className="villageWeather"
@@ -52,7 +64,7 @@ function VillagePage({ setPage, village, villageSlots, onPcClick }) {
       </div>
 
       <div className="card villageCard">
-        <h2>共有街</h2>
+        <h2>研究室</h2>
         {village ? (
           <>
             <PixelTown
@@ -88,9 +100,9 @@ function VillagePage({ setPage, village, villageSlots, onPcClick }) {
       </div>
 
       <div className="card">
-        <h2>共有街の説明</h2>
+        <h2>研究室の説明</h2>
         <p>
-          共有街は、研究室メンバーの活動ポイントによって発展します。
+          研究室は、研究室メンバーの活動ポイントによって発展します。
           研究室に来る人が増えるほど街が育ち、今日の活動人数によって天気も変化します。
         </p>
       </div>

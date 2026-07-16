@@ -7,13 +7,14 @@ import middleHitAnimation from "../assets/gacha/gatya_tyuuatari.gif";
 import secretAnimation from "../assets/gacha/putyun.gif";
 import gachaCoinImage from "../assets/gacha/coin128.png";
 import { getAvatarImage } from "./avatarAssets";
+import { getIconImage } from "./iconAssets";
 
 const KNOB_ANIMATION_MS = 4700;
 const PRIZE_HOLD_MS = 2000;
 const HIT_EFFECTS = {
   jackpot: { animation: jackpotAnimation, duration: 5580, prizeAt: 5580 },
   middle: { animation: middleHitAnimation, duration: 5010, prizeAt: 5010 },
-  secret: { animation: secretAnimation, duration: 2100, prizeAt: 2100 },
+  secret: { animation: secretAnimation, duration: 2170, prizeAt: 2170 },
 };
 
 const text = {
@@ -70,7 +71,11 @@ function GachaPage({ currentUser, setCurrentUser, setPage }) {
 
   const getHitType = (data) => data.avatar.id === "daiki"
     ? "secret"
-    : data.duplicate ? "middle" : "jackpot";
+    : data.avatar.kind === "icon" || data.duplicate ? "middle" : "jackpot";
+
+  const getPrizeImage = (prize) => prize.kind === "icon"
+    ? getIconImage(prize.id)
+    : getAvatarImage(prize.id);
 
   const revealPrize = (data) => {
     setShowingJackpot(false);
@@ -188,7 +193,7 @@ function GachaPage({ currentUser, setCurrentUser, setPage }) {
         {showingJackpot && hitType !== "secret" && <img alt="" className="gachaJackpotAnimation" key={`${hitType}-${spinKey}`} src={`${HIT_EFFECTS[hitType].animation}?run=${spinKey}`} />}
         {showingJackpot && hitType === "secret" && <img alt="" className="gachaSecretAnimation" key={`secret-${spinKey}`} src={`${HIT_EFFECTS.secret.animation}?run=${spinKey}`} />}
         {showingPrize && prizeAvatar && (
-          <img alt={prizeAvatar.name} className="gachaPrizeCharacter" key={`prize-${spinKey}`} src={`${getAvatarImage(prizeAvatar.id)}?run=${spinKey}`} />
+          <img alt={prizeAvatar.name} className="gachaPrizeCharacter" key={`prize-${spinKey}`} src={`${getPrizeImage(prizeAvatar)}?run=${spinKey}`} />
         )}
       </div>
       <button className="gachaPullButton" disabled={spinning || (status?.coins ?? 0) < 1} onClick={pull} type="button">
@@ -205,6 +210,19 @@ function GachaPage({ currentUser, setCurrentUser, setPage }) {
               <strong>{avatar.owned ? avatar.name : "???"}</strong>
               <span>{avatar.rarity}</span>
               <span>{avatar.owned ? text.owned : text.locked}</span>
+            </article>
+          ))}
+        </div>
+      </div>
+      <div className="avatarCollection">
+        <h3>アイコンコレクション</h3>
+        <div className="avatarCollectionGrid">
+          {(status?.icons ?? []).map((icon) => (
+            <article className={!icon.owned ? "avatarPrize avatarPrizeLocked" : "avatarPrize"} key={icon.id}>
+              <img alt={icon.name} src={getIconImage(icon.id)} />
+              <strong>{icon.owned ? icon.name : "???"}</strong>
+              <span>{icon.rarity}</span>
+              <span>{icon.owned ? text.owned : text.locked}</span>
             </article>
           ))}
         </div>

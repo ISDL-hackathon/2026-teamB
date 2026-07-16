@@ -1,13 +1,15 @@
 import { Fragment, useEffect, useState } from "react";
 import { requestBulletinJson } from "../api";
 import bulletinLogo from "../assets/bulletin-logo.png";
-import userIcon from "../assets/chara.png";
+import iconBackground from "../assets/icons/icon-background.png";
+import iconFrame from "../assets/icons/maru.png";
+import { getIconImage } from "./iconAssets";
 import homeNavIcon from "../assets/nav-home.png";
 import roomNavIcon from "../assets/nav-room.png";
 import followNavIcon from "../assets/nav-follow.png";
 import "./BulletinBoardPage.css";
 
-function BulletinBoardPage({ currentUser, setPage }) {
+function BulletinBoardPage({ currentUser, setCurrentUser, setPage }) {
   const [posts, setPosts] = useState([]);
   const [content, setContent] = useState("");
   const [error, setError] = useState("");
@@ -15,6 +17,10 @@ function BulletinBoardPage({ currentUser, setPage }) {
   const [imageData, setImageData] = useState(null);
   const [feedMode, setFeedMode] = useState("all");
   const [openProfileId, setOpenProfileId] = useState(null);
+  const questPostTitles = {
+    lunch: "昼飯クエスト完了",
+    lab_photo: "今日の研究室の風景・完了",
+  };
 
   useEffect(() => {
     requestBulletinJson(`/bulletin/posts?viewer_id=${currentUser.id}`)
@@ -75,6 +81,9 @@ function BulletinBoardPage({ currentUser, setPage }) {
     })
       .then((post) => {
         setPosts((current) => [post, ...current]);
+        if (post.user) {
+          setCurrentUser((current) => ({ ...current, ...post.user }));
+        }
         setContent("");
         setImageData(null);
       })
@@ -132,7 +141,13 @@ function BulletinBoardPage({ currentUser, setPage }) {
               {index > 0 && getPostDate(post.created_at) !== getPostDate(visiblePosts[index - 1].created_at) && (
                 <div className="bulletinDateDivider"><span>{formatPostDate(post.created_at)}</span></div>
               )}
-            <article className="bulletinPost">
+            <article className={post.quest_type ? "bulletinPost bulletinQuestPost" : "bulletinPost"}>
+              {post.quest_type ? (
+                <div className="bulletinQuestCompleteMark">
+                  <strong>QUEST</strong>
+                  <span>COMPLETE!</span>
+                </div>
+              ) : (
               <div className="bulletinAvatarArea">
                 <button
                   aria-label={`${post.user_name}のフォローメニュー`}
@@ -140,7 +155,9 @@ function BulletinBoardPage({ currentUser, setPage }) {
                   onClick={() => setOpenProfileId((id) => id === post.user_id ? null : post.user_id)}
                   type="button"
                 >
-                  <img alt="" src={userIcon} />
+                  <img alt="" className="bulletinAvatarBackground" src={iconBackground} />
+                  <img alt="" className="bulletinAvatarImage" src={getIconImage(post.user_icon)} />
+                  <img alt="" className="bulletinAvatarFrame" src={iconFrame} />
                 </button>
                 {openProfileId === post.user_id && post.user_id !== currentUser.id && (
                   <button
@@ -152,10 +169,11 @@ function BulletinBoardPage({ currentUser, setPage }) {
                   </button>
                 )}
               </div>
+              )}
               <div>
                 <div className="bulletinPostHeader">
-                  <strong>{post.user_name}</strong>
-                  {post.user_id !== currentUser.id && (
+                  <strong>{post.quest_type ? questPostTitles[post.quest_type] ?? "クエスト完了" : post.user_name}</strong>
+                  {!post.quest_type && post.user_id !== currentUser.id && (
                     <button
                       aria-label="いいね"
                       className={post.is_liked ? "bulletinLikeButton bulletinLikeButtonActive" : "bulletinLikeButton"}
@@ -171,7 +189,7 @@ function BulletinBoardPage({ currentUser, setPage }) {
                   <img alt="投稿画像" className="bulletinPostImage" src={post.image_data} />
                 )}
                 <span className="bulletinPostMeta">
-                  {post.user_grade} · {post.created_at.replace("T", " ").slice(0, 16)}
+                  {post.quest_type ? "クエスト達成" : post.user_grade} · {post.created_at.replace("T", " ").slice(0, 16)}
                 </span>
               </div>
             </article>

@@ -11,6 +11,13 @@ from database import (
     create_user,
     create_bulletin_post,
     get_bulletin_posts,
+    get_lunch_quest,
+    create_lunch_quest_room,
+    join_lunch_quest,
+    complete_lunch_quest,
+    get_daily_quest_status,
+    complete_photo_quest,
+    complete_daily_quest,
     get_battle_snapshot,
     toggle_bulletin_follow,
     toggle_bulletin_like,
@@ -43,6 +50,7 @@ from database import (
     purchase_gacha_coin,
     pull_gacha,
     select_avatar,
+    select_icon,
     save_room_layout,
     save_user_village_position,
     set_user_online,
@@ -75,9 +83,13 @@ from schemas import (
     BulletinPostRequest,
     BulletinFollowRequest,
     BulletinLikeRequest,
+    LunchQuestCompleteRequest,
+    LunchQuestJoinRequest,
+    PhotoQuestCompleteRequest,
     FurniturePurchaseRequest,
     GachaUserRequest,
     AvatarSelectRequest,
+    IconSelectRequest,
     LoginRequest,
     LogoutRequest,
     SessionHeartbeatRequest,
@@ -331,6 +343,7 @@ def login(request: LoginRequest):
             "total_point": user["total_point"] + added_point,
             "gacha_coins": user["gacha_coins"],
             "selected_avatar": user["selected_avatar"],
+            "selected_icon": user["selected_icon"],
             "village_slot_id": get_user_village_slot_id(user["id"]),
             "session_token": session_token,
         },
@@ -396,6 +409,98 @@ def bulletin_like(request: BulletinLikeRequest):
     if result is None:
         raise HTTPException(status_code=400, detail="自分の投稿にはいいねできません")
     return result
+
+
+@app.get("/quests/lunch")
+def lunch_quest_status(user_id: int):
+    result = get_lunch_quest(user_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail=USER_NOT_FOUND)
+    return result
+
+
+@app.post("/quests/lunch/rooms")
+def lunch_quest_room_create(request: GachaUserRequest):
+    result = create_lunch_quest_room(request.user_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail=USER_NOT_FOUND)
+    if not result["ok"]:
+        raise HTTPException(status_code=400, detail="本日はすでに別の昼飯グループへ参加しています")
+    return result
+
+
+@app.post("/quests/lunch/join")
+def lunch_quest_join(request: LunchQuestJoinRequest):
+    result = join_lunch_quest(request.user_id, request.room_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail=USER_NOT_FOUND)
+    if not result["ok"]:
+        details = {
+            "already_joined": "本日はすでに別の昼飯グループへ参加しています",
+            "room_not_found": "このグループには参加できません",
+        }
+        raise HTTPException(status_code=400, detail=details.get(result["reason"], "参加できません"))
+    return result
+
+
+@app.post("/quests/lunch/complete")
+def lunch_quest_complete(request: LunchQuestCompleteRequest):
+    allowed_prefixes = (
+        "data:image/png;base64,",
+        "data:image/jpeg;base64,",
+        "data:image/gif;base64,",
+        "data:image/webp;base64,",
+    )
+    if not request.image_data.startswith(allowed_prefixes) or len(request.image_data) > 2_800_000:
+        raise HTTPException(status_code=400, detail="画像はPNG・JPEG・GIF・WebPの2MB以下にしてください")
+    if len(request.content.strip()) > 500:
+        raise HTTPException(status_code=400, detail="本文は500文字以内にしてください")
+    result = complete_lunch_quest(request.user_id, request.room_id, request.content, request.image_data)
+    if result["ok"]:
+        return result
+    details = {
+        "not_participant": "先に昼飯クエストへ参加してください",
+        "not_enough_members": "2人以上参加するとクエストを完了できます",
+    }
+    raise HTTPException(status_code=400, detail=details.get(result["reason"], "クエストを完了できません"))
+
+
+@app.get("/quests/status/{user_id}")
+def daily_quest_status(user_id: int):
+    result = get_daily_quest_status(user_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail=USER_NOT_FOUND)
+    return result
+
+
+@app.post("/quests/visit-village")
+def visit_village_quest(request: GachaUserRequest):
+    result = complete_daily_quest(request.user_id, "visit_village")
+    if result is None:
+        raise HTTPException(status_code=404, detail=USER_NOT_FOUND)
+    return result
+
+
+@app.post("/quests/photo/complete")
+def photo_quest_complete(request: PhotoQuestCompleteRequest):
+    allowed_prefixes = (
+        "data:image/png;base64,",
+        "data:image/jpeg;base64,",
+        "data:image/gif;base64,",
+        "data:image/webp;base64,",
+    )
+    if not request.image_data.startswith(allowed_prefixes) or len(request.image_data) > 2_800_000:
+        raise HTTPException(status_code=400, detail="画像はPNG・JPEG・GIF・WebPの2MB以下にしてください")
+    if len(request.content.strip()) > 500:
+        raise HTTPException(status_code=400, detail="本文は500文字以内にしてください")
+    result = complete_photo_quest(request.user_id, request.content, request.image_data)
+    if result is None:
+        raise HTTPException(status_code=404, detail=USER_NOT_FOUND)
+    if not result["ok"]:
+        raise HTTPException(status_code=400, detail="本日の写真クエストは達成済みです")
+    return result
+
+
 
 
 @app.post("/activity/checkin")
@@ -467,6 +572,14 @@ def gacha_avatar_select(request: AvatarSelectRequest):
     if result["ok"]:
         return result
     raise HTTPException(status_code=400, detail="未所持のアバターは選択できません")
+
+
+@app.post("/gacha/icon/select")
+def gacha_icon_select(request: IconSelectRequest):
+    result = select_icon(request.user_id, request.icon_id)
+    if result["ok"]:
+        return result
+    raise HTTPException(status_code=400, detail="未所持のアイコンは選択できません")
 
 
 @app.get("/village/status")

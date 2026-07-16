@@ -142,7 +142,7 @@ function PixelTown({
       >
         <div
           className={`pixelTown ${weather}`}
-          aria-label="共用街"
+          aria-label="研究室"
           style={{
             backgroundImage: `url(${floorGreyImg})`,
             backgroundRepeat: "repeat",
