@@ -196,8 +196,10 @@ function PixelTown({
                 <button
                   key={slot.id}
                   className={`townSlot ${
-                    occupied ? "townSlotOccupied" : "townSlotEmpty"
-                  } ${isSelectMode && !occupied ? "townSlotPcPreview" : ""}`}
+                   occupied ? "townSlotOccupied" : "townSlotEmpty"
+                  } ${isSelectMode && !occupied ? "townSlotPcPreview" : ""} ${
+                      isSelectMode && occupied ? "townSlotOccupiedPreview" : ""
+                  }`}
                   style={getItemStyle({
                     col: slot.col,
                     row: slot.row,

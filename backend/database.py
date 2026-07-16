@@ -2372,6 +2372,9 @@ def get_village_status():
         (get_today_prefix(),),
     )
     active_users = cur.fetchone()["active_users"]
+    cur.execute("SELECT COUNT(*) AS total_users FROM users")
+    total_users = cur.fetchone()["total_users"]
+
     conn.close()
 
     _, level, title, description = next(
@@ -2388,6 +2391,48 @@ def get_village_status():
         "description": description,
         "active_users": active_users,
         "weather": weather,
+        "total_users": total_users, 
+    }
+
+def get_weekly_activity():
+    from datetime import date, timedelta
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT COUNT(*) AS total_users FROM users")
+    total_users = cur.fetchone()["total_users"]
+
+    today = date.today()
+    monday = today - timedelta(days=today.weekday())
+
+    days = []
+    for i in range(7):
+        day = monday + timedelta(days=i)
+        day_str = day.isoformat()
+
+        cur.execute(
+            """
+            SELECT COUNT(DISTINCT user_id) AS active_users
+            FROM activities
+            WHERE created_at LIKE ?
+            """,
+            (f"{day_str}%",),
+        )
+        active_users = cur.fetchone()["active_users"]
+        ratio = active_users / total_users if total_users > 0 else 0
+
+        days.append({
+            "date": day_str,
+            "weekday": day.weekday(),
+            "active_users": active_users,
+            "ratio": round(ratio, 3),
+        })
+
+    conn.close()
+    return {
+        "total_users": total_users,
+        "days": days,
     }
 
 

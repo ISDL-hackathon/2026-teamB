@@ -23,5 +23,5 @@ frontend/dist/
 .DS_Store
 Thumbs.db
 
+.pnpm-store/
 
-.pnpm-store/.pnpm-store/
