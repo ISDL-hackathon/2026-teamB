@@ -1,5 +1,9 @@
 import iconBase from "../assets/icons/maru.png";
 import iconBackground from "../assets/icons/icon-background.png";
+import gachaButtonImage from "../assets/gacha_btn.png";
+import labButtonImage from "../assets/lab_btn.png";
+import myRoomButtonImage from "../assets/myroom_btn.png";
+import shopButtonImage from "../assets/shop_btn.png";
 import RankingTable from "./RankingTable";
 import { getIconImage } from "./iconAssets";
 
@@ -124,10 +128,18 @@ function HomePage({
       </div>
 
       <div className="menuGrid">
-        <button onClick={() => setPage("villageLoading")}>共有街へ</button>
-        <button onClick={onOpenMyRoom}>個人ルームへ</button>
-        <button onClick={() => setPage("shop")}>Shop</button>
-        <button onClick={() => setPage("gacha")}>{"\u30ac\u30c1\u30e3"}</button>
+        <button aria-label="共有街（研究室）へ移動" className="homeMenuButton" onClick={() => setPage("villageLoading")} type="button">
+          <img alt="" src={labButtonImage} />
+        </button>
+        <button aria-label="マイルームへ移動" className="homeMenuButton" onClick={onOpenMyRoom} type="button">
+          <img alt="" src={myRoomButtonImage} />
+        </button>
+        <button aria-label="ショップへ移動" className="homeMenuButton" onClick={() => setPage("shop")} type="button">
+          <img alt="" src={shopButtonImage} />
+        </button>
+        <button aria-label="ガチャへ移動" className="homeMenuButton" onClick={() => setPage("gacha")} type="button">
+          <img alt="" src={gachaButtonImage} />
+        </button>
       </div>
 
       <section className="rankingSection">
