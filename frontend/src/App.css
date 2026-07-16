@@ -181,6 +181,7 @@ select {
 }
 
 .userIconBase,
+.userIconBackground,
 .userIconImage {
   position: absolute;
   object-fit: contain;
@@ -189,16 +190,28 @@ select {
 
 .userIconBase {
   inset: 0;
+  z-index: 2;
   width: 100%;
   height: 100%;
+  pointer-events: none;
+}
+
+.userIconBackground {
+  inset: 6px;
+  z-index: 0;
+  width: calc(100% - 12px);
+  height: calc(100% - 12px);
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .userIconImage {
-  left: 50%;
-  bottom: 7px;
-  width: 72%;
-  height: 72%;
-  transform: translateX(-50%);
+  inset: 6px;
+  z-index: 1;
+  width: calc(100% - 12px);
+  height: calc(100% - 12px);
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .homeUserInfo {
@@ -269,6 +282,21 @@ tr:last-child td {
   max-width: 680px;
   margin: 0 auto;
   text-align: left;
+}
+
+.roomPageHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 900px;
+}
+
+.roomPageHeader .secondaryButton {
+  margin: 0;
+}
+
+.roomSettingsButton {
+  margin-left: auto !important;
 }
 
 .villageCard {
@@ -742,6 +770,15 @@ tr:last-child td {
   }
 
   .roomCard { padding: 12px; }
+
+  .roomPageHeader {
+    gap: 7px;
+  }
+
+  .roomPageHeader .secondaryButton {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
 
   .homeUserHeader,
   .statusGrid {
@@ -1336,18 +1373,30 @@ tr:last-child td {
   image-rendering: pixelated;
 }
 
-.shopGachaLink {
+.gachaCoinShopItem .gachaCoinGoButton {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 2px;
+  width: 100%;
+  padding: 13px 18px;
   color: #3d2800;
   background: linear-gradient(180deg, #ffe98a, #e5aa2c);
   border-color: #fff2ab #9b650d #9b650d #fff2ab;
+  box-shadow: 0 5px 0 #8a5a10, 0 8px 16px rgba(96, 58, 0, 0.25);
 }
 
-.gachaCoinShopItem .gachaCoinGoButton {
-  grid-column: 1 / -1;
-  width: 100%;
-  color: #ffffff;
-  background: #75511a;
-  border-color: #bc8a37;
+.gachaCoinShopItem .gachaCoinGoButton span {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+}
+
+.gachaCoinShopItem .gachaCoinGoButton strong {
+  font-size: 18px;
+}
+
+.gachaCoinShopItem .gachaCoinGoButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 0 #8a5a10, 0 11px 18px rgba(96, 58, 0, 0.3);
 }
 
 .gachaCoinBalance {

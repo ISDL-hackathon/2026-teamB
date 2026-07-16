@@ -10,8 +10,19 @@ function RoomLoadingPage({ onComplete }) {
     return () => window.clearTimeout(timer);
   }, [onComplete]);
 
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter" || event.key === " ") onComplete();
+  };
+
   return (
-    <main className="roomLoadingPage" aria-label="個人ルームへ入室中">
+    <main
+      className="roomLoadingPage"
+      aria-label="個人ルームへ入室中。クリックでスキップ"
+      onClick={onComplete}
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
+    >
       <img
         alt="個人ルームへ入室中"
         className="roomLoadingImage"

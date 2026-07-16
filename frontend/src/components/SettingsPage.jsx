@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { requestJson } from "../api";
 import { getAvatarImage } from "./avatarAssets";
+import { getIconImage } from "./iconAssets";
 
 const text = {
   back: "\u2190 \u500b\u4eba\u30eb\u30fc\u30e0",
@@ -10,6 +11,10 @@ const text = {
   active: "\u4f7f\u7528\u4e2d",
   select: "\u3053\u306e\u30ad\u30e3\u30e9\u30af\u30bf\u30fc\u306b\u3059\u308b",
   changed: "\u30a2\u30d0\u30bf\u30fc\u3092\u5909\u66f4\u3057\u307e\u3057\u305f",
+  icon: "アイコン",
+  iconHelp: "ホーム画面と掲示板で使用するアイコンを選んでください。",
+  iconSelect: "このアイコンにする",
+  iconChanged: "アイコンを変更しました",
 };
 
 function SettingsPage({ currentUser, onAvatarChanged, setPage }) {
@@ -36,6 +41,20 @@ function SettingsPage({ currentUser, onAvatarChanged, setPage }) {
       .catch((err) => setMessage(err.message));
   };
 
+  const selectIcon = (iconId) => {
+    requestJson("/gacha/icon/select", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: currentUser.id, icon_id: iconId }),
+    })
+      .then((data) => {
+        setStatus((current) => ({ ...current, selected_icon: iconId }));
+        onAvatarChanged(data.user);
+        setMessage(text.iconChanged);
+      })
+      .catch((err) => setMessage(err.message));
+  };
+
   return (
     <section className="card settingsPage">
       <div className="pageHeader">
@@ -51,6 +70,19 @@ function SettingsPage({ currentUser, onAvatarChanged, setPage }) {
             <strong>{avatar.name}</strong>
             <button disabled={status.selected_avatar === avatar.id} onClick={() => selectAvatar(avatar.id)} type="button">
               {status.selected_avatar === avatar.id ? text.active : text.select}
+            </button>
+          </article>
+        ))}
+      </div>
+      <h3>{text.icon}</h3>
+      <p>{text.iconHelp}</p>
+      <div className="avatarCollectionGrid">
+        {(status?.icons ?? []).filter((icon) => icon.owned).map((icon) => (
+          <article className="avatarPrize" key={icon.id}>
+            <img alt={icon.name} src={getIconImage(icon.id)} />
+            <strong>{icon.name}</strong>
+            <button disabled={status.selected_icon === icon.id} onClick={() => selectIcon(icon.id)} type="button">
+              {status.selected_icon === icon.id ? text.active : text.iconSelect}
             </button>
           </article>
         ))}

@@ -15,8 +15,9 @@ pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 FURNITURE_CATALOG = [
     {"id": "round_table", "name": "Round Table", "price": 50, "min_level": 1, "category": "lab", "surface": "floor"},
     {"id": "office_chair", "name": "Office Chair", "price": 35, "min_level": 1, "category": "lab", "surface": "floor"},
-    {"id": "bulletin_board", "name": "Bulletin Board", "price": 50, "min_level": 1, "category": "lab", "surface": "wall"},
-    {"id": "game_cabinet", "name": "Game Cabinet", "price": 100, "min_level": 2, "category": "lab", "surface": "floor"},
+    {"id": "bulletin_board", "name": "Bulletin Board", "price": 15, "min_level": 1, "category": "lab", "surface": "wall"},
+    {"id": "quest_board", "name": "Quest Board", "price": 15, "min_level": 1, "category": "lab", "surface": "floor"},
+    {"id": "game_cabinet", "name": "Game Cabinet", "price": 15, "min_level": 2, "category": "lab", "surface": "floor"},
     {"id": "window", "name": "Window", "price": 30, "min_level": 2, "category": "western", "surface": "wall"},
     {"id": "clock", "name": "Clock", "price": 30, "min_level": 2, "category": "western", "surface": "wall"},
     {"id": "stove", "name": "Stove", "price": 50, "min_level": 2, "category": "western", "surface": "wall"},
@@ -33,6 +34,11 @@ AVATAR_CATALOG = {
     "abe": {"id": "abe", "name": "あべ", "rarity": "レア"},
     "daiki": {"id": "daiki", "name": "だいき", "rarity": "シークレット"},
     "maie": {"id": "maie", "name": "まいえ", "rarity": "大当たり"},
+}
+
+ICON_CATALOG = {
+    "hero": {"id": "hero", "name": "勇者", "rarity": "ノーマル", "kind": "icon"},
+    "icon1": {"id": "icon1", "name": "屋根のねずみ", "rarity": "中当たり", "kind": "icon"},
 }
 
 VILLAGE_LEVELS = [
@@ -544,6 +550,9 @@ def submit_battle_move(match_id: int, user_id: int, action: str):
             battle_result["text"], get_now(), match_id, match["turn"],
         ),
     )
+    if winner_id:
+        _complete_daily_quest(cur, match["player1_id"], "play_together")
+        _complete_daily_quest(cur, match["player2_id"], "play_together")
     conn.commit()
     result = {"match": _battle_snapshot(cur, match_id, user_id)}
     conn.close()
@@ -1059,6 +1068,9 @@ def finish_mahjong_room(room_id: int, user_id: int):
     if finished:
         _mahjong_event(cur, room_id, "game_finished", {"reason": "manual"})
         _settle_mahjong_points(cur, room_id)
+        cur.execute("SELECT user_id FROM mahjong_players WHERE room_id = ?", (room_id,))
+        for player in cur.fetchall():
+            _complete_daily_quest(cur, player["user_id"], "play_together")
     conn.commit()
     result = {"room": _mahjong_snapshot(cur, room_id, user_id)} if finished else None
     conn.close()
@@ -1241,6 +1253,9 @@ def init_db():
     if "selected_avatar" not in user_columns:
         cur.execute("ALTER TABLE users ADD COLUMN selected_avatar TEXT NOT NULL DEFAULT 'izumi'")
 
+    if "selected_icon" not in user_columns:
+        cur.execute("ALTER TABLE users ADD COLUMN selected_icon TEXT NOT NULL DEFAULT 'hero'")
+
     cur.execute("""
     CREATE TABLE IF NOT EXISTS user_avatars (
         user_id INTEGER NOT NULL,
@@ -1254,6 +1269,21 @@ def init_db():
     cur.execute("""
     INSERT OR IGNORE INTO user_avatars (user_id, avatar_id, acquired_at)
     SELECT id, 'izumi', ? FROM users
+    """, (get_now(),))
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS user_icons (
+        user_id INTEGER NOT NULL,
+        icon_id TEXT NOT NULL,
+        acquired_at TEXT NOT NULL,
+        PRIMARY KEY (user_id, icon_id),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+    """)
+
+    cur.execute("""
+    INSERT OR IGNORE INTO user_icons (user_id, icon_id, acquired_at)
+    SELECT id, 'hero', ? FROM users
     """, (get_now(),))
 
     cur.execute("""
@@ -1317,6 +1347,69 @@ def init_db():
     bulletin_post_columns = {row["name"] for row in cur.fetchall()}
     if "image_data" not in bulletin_post_columns:
         cur.execute("ALTER TABLE bulletin_posts ADD COLUMN image_data TEXT")
+    if "quest_type" not in bulletin_post_columns:
+        cur.execute("ALTER TABLE bulletin_posts ADD COLUMN quest_type TEXT")
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS quest_participants (
+        quest_id TEXT NOT NULL,
+        quest_date TEXT NOT NULL,
+        user_id INTEGER NOT NULL,
+        joined_at TEXT NOT NULL,
+        PRIMARY KEY (quest_id, quest_date, user_id),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+    """)
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS quest_completions (
+        quest_id TEXT NOT NULL,
+        quest_date TEXT NOT NULL,
+        post_id INTEGER NOT NULL,
+        completed_by INTEGER NOT NULL,
+        completed_at TEXT NOT NULL,
+        PRIMARY KEY (quest_id, quest_date),
+        FOREIGN KEY (post_id) REFERENCES bulletin_posts(id),
+        FOREIGN KEY (completed_by) REFERENCES users(id)
+    )
+    """)
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS daily_quest_completions (
+        quest_id TEXT NOT NULL,
+        quest_date TEXT NOT NULL,
+        user_id INTEGER NOT NULL,
+        reward INTEGER NOT NULL,
+        completed_at TEXT NOT NULL,
+        PRIMARY KEY (quest_id, quest_date, user_id),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+    """)
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS lunch_quest_rooms (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        quest_date TEXT NOT NULL,
+        host_id INTEGER NOT NULL,
+        status TEXT NOT NULL DEFAULT 'waiting',
+        post_id INTEGER,
+        created_at TEXT NOT NULL,
+        completed_at TEXT,
+        FOREIGN KEY (host_id) REFERENCES users(id),
+        FOREIGN KEY (post_id) REFERENCES bulletin_posts(id)
+    )
+    """)
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS lunch_quest_members (
+        room_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        joined_at TEXT NOT NULL,
+        PRIMARY KEY (room_id, user_id),
+        FOREIGN KEY (room_id) REFERENCES lunch_quest_rooms(id),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+    """)
 
     cur.execute("""
     CREATE TABLE IF NOT EXISTS bulletin_follows (
@@ -1648,8 +1741,10 @@ def get_bulletin_posts(limit: int = 100, viewer_id: int = 0):
     cur.execute(
         """
         SELECT bulletin_posts.id, bulletin_posts.content, bulletin_posts.image_data,
+               bulletin_posts.quest_type,
                bulletin_posts.created_at, users.id AS user_id,
                users.name AS user_name, users.grade AS user_grade,
+               users.selected_icon AS user_icon,
                EXISTS(
                    SELECT 1 FROM bulletin_follows
                    WHERE follower_id = ? AND followed_id = bulletin_posts.user_id
@@ -1684,10 +1779,273 @@ def create_bulletin_post(user_id: int, content: str, image_data=None):
         "INSERT INTO bulletin_posts (user_id, content, image_data, created_at) VALUES (?, ?, ?, ?)",
         (user_id, content, image_data, created_at),
     )
-    conn.commit()
     post_id = cur.lastrowid
+    quest_awarded = _complete_daily_quest(cur, user_id, "bulletin-post")
+    conn.commit()
     conn.close()
-    return next((post for post in get_bulletin_posts(viewer_id=user_id) if post["id"] == post_id), None)
+    post = next((post for post in get_bulletin_posts(viewer_id=user_id) if post["id"] == post_id), None)
+    if post is not None:
+        post["quest_awarded"] = quest_awarded
+        post["quest_reward"] = DAILY_QUEST_REWARDS["bulletin-post"] if quest_awarded else 0
+        post["user"] = get_user_by_id(user_id)
+    return post
+
+
+def get_lunch_quest(user_id: int):
+    quest_date = get_now()[:10]
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM users WHERE id = ?", (user_id,))
+    if cur.fetchone() is None:
+        conn.close()
+        return None
+    cur.execute(
+        """
+        SELECT r.id, r.host_id, r.status, r.post_id, r.created_at, r.completed_at,
+               u.name AS host_name
+        FROM lunch_quest_rooms r
+        JOIN users u ON u.id = r.host_id
+        WHERE r.quest_date = ?
+        ORDER BY CASE r.status WHEN 'waiting' THEN 0 ELSE 1 END, r.id DESC
+        """,
+        (quest_date,),
+    )
+    rooms = []
+    my_room_id = None
+    for room_row in cur.fetchall():
+        room = dict(room_row)
+        cur.execute(
+            """
+            SELECT u.id, u.name, u.grade, u.selected_icon
+            FROM lunch_quest_members m
+            JOIN users u ON u.id = m.user_id
+            WHERE m.room_id = ? ORDER BY m.joined_at
+            """,
+            (room["id"],),
+        )
+        room["participants"] = [dict(row) for row in cur.fetchall()]
+        if any(player["id"] == user_id for player in room["participants"]):
+            my_room_id = room["id"]
+        rooms.append(room)
+    conn.close()
+    return {
+        "quest_id": "lunch",
+        "quest_date": quest_date,
+        "reward": 20,
+        "rooms": rooms,
+        "my_room_id": my_room_id,
+    }
+
+
+def create_lunch_quest_room(user_id: int):
+    quest_date = get_now()[:10]
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM users WHERE id = ?", (user_id,))
+    if cur.fetchone() is None:
+        conn.close()
+        return None
+    cur.execute("""
+        SELECT 1 FROM lunch_quest_members m
+        JOIN lunch_quest_rooms r ON r.id = m.room_id
+        WHERE r.quest_date = ? AND m.user_id = ?
+    """, (quest_date, user_id))
+    if cur.fetchone() is not None:
+        conn.close()
+        return {"ok": False, "reason": "already_joined"}
+    now = get_now()
+    cur.execute(
+        "INSERT INTO lunch_quest_rooms (quest_date, host_id, created_at) VALUES (?, ?, ?)",
+        (quest_date, user_id, now),
+    )
+    room_id = cur.lastrowid
+    cur.execute("INSERT INTO lunch_quest_members (room_id, user_id, joined_at) VALUES (?, ?, ?)", (room_id, user_id, now))
+    conn.commit()
+    conn.close()
+    return {"ok": True, "room_id": room_id, "status": get_lunch_quest(user_id)}
+
+
+def join_lunch_quest(user_id: int, room_id: int):
+    quest_date = get_now()[:10]
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM users WHERE id = ?", (user_id,))
+    if cur.fetchone() is None:
+        conn.close()
+        return None
+    cur.execute("""
+        SELECT 1 FROM lunch_quest_members m
+        JOIN lunch_quest_rooms r ON r.id = m.room_id
+        WHERE r.quest_date = ? AND m.user_id = ?
+    """, (quest_date, user_id))
+    if cur.fetchone() is not None:
+        conn.close()
+        return {"ok": False, "reason": "already_joined"}
+    cur.execute(
+        "SELECT 1 FROM lunch_quest_rooms WHERE id = ? AND quest_date = ? AND status = 'waiting'",
+        (room_id, quest_date),
+    )
+    if cur.fetchone() is None:
+        conn.close()
+        return {"ok": False, "reason": "room_not_found"}
+    cur.execute("INSERT INTO lunch_quest_members (room_id, user_id, joined_at) VALUES (?, ?, ?)", (room_id, user_id, get_now()))
+    conn.commit()
+    conn.close()
+    return {"ok": True, "status": get_lunch_quest(user_id)}
+
+
+def complete_lunch_quest(user_id: int, room_id: int, content: str, image_data: str):
+    quest_date = get_now()[:10]
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT 1 FROM lunch_quest_rooms r
+        JOIN lunch_quest_members m ON m.room_id = r.id
+        WHERE r.id = ? AND r.quest_date = ? AND r.status = 'waiting' AND m.user_id = ?
+        """,
+        (room_id, quest_date, user_id),
+    )
+    if cur.fetchone() is None:
+        conn.close()
+        return {"ok": False, "reason": "not_participant"}
+    cur.execute("SELECT user_id FROM lunch_quest_members WHERE room_id = ?", (room_id,))
+    participant_ids = [row["user_id"] for row in cur.fetchall()]
+    if len(participant_ids) < 2:
+        conn.close()
+        return {"ok": False, "reason": "not_enough_members"}
+
+    created_at = get_now()
+    post_content = content.strip() or "みんなで昼飯クエストを達成しました！"
+    cur.execute(
+        "INSERT INTO bulletin_posts (user_id, content, image_data, quest_type, created_at) VALUES (?, ?, ?, 'lunch', ?)",
+        (user_id, post_content, image_data, created_at),
+    )
+    post_id = cur.lastrowid
+    for participant_id in participant_ids:
+        cur.execute(
+            "UPDATE users SET point = point + 20, total_point = total_point + 20 WHERE id = ?",
+            (participant_id,),
+        )
+        cur.execute(
+            "INSERT INTO activities (user_id, activity_type, point, created_at) VALUES (?, 'lunch_quest', 20, ?)",
+            (participant_id, created_at),
+        )
+    cur.execute("UPDATE lunch_quest_rooms SET status = 'completed', post_id = ?, completed_at = ? WHERE id = ?", (post_id, created_at, room_id))
+    conn.commit()
+    conn.close()
+    post = next((item for item in get_bulletin_posts(viewer_id=user_id) if item["id"] == post_id), None)
+    return {
+        "ok": True,
+        "post": post,
+        "awarded_user_ids": participant_ids,
+        "user": get_user_by_id(user_id),
+        "status": get_lunch_quest(user_id),
+    }
+
+
+DAILY_QUEST_REWARDS = {
+    "visit_village": 40,
+    "lab_photo": 10,
+    "bulletin-post": 10,
+    "play_together": 20,
+}
+
+
+def _complete_daily_quest(cur, user_id: int, quest_id: str):
+    reward = DAILY_QUEST_REWARDS.get(quest_id)
+    if reward is None:
+        return False
+    completed_at = get_now()
+    quest_date = completed_at[:10]
+    cur.execute(
+        """
+        INSERT OR IGNORE INTO daily_quest_completions
+            (quest_id, quest_date, user_id, reward, completed_at)
+        VALUES (?, ?, ?, ?, ?)
+        """,
+        (quest_id, quest_date, user_id, reward, completed_at),
+    )
+    awarded = cur.rowcount > 0
+    if awarded and reward > 0:
+        cur.execute(
+            "UPDATE users SET point = point + ?, total_point = total_point + ? WHERE id = ?",
+            (reward, reward, user_id),
+        )
+        cur.execute(
+            "INSERT INTO activities (user_id, activity_type, point, created_at) VALUES (?, ?, ?, ?)",
+            (user_id, f"quest_{quest_id}", reward, completed_at),
+        )
+    return awarded
+
+
+def complete_daily_quest(user_id: int, quest_id: str):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM users WHERE id = ?", (user_id,))
+    if cur.fetchone() is None:
+        conn.close()
+        return None
+    awarded = _complete_daily_quest(cur, user_id, quest_id)
+    conn.commit()
+    conn.close()
+    return {
+        "ok": True,
+        "awarded": awarded,
+        "reward": DAILY_QUEST_REWARDS.get(quest_id, 0) if awarded else 0,
+        "user": get_user_by_id(user_id),
+    }
+
+
+def get_daily_quest_status(user_id: int):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM users WHERE id = ?", (user_id,))
+    if cur.fetchone() is None:
+        conn.close()
+        return None
+    cur.execute(
+        "SELECT quest_id, reward, completed_at FROM daily_quest_completions WHERE user_id = ? AND quest_date = ?",
+        (user_id, get_now()[:10]),
+    )
+    completed = [dict(row) for row in cur.fetchall()]
+    conn.close()
+    return {"completed_quests": completed}
+
+
+def complete_photo_quest(user_id: int, content: str, image_data: str):
+    quest_date = get_now()[:10]
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM users WHERE id = ?", (user_id,))
+    if cur.fetchone() is None:
+        conn.close()
+        return None
+    cur.execute(
+        "SELECT 1 FROM daily_quest_completions WHERE quest_id = 'lab_photo' AND quest_date = ? AND user_id = ?",
+        (quest_date, user_id),
+    )
+    if cur.fetchone() is not None:
+        conn.close()
+        return {"ok": False, "reason": "completed"}
+
+    created_at = get_now()
+    post_content = content.strip() or "今日の研究室の風景を共有しました！"
+    cur.execute(
+        "INSERT INTO bulletin_posts (user_id, content, image_data, quest_type, created_at) VALUES (?, ?, ?, 'lab_photo', ?)",
+        (user_id, post_content, image_data, created_at),
+    )
+    post_id = cur.lastrowid
+    _complete_daily_quest(cur, user_id, "lab_photo")
+    conn.commit()
+    conn.close()
+    post = next((item for item in get_bulletin_posts(viewer_id=user_id) if item["id"] == post_id), None)
+    return {
+        "ok": True,
+        "post": post,
+        "user": get_user_by_id(user_id),
+        "status": get_daily_quest_status(user_id),
+    }
 
 
 def toggle_bulletin_follow(follower_id: int, followed_id: int):
@@ -1771,6 +2129,10 @@ def create_user(name: str, grade: str, password: str):
         "INSERT INTO user_avatars (user_id, avatar_id, acquired_at) VALUES (?, 'izumi', ?)",
         (user_id, get_now()),
     )
+    cur.execute(
+        "INSERT INTO user_icons (user_id, icon_id, acquired_at) VALUES (?, 'hero', ?)",
+        (user_id, get_now()),
+    )
     conn.commit()
     conn.close()
 
@@ -1782,6 +2144,7 @@ def create_user(name: str, grade: str, password: str):
         "total_point": 0,
         "gacha_coins": 0,
         "selected_avatar": "izumi",
+        "selected_icon": "hero",
     }
 
 
@@ -1792,7 +2155,7 @@ def get_user_by_name(name: str):
     cur.execute(
         """
         SELECT id, name, grade, password_hash, point, total_point,
-               gacha_coins, selected_avatar
+               gacha_coins, selected_avatar, selected_icon
         FROM users
         WHERE name = ?
         """,
@@ -1810,7 +2173,7 @@ def get_user_by_id(user_id: int):
 
     cur.execute(
         """
-        SELECT id, name, grade, point, total_point, gacha_coins, selected_avatar
+        SELECT id, name, grade, point, total_point, gacha_coins, selected_avatar, selected_icon
         FROM users
         WHERE id = ?
         """,
@@ -1906,7 +2269,7 @@ def get_ranking():
     cur = conn.cursor()
 
     cur.execute("""
-    SELECT id, name, grade, point, total_point, selected_avatar
+    SELECT id, name, grade, point, total_point, selected_avatar, selected_icon
     FROM users
     ORDER BY total_point DESC
     """)
@@ -2214,13 +2577,23 @@ def get_avatar_status(user_id: int):
         (user_id,),
     )
     owned_ids = [row["avatar_id"] for row in cur.fetchall()]
+    cur.execute(
+        "SELECT icon_id FROM user_icons WHERE user_id = ? ORDER BY acquired_at, icon_id",
+        (user_id,),
+    )
+    owned_icon_ids = [row["icon_id"] for row in cur.fetchall()]
     conn.close()
     return {
         "coins": user["gacha_coins"],
         "selected_avatar": user["selected_avatar"],
+        "selected_icon": user["selected_icon"],
         "avatars": [
             {**avatar, "owned": avatar_id in owned_ids}
             for avatar_id, avatar in AVATAR_CATALOG.items()
+        ],
+        "icons": [
+            {**icon, "owned": icon_id in owned_icon_ids}
+            for icon_id, icon in ICON_CATALOG.items()
         ],
     }
 
@@ -2259,24 +2632,27 @@ def pull_gacha(user_id: int):
         return {"ok": False, "reason": "not_enough_coin"}
 
     rarity_roll = secrets.randbelow(100)
+    prize_kind = "avatar"
     if rarity_roll < 5:
         avatar_id = "daiki"
     elif rarity_roll < 15:
         avatar_id = "maie"
+    elif rarity_roll < 35:
+        prize_kind = "icon"
+        avatar_id = "icon1"
     else:
         avatar_id = secrets.choice(("nagano", "abe"))
-    avatar = AVATAR_CATALOG[avatar_id]
-    cur.execute(
-        "SELECT 1 FROM user_avatars WHERE user_id = ? AND avatar_id = ?",
-        (user_id, avatar["id"]),
-    )
+    avatar = ICON_CATALOG[avatar_id] if prize_kind == "icon" else {**AVATAR_CATALOG[avatar_id], "kind": "avatar"}
+    owned_table = "user_icons" if prize_kind == "icon" else "user_avatars"
+    owned_column = "icon_id" if prize_kind == "icon" else "avatar_id"
+    cur.execute(f"SELECT 1 FROM {owned_table} WHERE user_id = ? AND {owned_column} = ?", (user_id, avatar["id"]))
     duplicate = cur.fetchone() is not None
     cur.execute("UPDATE users SET gacha_coins = gacha_coins - 1 WHERE id = ?", (user_id,))
     if duplicate:
         cur.execute("UPDATE users SET point = point + 5 WHERE id = ?", (user_id,))
     else:
         cur.execute(
-            "INSERT INTO user_avatars (user_id, avatar_id, acquired_at) VALUES (?, ?, ?)",
+            f"INSERT INTO {owned_table} (user_id, {owned_column}, acquired_at) VALUES (?, ?, ?)",
             (user_id, avatar["id"], get_now()),
         )
     conn.commit()
@@ -2304,6 +2680,24 @@ def select_avatar(user_id: int, avatar_id: str):
         conn.close()
         return {"ok": False, "reason": "not_owned"}
     cur.execute("UPDATE users SET selected_avatar = ? WHERE id = ?", (avatar_id, user_id))
+    conn.commit()
+    conn.close()
+    return {"ok": True, "user": get_user_by_id(user_id)}
+
+
+def select_icon(user_id: int, icon_id: str):
+    if icon_id not in ICON_CATALOG:
+        return {"ok": False, "reason": "not_found"}
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT 1 FROM user_icons WHERE user_id = ? AND icon_id = ?",
+        (user_id, icon_id),
+    )
+    if cur.fetchone() is None:
+        conn.close()
+        return {"ok": False, "reason": "not_owned"}
+    cur.execute("UPDATE users SET selected_icon = ? WHERE id = ?", (icon_id, user_id))
     conn.commit()
     conn.close()
     return {"ok": True, "user": get_user_by_id(user_id)}
