@@ -21,6 +21,9 @@ const TOWN_HEIGHT = TOWN_ROWS * TILE + BORDER * 2; // 768 + 12 = 780
 const VENT_INTERVAL_COL = 2.5;
 const VENT_INTERVAL_ROW = 2.5;
 
+// このスロットのPCだけ、モニターとの兼ね合いでzを下げる
+const LOWERED_Z_PC_IDS = new Set(["pc16", "pc23", "pc31"]);
+
 // 換気扇を等間隔で自動生成する
 function createVents() {
   const vents = [];
@@ -142,7 +145,7 @@ function PixelTown({
       >
         <div
           className={`pixelTown ${weather}`}
-          aria-label="研究室"
+          aria-label="共用街"
           style={{
             backgroundImage: `url(${floorGreyImg})`,
             backgroundRepeat: "repeat",
@@ -191,19 +194,21 @@ function PixelTown({
               charaImages.chair?.[direction] ??
               charaImg;
 
+            const pcZ = LOWERED_Z_PC_IDS.has(slot.id) ? 40 : 47;
+
             return (
               <Fragment key={slot.id}>
                 <button
                   key={slot.id}
                   className={`townSlot ${
-                   occupied ? "townSlotOccupied" : "townSlotEmpty"
+                    occupied ? "townSlotOccupied" : "townSlotEmpty"
                   } ${isSelectMode && !occupied ? "townSlotPcPreview" : ""} ${
-                      isSelectMode && occupied ? "townSlotOccupiedPreview" : ""
+                    isSelectMode && occupied ? "townSlotOccupiedPreview" : ""
                   }`}
                   style={getItemStyle({
                     col: slot.col,
                     row: slot.row,
-                    z: 47,
+                    z: pcZ,
                   })}
                   disabled={isSelectMode && occupied}
                   onClick={() => {
@@ -234,7 +239,6 @@ function PixelTown({
 
                 {occupied &&
                   (isOnline ? (
-                    // ログイン中:キャラ + 名前
                     <>
                       <img
                         src={charaImgForSeat}
@@ -258,7 +262,6 @@ function PixelTown({
                       </span>
                     </>
                   ) : (
-                    // 未ログイン:椅子だけ
                     <img
                       src={seatImg}
                       alt=""
@@ -272,13 +275,12 @@ function PixelTown({
                       })}
                     />
                   ))}
-                  
               </Fragment>
             );
           })}
 
           {/* キャラクター */}
-          {/* <img
+          <img
             src={charaImg}
             className="townChara"
             alt="街のキャラクター"
@@ -287,7 +289,7 @@ function PixelTown({
               transform: "translateY(-10px) scale(2.5)",
               transformOrigin: "center bottom",
             }}
-          /> */}
+          />
 
           {SHOW_GRID && <TownGridOverlay />}
         </div>
