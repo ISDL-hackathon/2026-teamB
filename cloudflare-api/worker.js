@@ -24,6 +24,46 @@ const messages = {
 
 const FURNITURE_CATALOG = [
   {
+    id: "fan",
+    name: "Fan",
+    price: 40,
+    min_level: 1,
+    category: "western",
+    surface: "floor",
+  },
+  {
+    id: "cactus",
+    name: "Cactus",
+    price: 30,
+    min_level: 1,
+    category: "western",
+    surface: "floor",
+  },
+  {
+    id: "flowering_cactus",
+    name: "Flowering Cactus",
+    price: 45,
+    min_level: 2,
+    category: "western",
+    surface: "floor",
+  },
+  {
+    id: "sofa",
+    name: "Sofa",
+    price: 120,
+    min_level: 3,
+    category: "western",
+    surface: "floor",
+  },
+  {
+    id: "sunflower",
+    name: "Sunflower",
+    price: 50,
+    min_level: 2,
+    category: "western",
+    surface: "floor",
+  },
+  {
     id: "round_table",
     name: "Round Table",
     price: 50,
