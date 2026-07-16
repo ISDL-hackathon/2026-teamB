@@ -122,7 +122,7 @@ function HomePage({
       </div>
 
       <div className="menuGrid">
-        <button onClick={() => setPage("village")}>共有街へ</button>
+        <button onClick={() => setPage("villageLoading")}>共有街へ</button>
         <button onClick={onOpenMyRoom}>個人ルームへ</button>
         <button onClick={() => setPage("shop")}>Shop</button>
         <button onClick={() => setPage("gacha")}>{"\u30ac\u30c1\u30e3"}</button>

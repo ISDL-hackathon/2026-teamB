@@ -103,6 +103,14 @@ const FURNITURE_CATALOG = [
     category: "western",
     surface: "floor",
   },
+  {
+  id: "retro_tv",
+  name: "Retro TV",
+  price: 80,
+  min_level: 2,
+  category: "western",
+  surface: "floor",
+},
 ];
 
 const VILLAGE_LEVELS = [
