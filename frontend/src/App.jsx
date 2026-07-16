@@ -309,17 +309,17 @@ const fetchWeeklyActivity = () => {
       .catch((err) => setMessage(err.message));
   };
 
-  const handlePurchaseGachaCoin = () => {
+  const handlePurchaseGachaCoin = (quantity = 1) => {
     if (!currentUser) return;
     requestJson("/shop/gacha-coins/purchase", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user_id: currentUser.id }),
+      body: JSON.stringify({ user_id: currentUser.id, quantity }),
     })
       .then((data) => {
         setCurrentUser((current) => ({ ...current, ...data.user }));
         fetchRoom(currentUser.id);
-        setMessage("\u30ac\u30c1\u30e3\u30b3\u30a4\u30f3\u30921\u679a\u8cfc\u5165\u3057\u307e\u3057\u305f -10pt");
+        setMessage(`ガチャコインを${data.quantity}枚購入しました -${data.price}pt`);
       })
       .catch((err) => setMessage(err.message));
   };
@@ -473,7 +473,12 @@ const fetchWeeklyActivity = () => {
       )}
 
       {currentUser && page === "bulletin" && (
-        <BulletinBoardPage currentUser={currentUser} setCurrentUser={setCurrentUser} setPage={setPage} />
+        <BulletinBoardPage
+          currentUser={currentUser}
+          rankOneUserId={ranking[0]?.id}
+          setCurrentUser={setCurrentUser}
+          setPage={setPage}
+        />
       )}
 
       {currentUser && page === "shop" && (

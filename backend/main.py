@@ -87,6 +87,7 @@ from schemas import (
     LunchQuestJoinRequest,
     PhotoQuestCompleteRequest,
     FurniturePurchaseRequest,
+    GachaCoinPurchaseRequest,
     GachaUserRequest,
     AvatarSelectRequest,
     IconSelectRequest,
@@ -386,8 +387,8 @@ def bulletin_post_create(request: BulletinPostRequest):
             "data:image/gif;base64,",
             "data:image/webp;base64,",
         )
-        if not image_data.startswith(allowed_prefixes) or len(image_data) > 2_800_000:
-            raise HTTPException(status_code=400, detail="画像はPNG・JPEG・GIF・WebPの2MB以下にしてください")
+        if not image_data.startswith(allowed_prefixes) or len(image_data) > 1_500_000:
+            raise HTTPException(status_code=400, detail="画像はPNG・JPEG・GIF・WebPの1MB以下にしてください")
 
     post = create_bulletin_post(request.user_id, content, image_data)
     if post is None:
@@ -451,8 +452,8 @@ def lunch_quest_complete(request: LunchQuestCompleteRequest):
         "data:image/gif;base64,",
         "data:image/webp;base64,",
     )
-    if not request.image_data.startswith(allowed_prefixes) or len(request.image_data) > 2_800_000:
-        raise HTTPException(status_code=400, detail="画像はPNG・JPEG・GIF・WebPの2MB以下にしてください")
+    if not request.image_data.startswith(allowed_prefixes) or len(request.image_data) > 1_500_000:
+        raise HTTPException(status_code=400, detail="画像はPNG・JPEG・GIF・WebPの1MB以下にしてください")
     if len(request.content.strip()) > 500:
         raise HTTPException(status_code=400, detail="本文は500文字以内にしてください")
     result = complete_lunch_quest(request.user_id, request.room_id, request.content, request.image_data)
@@ -489,8 +490,8 @@ def photo_quest_complete(request: PhotoQuestCompleteRequest):
         "data:image/gif;base64,",
         "data:image/webp;base64,",
     )
-    if not request.image_data.startswith(allowed_prefixes) or len(request.image_data) > 2_800_000:
-        raise HTTPException(status_code=400, detail="画像はPNG・JPEG・GIF・WebPの2MB以下にしてください")
+    if not request.image_data.startswith(allowed_prefixes) or len(request.image_data) > 1_500_000:
+        raise HTTPException(status_code=400, detail="画像はPNG・JPEG・GIF・WebPの1MB以下にしてください")
     if len(request.content.strip()) > 500:
         raise HTTPException(status_code=400, detail="本文は500文字以内にしてください")
     result = complete_photo_quest(request.user_id, request.content, request.image_data)
@@ -549,10 +550,12 @@ def gacha_status(user_id: int):
 
 
 @app.post("/shop/gacha-coins/purchase")
-def gacha_coin_purchase(request: GachaUserRequest):
-    result = purchase_gacha_coin(request.user_id)
+def gacha_coin_purchase(request: GachaCoinPurchaseRequest):
+    result = purchase_gacha_coin(request.user_id, request.quantity)
     if result["ok"]:
         return result
+    if result["reason"] == "invalid_quantity":
+        raise HTTPException(status_code=400, detail="購入枚数は1〜99枚で指定してください")
     detail = USER_NOT_FOUND if result["reason"] == "user_not_found" else NOT_ENOUGH_POINT
     raise HTTPException(status_code=404 if result["reason"] == "user_not_found" else 400, detail=detail)
 

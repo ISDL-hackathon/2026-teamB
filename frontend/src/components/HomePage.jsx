@@ -1,4 +1,5 @@
 import iconBase from "../assets/icons/maru.png";
+import crownIconBase from "../assets/icons/maru-crown.png";
 import iconBackground from "../assets/icons/icon-background.png";
 import gachaButtonImage from "../assets/gacha_btn.png";
 import labButtonImage from "../assets/lab_btn.png";
@@ -51,12 +52,16 @@ function getLevelProgress(village) {
   return { isMax: false, ratio, remaining, next, total };
 }
 
-function UserIcon({ icon }) {
+function UserIcon({ icon, isRankOne = false }) {
   return (
     <div className="userIcon" aria-hidden="true">
       <img alt="" className="userIconBackground" src={iconBackground} />
       <img alt="" className="userIconImage" src={icon} />
-      <img alt="" className="userIconBase" src={iconBase} />
+      <img
+        alt=""
+        className="userIconBase"
+        src={isRankOne ? crownIconBase : iconBase}
+      />
     </div>
   );
 }
@@ -73,6 +78,7 @@ function HomePage({
 }) {
   const progress = getLevelProgress(village);
   const todayIndex = (new Date().getDay() + 6) % 7; // 0=月 ... 6=日 に変換
+  const isRankOne = Number(ranking[0]?.id) === Number(currentUser.id);
 
   return (
     <div className="homeWeather" style={getWeatherBackground(village?.weather)}>
@@ -80,7 +86,10 @@ function HomePage({
         <div className="card homeUserCard">
           <div className="homeUserHeader">
             <div className="homeUserProfile">
-              <UserIcon icon={getIconImage(currentUser.selected_icon)} />
+              <UserIcon
+                icon={getIconImage(currentUser.selected_icon)}
+                isRankOne={isRankOne}
+              />
               <div className="homeUserInfo">
                 <span className="eyebrow">ログイン中</span>
                 <p>

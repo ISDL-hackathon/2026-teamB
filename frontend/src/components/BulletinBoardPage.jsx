@@ -3,13 +3,14 @@ import { requestBulletinJson } from "../api";
 import bulletinLogo from "../assets/bulletin-logo.png";
 import iconBackground from "../assets/icons/icon-background.png";
 import iconFrame from "../assets/icons/maru.png";
+import crownIconFrame from "../assets/icons/maru-crown.png";
 import { getIconImage } from "./iconAssets";
 import homeNavIcon from "../assets/nav-home.png";
 import roomNavIcon from "../assets/nav-room.png";
 import followNavIcon from "../assets/nav-follow.png";
 import "./BulletinBoardPage.css";
 
-function BulletinBoardPage({ currentUser, setCurrentUser, setPage }) {
+function BulletinBoardPage({ currentUser, rankOneUserId, setCurrentUser, setPage }) {
   const [posts, setPosts] = useState([]);
   const [content, setContent] = useState("");
   const [error, setError] = useState("");
@@ -94,8 +95,8 @@ function BulletinBoardPage({ currentUser, setCurrentUser, setPage }) {
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    if (!['image/png', 'image/jpeg', 'image/gif', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
-      setError("画像はPNG・JPEG・GIF・WebPの2MB以下にしてください");
+    if (!['image/png', 'image/jpeg', 'image/gif', 'image/webp'].includes(file.type) || file.size > 1024 * 1024) {
+      setError("画像はPNG・JPEG・GIF・WebPの1MB以下にしてください");
       event.target.value = "";
       return;
     }
@@ -157,7 +158,11 @@ function BulletinBoardPage({ currentUser, setCurrentUser, setPage }) {
                 >
                   <img alt="" className="bulletinAvatarBackground" src={iconBackground} />
                   <img alt="" className="bulletinAvatarImage" src={getIconImage(post.user_icon)} />
-                  <img alt="" className="bulletinAvatarFrame" src={iconFrame} />
+                  <img
+                    alt=""
+                    className="bulletinAvatarFrame"
+                    src={Number(post.user_id) === Number(rankOneUserId) ? crownIconFrame : iconFrame}
+                  />
                 </button>
                 {openProfileId === post.user_id && post.user_id !== currentUser.id && (
                   <button
