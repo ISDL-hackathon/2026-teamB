@@ -84,6 +84,9 @@ function HomePage({
             </button>
           </div>
           <button onClick={onCheckin}>活動ポイントを追加</button>
+          <button className="secondaryButton" onClick={() => setPage("selectVillageSlot")} type="button">
+            {currentUser.village_slot_id ? "座席を変更する" : "座席を選ぶ"}
+          </button>
         </div>
 
         {/* 今日のISDL + 街レベル進捗 */}

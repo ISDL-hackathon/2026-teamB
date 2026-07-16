@@ -343,6 +343,16 @@ tr:last-child td {
   max-width: none;
 }
 
+.villageSlotNotice {
+  font-weight: 700;
+}
+
+.villageSlotActions {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
 .roomCard {
   max-width: 900px;
   border-color: #e1bd56;
