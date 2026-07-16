@@ -741,6 +741,8 @@ tr:last-child td {
     padding: 14px;
   }
 
+  .roomCard { padding: 12px; }
+
   .homeUserHeader,
   .statusGrid {
     grid-template-columns: 1fr;
@@ -759,4 +761,612 @@ tr:last-child td {
     padding: 10px 8px;
     font-size: 14px;
   }
+}
+
+
+.villageWeather {
+  min-height: 100vh;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;   /* スクロールしても背景固定。不要なら削除 */
+  background-repeat: no-repeat;
+}
+
+/* ===== ログイン画面:街背景 + 明るいカード ===== */
+
+/* 背景に街をぼかして敷く + ゆっくり動かす */
+.login-mode {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+}
+.login-mode::before {
+  content: "";
+  position: fixed;
+  inset: -6% -6% -6% -6%;            /* パンで端が出ないよう少し大きめ */
+  background: url('/login_bg.png') center/cover no-repeat;
+  z-index: 0;
+  animation: loginPan 10s ease-in-out infinite alternate;
+}
+/* 背景の上にうっすら明るいベール(全体を明るく統一) */
+.login-mode::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(244, 246, 250, 0.30);
+  z-index: 0;
+}
+/* 中身(ヘッダー・カード)は背景より前面に */
+.login-mode > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ゆっくりパン+わずかにズーム */
+@keyframes loginPan {
+  from { transform: scale(1.06) translate(-3%, -1%); }
+  to   { transform: scale(1.10) translate(3%, 1%); }
+}
+
+/* ヘッダーの文字色(明るい背景で読めるように濃く) */
+.login-mode .appHeader h1 {
+  color: #1a2230;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
+}
+.login-mode .appHeader p {
+  color: #3d4658;
+}
+
+/* --- 明るい不透明カード --- */
+.login-mode .authCard {
+  background: #f7f9fc;
+  border: 1px solid #d8deea;
+  box-shadow: 0 24px 60px rgba(20, 30, 50, 0.28);
+}
+.login-mode .authCard h2 {
+  color: #1a2230;
+}
+.login-mode .authCard p {
+  color: #4a5568;
+}
+
+/* 入力欄:明るい背景・濃い文字・フォーカスで緑発光 */
+.login-mode .authCard input,
+.login-mode .authCard select {
+  color: #1a2230;
+  background: #ffffff;
+  border: 1px solid #c7cfdd;
+}
+.login-mode .authCard input::placeholder {
+  color: #9aa3b5;
+}
+.login-mode .authCard input:focus,
+.login-mode .authCard select:focus {
+  outline: none;
+  border-color: #2f7d68;
+  box-shadow: 0 0 0 3px rgba(47, 125, 104, 0.22);
+}
+
+/* 主ボタンは全幅で見栄えよく(緑はそのまま活かす) */
+.login-mode .authCard > button {
+  width: 100%;
+  margin: 14px 0 6px;
+}
+
+/* ユーザー登録などのリンク色(明るい背景で読める色に) */
+.login-mode .authCard .linkButton {
+  color: #2f7d68;
+}
+.login-mode .authCard .linkButton:hover {
+  color: #256254;
+}
+
+/* ===== ホーム画面:カードの階層とデータ表示 ===== */
+
+/* 全カード共通の下地(質感アップ) */
+.homeWeather .card,
+.homeWeather .rankingSection {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.06)),
+    rgba(22, 27, 38, 0.94);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+}
+
+/* --- 主役:ユーザーカード --- */
+.homeWeather .homeUserCard {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(47, 125, 104, 0.4);
+  background:
+    radial-gradient(140% 120% at 0% 0%, rgba(47, 125, 104, 0.22), transparent 55%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.10)),
+    rgba(20, 26, 37, 0.96);
+}
+/* 左端のアクセントバー */
+.homeWeather .homeUserCard::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: linear-gradient(#37957c, #2f7d68);
+}
+
+/* pt を主役として特大・金色に */
+.homeWeather .pointValue {
+  display: block;
+  margin-top: 4px;
+  color: #ffd76a;
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 0.5px;
+}
+.homeWeather .eyebrow {
+  color: #8bd3c0;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+/* --- メニューボタン:ホバーで軽く持ち上げ --- */
+.homeWeather .menuGrid button {
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s;
+}
+.homeWeather .menuGrid button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.3);
+}
+
+/* --- 今日のISDL:3つの統計ブロック --- */
+.villageSummary h2,
+.rankingSection h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.villageSummary h2::before,
+.rankingSection h2::before {
+  content: "";
+  width: 6px;
+  height: 22px;
+  border-radius: 3px;
+  background: #37957c;
+}
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 4px;
+}
+.statBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.statLabel {
+  color: #9fb0c8;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+.statValue {
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+.statValue small {
+  font-size: 14px;
+  font-weight: 600;
+  color: #c6d0e0;
+  margin-left: 2px;
+}
+.statSub {
+  color: #aeb9cc;
+  font-size: 12px;
+}
+
+/* スマホでは統計を縦積み */
+@media (max-width: 560px) {
+  .statGrid { grid-template-columns: 1fr; }
+}
+
+/* ===== ランキング 1〜3位を金・銀・銅でほんのり ===== */
+.rankingSection tbody tr:nth-child(1) {
+  background: rgba(255, 200, 60, 0.12);   /* 金 */
+}
+.rankingSection tbody tr:nth-child(2) {
+  background: rgba(200, 205, 215, 0.12);  /* 銀 */
+}
+.rankingSection tbody tr:nth-child(3) {
+  background: rgba(205, 130, 70, 0.12);   /* 銅 */
+}
+
+/* 左端に色バーを付けて順位を分かりやすく(任意) */
+.rankingSection tbody tr:nth-child(1) td:first-child {
+  box-shadow: inset 3px 0 0 #ffc83c;
+}
+.rankingSection tbody tr:nth-child(2) td:first-child {
+  box-shadow: inset 3px 0 0 #c8cdd7;
+}
+.rankingSection tbody tr:nth-child(3) td:first-child {
+  box-shadow: inset 3px 0 0 #cd8246;
+}
+/* ===== 共有街ページ:ボックスの質感アップ ===== */
+
+/* 共有街カード(主役)＋説明カード 共通の下地 */
+.villageCard,
+.villageCard + .card {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.06)),
+    rgba(22, 27, 38, 0.94);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+}
+
+/* 見出しに緑のアクセントバー(ホームと統一) */
+.villageCard h2,
+.villageCard + .card h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.villageCard h2::before,
+.villageCard + .card h2::before {
+  content: "";
+  width: 6px;
+  height: 22px;
+  border-radius: 3px;
+  background: #37957c;
+}
+
+/* Lv.タイトル(街の下)を主役の見出しに */
+.villageCard h3 {
+  margin: 18px 0 6px;
+  font-size: 20px;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+/* Lv バッジ風の下線アクセント */
+.villageCard h3::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  min-width: 24px;
+  background: linear-gradient(90deg, rgba(55,149,124,0.6), transparent);
+}
+.villageCard > p {
+  color: #b9c4d6;
+  line-height: 1.7;
+}
+
+/* --- ステータスを3つの統計ブロックに --- */
+.statusGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+.statusGrid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.statusGrid > div span {
+  color: #9fb0c8;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+.statusGrid > div strong {
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+/* 全体ポイントは金色で主役に */
+.statusGrid .pointValue {
+  color: #ffd76a;
+  font-size: 26px;
+}
+
+/* Homeボタン:ホバーで軽く反応 */
+.pageHeader .secondaryButton {
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s;
+}
+.pageHeader .secondaryButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
+}
+
+/* スマホでは統計を縦積み */
+@media (max-width: 560px) {
+  .statusGrid { grid-template-columns: 1fr; }
+}
+
+/* ホーム:上段2カラムグリッド */
+.homeTopGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  max-width: 980px;
+  margin: 20px auto;
+}
+/* グリッド内のカードは幅いっぱいに(既存の max-width/margin を打ち消す) */
+.homeTopGrid > .card {
+  max-width: none;
+  margin: 0;
+}
+@media (max-width: 760px) {
+  .homeTopGrid { grid-template-columns: 1fr; }
+}
+
+/* 自分のポイントの説明 */
+.pointCaption {
+  display: block;
+  margin-top: 2px;
+  color: #9fb0c8;
+  font-size: 12px;
+}
+
+/* 街レベル進捗バー */
+.levelProgress {
+  margin-top: 16px;
+}
+.levelProgressHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+.levelRemaining {
+  color: #ffd76a;
+  font-weight: 800;
+  font-size: 14px;
+}
+.levelBar {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.10);
+  overflow: hidden;
+}
+.levelBarFill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #37957c, #4bd1a8);
+  transition: width 0.5s ease;
+}
+
+.gachaPage {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 18px;
+  color: #dff7ff;
+  background: #001538;
+  border: 4px solid #169ee8;
+  box-shadow: inset 0 0 0 2px #63d9ff;
+  image-rendering: pixelated;
+}
+
+.gachaHeader {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.gachaHeader h2,
+.gachaHeader p { margin: 4px; }
+
+.gachaMachine {
+  position: relative;
+  width: min(440px, 100%);
+  aspect-ratio: 1;
+  margin: 14px auto;
+}
+
+.gachaMachineBase {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.gachaKnobAnimation {
+  position: absolute;
+  left: 37.109375%;
+  top: 57.5%;
+  width: 25%;
+  height: 25%;
+  transform: none;
+  mix-blend-mode: normal;
+  object-fit: contain;
+}
+
+.gachaJackpotAnimation {
+  position: absolute;
+  left: 24%;
+  top: 28%;
+  width: 52%;
+  height: 52%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.gachaSecretAnimation {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  image-rendering: pixelated;
+  background: #000;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.gachaSkipOverlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  padding: 0 20px 28px;
+  color: #ffffff;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  font-size: 14px;
+  text-shadow: 0 2px 4px #000000, 0 0 8px #000000;
+  cursor: pointer;
+  z-index: 10000;
+}
+
+.gachaSkipOverlay:hover,
+.gachaSkipOverlay:focus-visible {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.gachaPrizeCharacter {
+  position: absolute;
+  left: 50%;
+  top: 69%;
+  width: 30%;
+  height: 30%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  pointer-events: none;
+  z-index: 4;
+  animation: gachaPrizeRise 0.55s ease-out both;
+  transform-origin: center bottom;
+}
+
+@keyframes gachaPrizeRise {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.12);
+  }
+  35% { opacity: 1; }
+  75% {
+    transform: translate(-50%, -165%) scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -155%) scale(1);
+  }
+}
+
+.gachaPullButton {
+  display: block;
+  min-width: 220px;
+  margin: 0 auto;
+  color: #001538;
+  background: #36c8ff;
+  border-color: #b9efff;
+}
+
+.gachaResult,
+.gachaError {
+  padding: 12px;
+  text-align: center;
+  border: 2px solid #36c8ff;
+  background: #062657;
+}
+
+.gachaError { color: #ff96a9; border-color: #ff6481; }
+
+.avatarCollection { margin-top: 24px; }
+.avatarCollectionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.avatarPrize {
+  display: grid;
+  place-items: center;
+  gap: 7px;
+  padding: 12px;
+  color: #001538;
+  background: #e8f8ff;
+  border: 3px solid #36c8ff;
+}
+
+.avatarPrize img {
+  width: 112px;
+  height: 112px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.avatarPrizeLocked img { filter: brightness(0); opacity: 0.55; }
+.avatarPrize button { width: 100%; }
+
+.gachaCoinShopItem {
+  display: grid;
+  grid-template-columns: 72px 1fr auto;
+  align-items: center;
+  gap: 14px;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 16px;
+  color: #052033;
+  background: #fff7d6;
+  border: 2px solid #cf9b31;
+  border-radius: 8px;
+}
+
+.gachaCoinIcon {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.shopGachaLink {
+  color: #3d2800;
+  background: linear-gradient(180deg, #ffe98a, #e5aa2c);
+  border-color: #fff2ab #9b650d #9b650d #fff2ab;
+}
+
+.gachaCoinShopItem .gachaCoinGoButton {
+  grid-column: 1 / -1;
+  width: 100%;
+  color: #ffffff;
+  background: #75511a;
+  border-color: #bc8a37;
+}
+
+.gachaCoinBalance {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.gachaCoinBalance img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+@media (max-width: 520px) {
+  .gachaHeader { grid-template-columns: 1fr 1fr; }
+  .gachaHeader div { grid-column: 1 / -1; grid-row: 1; }
+  .gachaCoinShopItem { grid-template-columns: 64px 1fr; }
+  .gachaCoinShopItem button { grid-column: 1 / -1; }
 }

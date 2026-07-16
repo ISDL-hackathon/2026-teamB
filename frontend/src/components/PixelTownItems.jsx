@@ -109,10 +109,10 @@ export const townItems = [
   { id: "tatami-19-4", src: tatamiTopImg, alt: "畳", minLevel: 1, maxLevel: 4, col: 19, row: 4, z: 2 },
   { id: "tatami-20-4", src: tatamiTopImg, alt: "畳", minLevel: 1, maxLevel: 4, col: 20, row: 4, z: 2 },
   // 茶色の横長机(col=16〜19, row=3、畳の上に乗せる)
-  { id: "brown-desk-16-3", src: deskBrownLeftImg, alt: "茶机", minLevel: 1, col: 16, row: 3, z: 6 },
-  { id: "brown-desk-17-3", src: deskBrownMidImg, alt: "茶机", minLevel: 1, col: 17, row: 3, z: 6 },
-  { id: "brown-desk-18-3", src: deskBrownMidImg, alt: "茶机", minLevel: 1, col: 18, row: 3, z: 6 },
-  { id: "brown-desk-19-3", src: deskBrownRightImg, alt: "茶机", minLevel: 1, col: 19, row: 3, z: 6 },
+  { id: "brown-desk-16-3", src: deskBrownLeftImg, alt: "茶机", minLevel: 1, col: 16, row: 3, z: 46 },
+  { id: "brown-desk-17-3", src: deskBrownMidImg, alt: "茶机", minLevel: 1, col: 17, row: 3, z: 46 },
+  { id: "brown-desk-18-3", src: deskBrownMidImg, alt: "茶机", minLevel: 1, col: 18, row: 3, z: 46 },
+  { id: "brown-desk-19-3", src: deskBrownRightImg, alt: "茶机", minLevel: 1, col: 19, row: 3, z: 46 },
 
   // 畳の側面(col=15〜20, row=5)
   { id: "tatami-side-15-5", src: tatamiSideImg, alt: "畳の側面", minLevel: 1, maxLevel: 4, col: 15, row: 5, z: 3 },
@@ -225,13 +225,13 @@ export const townItems = [
   { id: "glass-20-10", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 20, row: 10, z: 1 },
 
   // ガラス面(下の横枠 row=18〜19, col=17〜20)
-  { id: "glass-17-18", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 17, row: 18, z: 7 },
-  { id: "glass-18-18", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 18, row: 18, z: 7 },
-  { id: "glass-19-18", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 19, row: 18, z: 7 },
-  { id: "glass-20-18", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 20, row: 18, z: 7 },
-  { id: "glass-17-19", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 17, row: 19, z: 7 },
-  { id: "glass-18-19", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 18, row: 19, z: 7 },
-  { id: "glass-19-19", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 19, row: 19, z: 7 },
+  { id: "glass-17-18", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 17, row: 18, z: 50 },
+  { id: "glass-18-18", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 18, row: 18, z: 50 },
+  { id: "glass-19-18", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 19, row: 18, z: 50 },
+  { id: "glass-20-18", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 20, row: 18, z: 50 },
+  { id: "glass-17-19", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 17, row: 19, z: 50 },
+  { id: "glass-18-19", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 18, row: 19, z: 50 },
+  { id: "glass-19-19", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 19, row: 19, z: 50 },
   { id: "glass-20-19", src: glassPaneImg, alt: "ガラス", minLevel: 1, maxLevel: 3, col: 20, row: 19, z: 1 },
 
   // ガラス上の横枠(row=9〜10, col=17〜20)
