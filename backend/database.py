@@ -13,6 +13,11 @@ CHECKIN_POINT = 20
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 FURNITURE_CATALOG = [
+    {"id": "fan", "name": "Fan", "price": 40, "min_level": 1, "category": "western", "surface": "floor"},
+    {"id": "cactus", "name": "Cactus", "price": 30, "min_level": 1, "category": "western", "surface": "floor"},
+    {"id": "flowering_cactus", "name": "Flowering Cactus", "price": 45, "min_level": 2, "category": "western", "surface": "floor"},
+    {"id": "sofa", "name": "Sofa", "price": 120, "min_level": 3, "category": "western", "surface": "floor"},
+    {"id": "sunflower", "name": "Sunflower", "price": 50, "min_level": 2, "category": "western", "surface": "floor"},
     {"id": "round_table", "name": "Round Table", "price": 50, "min_level": 1, "category": "lab", "surface": "floor"},
     {"id": "office_chair", "name": "Office Chair", "price": 35, "min_level": 1, "category": "lab", "surface": "floor"},
     {"id": "bulletin_board", "name": "Bulletin Board", "price": 15, "min_level": 1, "category": "lab", "surface": "wall"},

@@ -7,12 +7,17 @@ import floorGreyImg from "../assets/room/floor_grey_2.png";
 import bedImg from "../assets/furniture/bed_pink.png";
 import bookshelfImg from "../assets/furniture/bookshelf.png";
 import clockImg from "../assets/furniture/clock.png";
+import fanImg from "../assets/furniture/fan.png";
 import bulletinBoardImg from "../assets/furniture/keijibann.png";
 import gameCabinetImg from "../assets/furniture/game-cabinet.png";
 import questBoardImg from "../assets/furniture/quest-board.png";
 import officeChairImg from "../assets/furniture/office_chair.png";
 import roundTableImg from "../assets/furniture/round_table.png";
+import cactusImg from "../assets/furniture/saboten.png";
+import floweringCactusImg from "../assets/furniture/sabowithflower.png";
 import shelfImg from "../assets/furniture/shelf.png";
+import sofaImg from "../assets/furniture/sofa.png";
+import sunflowerImg from "../assets/furniture/sunflower.png";
 import stoveImg from "../assets/furniture/suto-bu.png";
 import windowImg from "../assets/furniture/window.png";
 import retroTVImg from "../assets/furniture/retro_tv.png";
@@ -248,6 +253,86 @@ export const roomItems = [
     colSpan: 2,
     rowSpan: 3,
     z: 9,
+    anchor: "bottomLeft",
+  },
+  {
+    id: "fan",
+    name: "Fan",
+    price: 40,
+    category: "western",
+    surface: "floor",
+    minLevel: 1,
+    src: fanImg,
+    alt: "electric fan",
+    col: 10,
+    row: 5,
+    colSpan: 1,
+    rowSpan: 1,
+    z: 8,
+    anchor: "bottomLeft",
+  },
+  {
+    id: "cactus",
+    name: "Cactus",
+    price: 30,
+    category: "western",
+    surface: "floor",
+    minLevel: 1,
+    src: cactusImg,
+    alt: "cactus",
+    col: 2,
+    row: 6,
+    colSpan: 1,
+    rowSpan: 1.3,
+    z: 8,
+    anchor: "bottomLeft",
+  },
+  {
+    id: "flowering_cactus",
+    name: "Flowering Cactus",
+    price: 45,
+    category: "western",
+    surface: "floor",
+    minLevel: 2,
+    src: floweringCactusImg,
+    alt: "flowering cactus",
+    col: 3,
+    row: 6,
+    colSpan: 1,
+    rowSpan: 1.3,
+    z: 8,
+    anchor: "bottomLeft",
+  },
+  {
+    id: "sofa",
+    name: "Sofa",
+    price: 120,
+    category: "western",
+    surface: "floor",
+    minLevel: 3,
+    src: sofaImg,
+    alt: "sofa",
+    col: 5,
+    row: 5,
+    colSpan: 2,
+    rowSpan: 1.5,
+    z: 8,
+    anchor: "bottomLeft",
+  },
+  {
+    id: "sunflower",
+    name: "Sunflower",
+    price: 50,
+    category: "western",
+    surface: "floor",
+    minLevel: 2,
+    src: sunflowerImg,
+    alt: "sunflower",
+    col: 11,
+    row: 5,
+    colSpan: 1,
+    rowSpan: 1.3,
+    z: 8,
     anchor: "bottomLeft",
   },
   {
