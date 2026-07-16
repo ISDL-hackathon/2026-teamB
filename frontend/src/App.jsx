@@ -15,6 +15,9 @@ import ShopPage from "./components/ShopPage";
 import VillageLoadingPage from "./components/VillageLoadingPage";
 import GachaPage from "./components/GachaPage";
 import SettingsPage from "./components/SettingsPage";
+import QuestPage from "./components/QuestPage";
+import LunchQuestPage from "./components/LunchQuestPage";
+import PhotoQuestPage from "./components/PhotoQuestPage";
 import VillagePage from "./components/VillagePage";
 import VillageSlotSelectPage from "./components/VillageSlotSelectPage";
 import "./App.css";
@@ -384,7 +387,9 @@ function App() {
 
       {currentUser && page === "village" && (
         <VillagePage
+          currentUser={currentUser}
           onPcClick={handleOpenReadonlyRoom}
+          setCurrentUser={setCurrentUser}
           setPage={setPage}
           village={village}
           villageSlots={villageSlots}
@@ -399,6 +404,7 @@ function App() {
         <RoomPage
           onOpenBulletinBoard={() => setPage("bulletinLoading")}
           onOpenGameSelect={() => setPage("gameLoading")}
+          onOpenQuestBoard={() => setPage("quests")}
           onSaveRoomLayout={handleSaveRoomLayout}
           readonly={viewingRoomUserId !== null}
           room={room}
@@ -412,6 +418,18 @@ function App() {
 
       {currentUser && page === "gameLoading" && (
         <GameLoadingPage onComplete={() => setPage("gameSelect")} />
+      )}
+
+      {currentUser && page === "quests" && (
+        <QuestPage currentUser={currentUser} setCurrentUser={setCurrentUser} setPage={setPage} />
+      )}
+
+      {currentUser && page === "lunchQuest" && (
+        <LunchQuestPage currentUser={currentUser} setCurrentUser={setCurrentUser} setPage={setPage} />
+      )}
+
+      {currentUser && page === "photoQuest" && (
+        <PhotoQuestPage currentUser={currentUser} setCurrentUser={setCurrentUser} setPage={setPage} />
       )}
 
       {currentUser && page === "gameSelect" && (
@@ -431,11 +449,11 @@ function App() {
       )}
 
       {currentUser && page === "bulletinLoading" && (
-        <BulletinLoadingPage onComplete={() => setPage("bulletin")} />
+        <BulletinLoadingPage currentUser={currentUser} onComplete={() => setPage("bulletin")} />
       )}
 
       {currentUser && page === "bulletin" && (
-        <BulletinBoardPage currentUser={currentUser} setPage={setPage} />
+        <BulletinBoardPage currentUser={currentUser} setCurrentUser={setCurrentUser} setPage={setPage} />
       )}
 
       {currentUser && page === "shop" && (

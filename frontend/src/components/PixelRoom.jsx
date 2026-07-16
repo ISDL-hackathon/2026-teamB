@@ -161,7 +161,7 @@ function RoomItem({ item, isEditing, isSelected, onActivate, onSelect }) {
       onClick={
         isEditing
           ? () => onSelect(item.id)
-          : ["bulletin_board", "game_cabinet"].includes(item.id)
+          : ["bulletin_board", "game_cabinet", "quest_board"].includes(item.id)
             ? () => onActivate?.(item.id)
             : undefined
       }
@@ -341,6 +341,7 @@ function PixelRoom({
   onSaveLayout,
   onOpenBulletinBoard,
   onOpenGameSelect,
+  onOpenQuestBoard,
   readonly = false,
 }) {
   const [items, setItems] = useState(() =>
@@ -377,6 +378,7 @@ function PixelRoom({
   const handleActivateItem = (itemId) => {
     if (itemId === "bulletin_board") onOpenBulletinBoard?.();
     if (itemId === "game_cabinet") onOpenGameSelect?.();
+    if (itemId === "quest_board") onOpenQuestBoard?.();
   };
 
   const saveRoomState = (nextItems, nextTheme = roomTheme) => {

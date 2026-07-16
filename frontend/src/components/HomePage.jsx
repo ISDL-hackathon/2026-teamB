@@ -1,6 +1,7 @@
-import charaIcon from "../assets/chara.png";
 import iconBase from "../assets/icons/maru.png";
+import iconBackground from "../assets/icons/icon-background.png";
 import RankingTable from "./RankingTable";
+import { getIconImage } from "./iconAssets";
 
 const weatherBackgrounds = {
   快晴: { overlay: "linear-gradient(rgba(255, 188, 94, 0.10), rgba(41, 128, 185, 0.14))", image: "url('/weather/clear.gif')" },
@@ -36,11 +37,12 @@ function getLevelProgress(village) {
   return { isMax: false, ratio, remaining, next, total };
 }
 
-function UserIcon({ icon = charaIcon }) {
+function UserIcon({ icon }) {
   return (
     <div className="userIcon" aria-hidden="true">
-      <img alt="" className="userIconBase" src={iconBase} />
+      <img alt="" className="userIconBackground" src={iconBackground} />
       <img alt="" className="userIconImage" src={icon} />
+      <img alt="" className="userIconBase" src={iconBase} />
     </div>
   );
 }
@@ -63,7 +65,7 @@ function HomePage({
         <div className="card homeUserCard">
           <div className="homeUserHeader">
             <div className="homeUserProfile">
-              <UserIcon />
+              <UserIcon icon={getIconImage(currentUser.selected_icon)} />
               <div className="homeUserInfo">
                 <span className="eyebrow">ログイン中</span>
                 <p>

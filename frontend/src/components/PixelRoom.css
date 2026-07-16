@@ -101,7 +101,8 @@
 }
 
 .roomItem[alt="bulletin board"]:not(.roomItemEditable),
-.roomItem[alt="game cabinet"]:not(.roomItemEditable) {
+.roomItem[alt="game cabinet"]:not(.roomItemEditable),
+.roomItem[alt="quest board"]:not(.roomItemEditable) {
   cursor: pointer;
   pointer-events: auto;
 }

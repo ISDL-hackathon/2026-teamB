@@ -59,8 +59,45 @@ async function createPost(request, env) {
   const result = await env.DB.prepare(
     "INSERT INTO bulletin_posts (user_id, content, image_key, created_at) VALUES (?, ?, NULL, ?)",
   ).bind(userId, content, createdAt).run();
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS daily_quest_completions (
+      quest_id TEXT NOT NULL,
+      quest_date TEXT NOT NULL,
+      user_id INTEGER NOT NULL,
+      reward INTEGER NOT NULL DEFAULT 0,
+      completed_at TEXT NOT NULL,
+      PRIMARY KEY (quest_id, quest_date, user_id),
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+  `).run();
+  const questDate = new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const questResult = await env.DB.prepare(`
+    INSERT OR IGNORE INTO daily_quest_completions
+      (quest_id, quest_date, user_id, reward, completed_at)
+    VALUES ('bulletin-post', ?, ?, 10, ?)
+  `).bind(questDate, userId, createdAt).run();
+  const questAwarded = Number(questResult.meta?.changes ?? 0) > 0;
+  if (questAwarded) {
+    await env.DB.batch([
+      env.DB.prepare(
+        "UPDATE users SET point = point + 10, total_point = total_point + 10 WHERE id = ?",
+      ).bind(userId),
+      env.DB.prepare(
+        "INSERT INTO activities (user_id, activity_type, point, created_at) VALUES (?, 'quest_bulletin-post', 10, ?)",
+      ).bind(userId, createdAt),
+    ]);
+  }
   const posts = await listPosts(env, userId);
-  return json(posts.find((post) => post.id === result.meta.last_row_id));
+  const post = posts.find((item) => item.id === result.meta.last_row_id);
+  const updatedUser = await env.DB.prepare(
+    "SELECT id, point, total_point FROM users WHERE id = ?",
+  ).bind(userId).first();
+  return json({
+    ...post,
+    quest_awarded: questAwarded,
+    quest_reward: questAwarded ? 10 : 0,
+    user: updatedUser,
+  });
 }
 
 async function toggleFollow(request, env) {

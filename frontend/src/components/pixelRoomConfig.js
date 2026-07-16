@@ -9,6 +9,7 @@ import bookshelfImg from "../assets/furniture/bookshelf.png";
 import clockImg from "../assets/furniture/clock.png";
 import bulletinBoardImg from "../assets/furniture/keijibann.png";
 import gameCabinetImg from "../assets/furniture/game-cabinet.png";
+import questBoardImg from "../assets/furniture/quest-board.png";
 import officeChairImg from "../assets/furniture/office_chair.png";
 import roundTableImg from "../assets/furniture/round_table.png";
 import shelfImg from "../assets/furniture/shelf.png";
@@ -100,6 +101,22 @@ export const roomItems = [
     colSpan: 3,
     rowSpan: 3,
     z: 7,
+    anchor: "bottomLeft",
+  },
+  {
+    id: "quest_board",
+    name: "Quest Board",
+    price: 50,
+    category: "lab",
+    surface: "floor",
+    minLevel: 1,
+    src: questBoardImg,
+    alt: "quest board",
+    col: 7,
+    row: 8,
+    colSpan: 3,
+    rowSpan: 4,
+    z: 8,
     anchor: "bottomLeft",
   },
   {

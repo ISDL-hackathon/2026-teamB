@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { requestJson } from "../api";
 import PixelTown from "./PixelTown";
 
 const weatherClassNames = {
@@ -39,7 +41,17 @@ function getWeatherBackground(weather) {
   };
 }
 
-function VillagePage({ setPage, village, villageSlots, onPcClick }) {
+function VillagePage({ currentUser, setCurrentUser, setPage, village, villageSlots, onPcClick }) {
+  useEffect(() => {
+    requestJson("/quests/visit-village", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: currentUser.id }),
+    })
+      .then((data) => setCurrentUser((current) => ({ ...current, ...data.user })))
+      .catch(() => {});
+  }, [currentUser.id, setCurrentUser]);
+
   return (
     <div
       className="villageWeather"
