@@ -243,7 +243,14 @@ function GachaPage({ currentUser, setCurrentUser, setPage }) {
           />
         )}
         {showingPrize && prizeAvatar && (
-          <img alt={t(`gacha.prizes.${prizeAvatar.id}`, { defaultValue: prizeAvatar.name })} className="gachaPrizeCharacter" key={`prize-${spinKey}`} src={`${getPrizeImage(prizeAvatar)}?run=${spinKey}`} />
+          <img
+            alt={t(`gacha.prizes.${prizeAvatar.id}`, { defaultValue: prizeAvatar.name })}
+            className="gachaPrizeCharacter"
+            key={`prize-${spinKey}`}
+            src={prizeAvatar.kind === "icon"
+              ? getPrizeImage(prizeAvatar)
+              : `${getPrizeImage(prizeAvatar)}?run=${spinKey}`}
+          />
         )}
       </div>
       <button className="gachaPullButton" disabled={spinning || (status?.coins ?? 0) < 1} onClick={pull} type="button">
