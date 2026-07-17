@@ -49,6 +49,7 @@ import monitorRightImg from "../assets/town/monitor_right.png";
 import benchFutureImg from "../assets/town/bench_future.png";
 import deskDualPrintersImg from "../assets/town/desk_dual_printers.png";
 import hologramDocGif from "../assets/town/hologram_doc.gif";
+import lPlatformWhiteImg from "../assets/town/l_platform_white.png";
 
 // 白い縦長机(各机の col と、天面の行リスト・側面の行)
 const WHITE_DESKS = [
@@ -340,9 +341,11 @@ export const townItems = [
   { id: "monitor-sq8", src: monitorRightImg,  alt: "モニター", minLevel: 2, col: 13.2, row: 10.2, z: 43 },
   { id: "monitor-sq9", src: monitorFrontImg, alt: "モニター", minLevel: 2, col: 14.1,  row: 17.5, z: 42 },
   { id: "monitor-sq10", src: monitorBackImg,  alt: "モニター", minLevel: 2, col: 13.9,  row: 17, z: 41 },
-
   { id: "monitor-sq11", src: monitorLeftImg, alt: "モニター", minLevel: 2, col: 20,  row: 5.8, z: 8 },
   { id: "desk-dual-printers-1-10", src: deskDualPrintersImg, alt: "机とプリンター", minLevel: 2, maxLevel: 4, col: 1, row: 9.4, rowSpan: 2.6, z: 5 },
+  // (col18-20, row20-21) L字の白い台
+  { id: "l-platform-18-20", src: lPlatformWhiteImg, alt: "台", minLevel: 2, col: 18, row: 20, colSpan: 3, rowSpan: 2, z: 2 },
+
 
   // === Lv.3 で追加する家具は、ここに minLevel: 3 で書いていく ===
 
@@ -350,6 +353,16 @@ export const townItems = [
   { id: "plant-16-13-lv3", src: plant_lv3Img, alt: "観葉植物", minLevel: 3, maxLevel: 3, col: 16, row: 13, z: 4 },
   { id: "plant-16-15-lv3", src: plant_lv3Img, alt: "観葉植物", minLevel: 3, maxLevel: 3, col: 16, row: 15, z: 4 },
   { id: "plant-4-22-lv3", src: plant_lv3Img, alt: "観葉植物", minLevel: 3, maxLevel: 3, col: 4, row: 22, z: 4 },
+
+  // --- 横部分(row20, col18-20):Leftモニター3台 ---
+{ id: "monitor-l-18-20", src: monitorLeftImg, alt: "モニター", minLevel: 3, col: 19.5, row: 19.6, z: 7 },
+{ id: "monitor-l-19-20", src: monitorLeftImg, alt: "モニター", minLevel: 3, col: 19, row: 19.6, z: 7 },
+{ id: "monitor-l-20-20", src: monitorLeftImg, alt: "モニター", minLevel: 3, col: 20, row: 19.6, z: 7 },
+
+// --- 縦部分(col20, row20-21):Frontモニター3台(重なってOK) ---
+{ id: "monitor-f-20-20a", src: monitorFrontImg, alt: "モニター", minLevel: 3, col: 20, row: 20.2, z: 8 },
+{ id: "monitor-f-20-20b", src: monitorFrontImg, alt: "モニター", minLevel: 3, col: 20, row: 20.4, z: 9 },
+{ id: "monitor-f-20-21",  src: monitorFrontImg, alt: "モニター", minLevel: 3, col: 20, row: 20.8,   z: 10 },
 
   // === Lv.4 で追加する家具は、ここに minLevel: 4 で書いていく ===
 
