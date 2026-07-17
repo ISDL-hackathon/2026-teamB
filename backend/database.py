@@ -48,7 +48,12 @@ FURNITURE_CATALOG = [
 
 GACHA_COIN_PRICE = 10
 AVATAR_CATALOG = {
-    "izumi": {"id": "izumi", "name": "いずみ", "rarity": "ノーマル"},
+    "initial_male": {"id": "initial_male", "name": "初期男性", "rarity": "初期"},
+    "initial_female": {"id": "initial_female", "name": "初期女性", "rarity": "初期"},
+    "izumi": {"id": "izumi", "name": "いずみ", "rarity": "中当たり"},
+    "nari": {"id": "nari", "name": "なり", "rarity": "中当たり"},
+    "nakazono": {"id": "nakazono", "name": "なかぞの", "rarity": "大当たり"},
+    "golden_dopamine": {"id": "golden_dopamine", "name": "ドーパくん", "rarity": "確変"},
     "nagano": {"id": "nagano", "name": "ながの", "rarity": "中当たり"},
     "abe": {"id": "abe", "name": "あべ", "rarity": "中当たり"},
     "daiki": {"id": "daiki", "name": "だいき", "rarity": "シークレット"},
@@ -63,6 +68,8 @@ ICON_CATALOG = {
     "icon3": {"id": "icon3", "name": "イービィ", "rarity": "中当たり", "kind": "icon"},
     "icon4": {"id": "icon4", "name": "もふもふ", "rarity": "大当たり", "kind": "icon"},
     "icon5": {"id": "icon5", "name": "かっぱ", "rarity": "中当たり", "kind": "icon"},
+    "icon6": {"id": "icon6", "name": "いずみ", "rarity": "中当たり", "kind": "icon"},
+    "creator_icon": {"id": "creator_icon", "name": "制作者", "rarity": "確変", "kind": "icon"},
 }
 
 VILLAGE_LEVELS = [
@@ -1276,7 +1283,7 @@ def init_db():
         cur.execute("ALTER TABLE users ADD COLUMN gacha_coins INTEGER NOT NULL DEFAULT 0")
 
     if "selected_avatar" not in user_columns:
-        cur.execute("ALTER TABLE users ADD COLUMN selected_avatar TEXT NOT NULL DEFAULT 'izumi'")
+        cur.execute("ALTER TABLE users ADD COLUMN selected_avatar TEXT NOT NULL DEFAULT 'initial_male'")
 
     if "selected_icon" not in user_columns:
         cur.execute("ALTER TABLE users ADD COLUMN selected_icon TEXT NOT NULL DEFAULT 'hero'")
@@ -1292,9 +1299,32 @@ def init_db():
     """)
 
     cur.execute("""
-    INSERT OR IGNORE INTO user_avatars (user_id, avatar_id, acquired_at)
-    SELECT id, 'izumi', ? FROM users
-    """, (get_now(),))
+    CREATE TABLE IF NOT EXISTS app_migrations (
+        migration_key TEXT PRIMARY KEY,
+        applied_at TEXT NOT NULL
+    )
+    """)
+    cur.execute(
+        "SELECT 1 FROM app_migrations WHERE migration_key = 'initial_avatars_v2'"
+    )
+    if cur.fetchone() is None:
+        acquired_at = get_now()
+        cur.execute("""
+        INSERT OR IGNORE INTO user_avatars (user_id, avatar_id, acquired_at)
+        SELECT id, 'initial_male', ? FROM users
+        """, (acquired_at,))
+        cur.execute("""
+        INSERT OR IGNORE INTO user_avatars (user_id, avatar_id, acquired_at)
+        SELECT id, 'initial_female', ? FROM users
+        """, (acquired_at,))
+        cur.execute(
+            "UPDATE users SET selected_avatar = 'initial_male' WHERE selected_avatar = 'izumi'"
+        )
+        cur.execute("DELETE FROM user_avatars WHERE avatar_id = 'izumi'")
+        cur.execute(
+            "INSERT INTO app_migrations (migration_key, applied_at) VALUES ('initial_avatars_v2', ?)",
+            (acquired_at,),
+        )
 
     cur.execute("""
     CREATE TABLE IF NOT EXISTS user_icons (
@@ -2143,16 +2173,20 @@ def create_user(name: str, grade: str, password: str):
 
     cur.execute(
         """
-        INSERT INTO users (name, grade, password_hash, point, total_point)
-        VALUES (?, ?, ?, 0, 0)
+        INSERT INTO users (name, grade, password_hash, point, total_point, selected_avatar)
+        VALUES (?, ?, ?, 0, 0, 'initial_male')
         """,
         (name, grade, hash_password(password)),
     )
 
     user_id = cur.lastrowid
-    cur.execute(
-        "INSERT INTO user_avatars (user_id, avatar_id, acquired_at) VALUES (?, 'izumi', ?)",
-        (user_id, get_now()),
+    acquired_at = get_now()
+    cur.executemany(
+        "INSERT INTO user_avatars (user_id, avatar_id, acquired_at) VALUES (?, ?, ?)",
+        [
+            (user_id, "initial_male", acquired_at),
+            (user_id, "initial_female", acquired_at),
+        ],
     )
     cur.execute(
         "INSERT INTO user_icons (user_id, icon_id, acquired_at) VALUES (?, 'hero', ?)",
@@ -2168,7 +2202,7 @@ def create_user(name: str, grade: str, password: str):
         "point": 0,
         "total_point": 0,
         "gacha_coins": 0,
-        "selected_avatar": "izumi",
+        "selected_avatar": "initial_male",
         "selected_icon": "hero",
     }
 
@@ -2710,15 +2744,20 @@ def pull_gacha(user_id: int):
         conn.close()
         return {"ok": False, "reason": "not_enough_coin"}
 
-    rarity_roll = secrets.randbelow(100)
+    rarity_roll = secrets.randbelow(1000)
     prize_kind = "avatar"
-    if rarity_roll < 5:
+    if rarity_roll < 4:
+        avatar_id = "creator_icon"
+        prize_kind = "icon"
+    elif rarity_roll < 40:
+        avatar_id = "golden_dopamine"
+    elif rarity_roll < 90:
         avatar_id = secrets.choice(("daiki", "giant_robot"))
-    elif rarity_roll < 15:
-        avatar_id = secrets.choice(("maie", "icon4"))
+    elif rarity_roll < 190:
+        avatar_id = secrets.choice(("maie", "nakazono", "icon4"))
         prize_kind = "icon" if avatar_id == "icon4" else "avatar"
     else:
-        avatar_id = secrets.choice(("icon1", "icon2", "icon3", "icon5", "nagano", "abe"))
+        avatar_id = secrets.choice(("icon1", "icon2", "icon3", "icon5", "icon6", "nagano", "abe", "izumi", "nari"))
         prize_kind = "icon" if avatar_id.startswith("icon") else "avatar"
     avatar = ICON_CATALOG[avatar_id] if prize_kind == "icon" else {**AVATAR_CATALOG[avatar_id], "kind": "avatar"}
     owned_table = "user_icons" if prize_kind == "icon" else "user_avatars"

@@ -1,6 +1,6 @@
 body {
   margin: 0;
-  background: #000000;
+  background: #121821;
   color: #e8edf5;
   font-family: "DotGothic16", monospace;
 }
@@ -397,6 +397,7 @@ tr:last-child td {
 .roomCard {
   max-width: 900px;
   border-color: #e1bd56;
+  background-color: #d8d2c8;
 }
 
 .statusGrid {
@@ -1416,6 +1417,21 @@ tr:last-child td {
   z-index: 9999;
 }
 
+.gachaPromotionHalfAnimation {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: 75vw;
+  height: 75vh;
+  object-fit: contain;
+  image-rendering: pixelated;
+  background: #000;
+  box-shadow: 0 0 0 100vmax #000;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 9999;
+}
+
 .gachaSkipOverlay {
   position: fixed;
   inset: 0;
@@ -1637,6 +1653,17 @@ tr:last-child td {
 
 .roomLevelSummary small {
   color: #7a6a3f;
+}
+
+.roomLevelSummary .levelRemaining {
+  color: #ffd76a;
+  font-size: 18px;
+  font-weight: 800;
+  text-shadow:
+    -1.5px -1.5px 0 #1a2230,
+     1.5px -1.5px 0 #1a2230,
+    -1.5px  1.5px 0 #1a2230,
+     1.5px  1.5px 0 #1a2230;
 }
 
 .roomLevelBarFill {

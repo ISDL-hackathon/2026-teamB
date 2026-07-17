@@ -6,6 +6,9 @@ import knobAnimation from "../assets/gacha/kaiten.gif";
 import jackpotAnimation from "../assets/gacha/gatya_ooatari.gif";
 import middleHitAnimation from "../assets/gacha/gatya_tyuuatari.gif";
 import secretAnimation from "../assets/gacha/putyun.gif";
+import promotionAnimation1 from "../assets/gacha/kakuhen-1.gif";
+import promotionAnimation2 from "../assets/gacha/kakuhen-2.gif";
+import promotionAnimation3 from "../assets/gacha/kakuhen-3.gif";
 import gachaCoinImage from "../assets/gacha/coin128.png";
 import { getAvatarImage } from "./avatarAssets";
 import { getIconImage } from "./iconAssets";
@@ -18,6 +21,12 @@ const HIT_EFFECTS = {
   middle: { animation: middleHitAnimation, duration: 5010, prizeAt: 5010 },
   secret: { animation: secretAnimation, duration: 2170, prizeAt: 2170 },
 };
+const PROMOTION_STAGES = [
+  { animation: promotionAnimation1, duration: 7700 },
+  { animation: promotionAnimation2, duration: 1910 },
+  // 10ms指定のGIFフレームはブラウザで約100msに補正されるため、28フレーム分を確保する。
+  { animation: promotionAnimation3, duration: 2800 },
+];
 
 const RARITY_KEYS = { "ノーマル": "normal", "中当たり": "middle", "大当たり": "jackpot", "シークレット": "secret" };
 
@@ -29,6 +38,7 @@ function GachaPage({ currentUser, setCurrentUser, setPage }) {
   const [showingPrize, setShowingPrize] = useState(false);
   const [prizeAvatar, setPrizeAvatar] = useState(null);
   const [hitType, setHitType] = useState("jackpot");
+  const [promotionStage, setPromotionStage] = useState(null);
   const [spinKey, setSpinKey] = useState(0);
   const [result, setResult] = useState("");
   const [error, setError] = useState("");
@@ -56,12 +66,15 @@ function GachaPage({ currentUser, setCurrentUser, setPage }) {
     setResult(data.duplicate ? t("gacha.duplicate", { name }) : t("gacha.acquired", { name, rarity }));
     setShowingJackpot(false);
     setShowingPrize(false);
+    setPromotionStage(null);
     setSpinning(false);
     pendingResultRef.current = null;
     skipRequestedRef.current = false;
   };
 
-  const getHitType = (data) => data.avatar.rarity === "シークレット"
+  const getHitType = (data) => ["golden_dopamine", "creator_icon"].includes(data.avatar.id)
+    ? "promotion"
+    : data.avatar.rarity === "シークレット"
     ? "secret"
     : data.avatar.rarity === "大当たり"
       ? "jackpot"
@@ -86,6 +99,19 @@ function GachaPage({ currentUser, setCurrentUser, setPage }) {
     setPrizeAvatar(data.avatar);
     setShowingJackpot(true);
     setShowingPrize(false);
+    if (nextHitType === "promotion") {
+      const totalDuration = PROMOTION_STAGES.reduce((total, stage) => total + stage.duration, 0);
+      setPromotionStage(0);
+      let elapsed = PROMOTION_STAGES[0].duration;
+      PROMOTION_STAGES.slice(1).forEach((stage, index) => {
+        schedule(() => setPromotionStage(index + 1), elapsed);
+        elapsed += stage.duration;
+      });
+      schedule(() => revealPrize(data), totalDuration);
+      schedule(() => finishPull(data), totalDuration + PRIZE_HOLD_MS);
+      return;
+    }
+    setPromotionStage(null);
     schedule(() => revealPrize(data), hitEffect.prizeAt);
     schedule(() => finishPull(data), hitEffect.duration + PRIZE_HOLD_MS);
   };
@@ -106,6 +132,7 @@ function GachaPage({ currentUser, setCurrentUser, setPage }) {
 
   const skipAnimation = () => {
     if (!spinning) return;
+    if (hitType === "promotion") return;
     if (showingJackpot && hitType === "secret") return;
     if (showingPrize) {
       if (pendingResultRef.current) finishPull(pendingResultRef.current);
@@ -129,6 +156,8 @@ function GachaPage({ currentUser, setCurrentUser, setPage }) {
     setShowingJackpot(false);
     setShowingPrize(false);
     setPrizeAvatar(null);
+    setPromotionStage(null);
+    setHitType("jackpot");
     // GIFを毎回別URLとして読み込み、前回の途中フレームから再開されるのを防ぐ。
     setSpinKey(`${Date.now()}-${Math.random().toString(36).slice(2)}`);
     setResult("");
@@ -156,6 +185,7 @@ function GachaPage({ currentUser, setCurrentUser, setPage }) {
         setError(localizeError(err.message));
         setShowingJackpot(false);
         setShowingPrize(false);
+        setPromotionStage(null);
         setSpinning(false);
       });
   };
@@ -163,12 +193,12 @@ function GachaPage({ currentUser, setCurrentUser, setPage }) {
   const buttonLabel = showingPrize
     ? t("gacha.get")
     : showingJackpot
-      ? hitType === "secret" ? "SECRET!" : hitType === "middle" ? t("gacha.middleHit") : t("gacha.jackpot")
+      ? hitType === "secret" ? "SECRET!" : hitType === "promotion" ? t("gacha.spinning") : hitType === "middle" ? t("gacha.middleHit") : t("gacha.jackpot")
       : spinning ? t("gacha.spinning") : t("gacha.pull");
 
   return (
     <section className="gachaPage" data-i18n-managed>
-      {spinning && !(showingJackpot && hitType === "secret") && (
+      {spinning && hitType !== "promotion" && !(showingJackpot && hitType === "secret") && (
         <button
           className="gachaSkipOverlay"
           onClick={skipAnimation}
@@ -189,8 +219,22 @@ function GachaPage({ currentUser, setCurrentUser, setPage }) {
       <div className="gachaMachine">
         <img alt={t("gacha.machine")} className="gachaMachineBase" src={machineImage} />
         {spinning && !showingJackpot && !showingPrize && <img alt="" className="gachaKnobAnimation" key={`spin-${spinKey}`} src={`${knobAnimation}?run=${spinKey}`} />}
-        {showingJackpot && hitType !== "secret" && <img alt="" className="gachaJackpotAnimation" key={`${hitType}-${spinKey}`} src={`${HIT_EFFECTS[hitType].animation}?run=${spinKey}`} />}
+        {showingJackpot && hitType !== "secret" && hitType !== "promotion" && <img alt="" className="gachaJackpotAnimation" key={`${hitType}-${spinKey}`} src={`${HIT_EFFECTS[hitType].animation}?run=${spinKey}`} />}
         {showingJackpot && hitType === "secret" && <img alt="" className="gachaSecretAnimation" key={`secret-${spinKey}`} src={`${HIT_EFFECTS.secret.animation}?run=${spinKey}`} />}
+        {showingJackpot && hitType === "promotion" && promotionStage !== null && (
+          <img
+            alt=""
+            className={
+              promotionStage === 0
+                ? "gachaJackpotAnimation"
+                : promotionStage === 1
+                  ? "gachaPromotionHalfAnimation"
+                  : "gachaSecretAnimation"
+            }
+            key={`promotion-${promotionStage}-${spinKey}`}
+            src={`${PROMOTION_STAGES[promotionStage].animation}?run=${spinKey}`}
+          />
+        )}
         {showingPrize && prizeAvatar && (
           <img alt={t(`gacha.prizes.${prizeAvatar.id}`, { defaultValue: prizeAvatar.name })} className="gachaPrizeCharacter" key={`prize-${spinKey}`} src={`${getPrizeImage(prizeAvatar)}?run=${spinKey}`} />
         )}
