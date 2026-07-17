@@ -177,7 +177,12 @@ const FURNITURE_CATALOG = [
 
 const GACHA_COIN_PRICE = 10;
 const AVATAR_CATALOG = {
-  izumi: { id: "izumi", name: "いずみ", rarity: "ノーマル", kind: "avatar" },
+  initial_male: { id: "initial_male", name: "初期男性", rarity: "初期", kind: "avatar" },
+  initial_female: { id: "initial_female", name: "初期女性", rarity: "初期", kind: "avatar" },
+  izumi: { id: "izumi", name: "いずみ", rarity: "中当たり", kind: "avatar" },
+  nari: { id: "nari", name: "なり", rarity: "中当たり", kind: "avatar" },
+  nakazono: { id: "nakazono", name: "なかぞの", rarity: "大当たり", kind: "avatar" },
+  golden_dopamine: { id: "golden_dopamine", name: "ドーパくん", rarity: "確変", kind: "avatar" },
   nagano: { id: "nagano", name: "ながの", rarity: "中当たり", kind: "avatar" },
   abe: { id: "abe", name: "あべ", rarity: "中当たり", kind: "avatar" },
   daiki: { id: "daiki", name: "だいき", rarity: "シークレット", kind: "avatar" },
@@ -191,6 +196,8 @@ const ICON_CATALOG = {
   icon3: { id: "icon3", name: "イービィ", rarity: "中当たり", kind: "icon" },
   icon4: { id: "icon4", name: "もふもふ", rarity: "大当たり", kind: "icon" },
   icon5: { id: "icon5", name: "かっぱ", rarity: "中当たり", kind: "icon" },
+  icon6: { id: "icon6", name: "いずみ", rarity: "中当たり", kind: "icon" },
+  creator_icon: { id: "creator_icon", name: "制作者", rarity: "確変", kind: "icon" },
 };
 
 const VILLAGE_LEVELS = [
@@ -1206,7 +1213,7 @@ async function ensureGachaSchema(env) {
     await env.DB.prepare("ALTER TABLE users ADD COLUMN gacha_coins INTEGER NOT NULL DEFAULT 0").run();
   }
   if (!names.has("selected_avatar")) {
-    await env.DB.prepare("ALTER TABLE users ADD COLUMN selected_avatar TEXT NOT NULL DEFAULT 'izumi'").run();
+    await env.DB.prepare("ALTER TABLE users ADD COLUMN selected_avatar TEXT NOT NULL DEFAULT 'initial_male'").run();
   }
   if (!names.has("selected_icon")) {
     await env.DB.prepare("ALTER TABLE users ADD COLUMN selected_icon TEXT NOT NULL DEFAULT 'hero'").run();
@@ -1225,14 +1232,38 @@ async function ensureGachaSchema(env) {
       )
     `),
     env.DB.prepare(`
-      INSERT OR IGNORE INTO user_avatars (user_id, avatar_id, acquired_at)
-      SELECT id, 'izumi', ? FROM users
-    `).bind(nowJstIso()),
+      CREATE TABLE IF NOT EXISTS app_migrations (
+        migration_key TEXT PRIMARY KEY, applied_at TEXT NOT NULL
+      )
+    `),
     env.DB.prepare(`
       INSERT OR IGNORE INTO user_icons (user_id, icon_id, acquired_at)
       SELECT id, 'hero', ? FROM users
     `).bind(nowJstIso()),
   ]);
+  const avatarMigration = await env.DB.prepare(
+    "SELECT 1 FROM app_migrations WHERE migration_key = 'initial_avatars_v2'",
+  ).first();
+  if (!avatarMigration) {
+    const acquiredAt = nowJstIso();
+    await env.DB.batch([
+      env.DB.prepare(`
+        INSERT OR IGNORE INTO user_avatars (user_id, avatar_id, acquired_at)
+        SELECT id, 'initial_male', ? FROM users
+      `).bind(acquiredAt),
+      env.DB.prepare(`
+        INSERT OR IGNORE INTO user_avatars (user_id, avatar_id, acquired_at)
+        SELECT id, 'initial_female', ? FROM users
+      `).bind(acquiredAt),
+      env.DB.prepare(
+        "UPDATE users SET selected_avatar = 'initial_male' WHERE selected_avatar = 'izumi'",
+      ),
+      env.DB.prepare("DELETE FROM user_avatars WHERE avatar_id = 'izumi'"),
+      env.DB.prepare(
+        "INSERT INTO app_migrations (migration_key, applied_at) VALUES ('initial_avatars_v2', ?)",
+      ).bind(acquiredAt),
+    ]);
+  }
   gachaSchemaReady = true;
 }
 
@@ -1284,16 +1315,21 @@ async function pullGacha(env, userId) {
   const user = await getUserById(env, userId);
   if (!user) return { ok: false, reason: "user_not_found" };
   if (user.gacha_coins < 1) return { ok: false, reason: "not_enough_coin" };
-  const roll = crypto.getRandomValues(new Uint32Array(1))[0] % 100;
+  const roll = crypto.getRandomValues(new Uint32Array(1))[0] % 1000;
   let kind = "avatar";
   let prizeId;
-  if (roll < 5) prizeId = randomChoice(["daiki", "giant_robot"]);
-  else if (roll < 15) {
-    prizeId = randomChoice(["maie", "icon4"]);
+  if (roll < 4) {
+    prizeId = "creator_icon";
+    kind = "icon";
+  }
+  else if (roll < 40) prizeId = "golden_dopamine";
+  else if (roll < 90) prizeId = randomChoice(["daiki", "giant_robot"]);
+  else if (roll < 190) {
+    prizeId = randomChoice(["maie", "nakazono", "icon4"]);
     if (prizeId === "icon4") kind = "icon";
   }
   else {
-    prizeId = randomChoice(["icon1", "icon2", "icon3", "icon5", "nagano", "abe"]);
+    prizeId = randomChoice(["icon1", "icon2", "icon3", "icon5", "icon6", "nagano", "abe", "izumi", "nari"]);
     if (prizeId.startsWith("icon")) kind = "icon";
   }
   const prize = kind === "icon" ? ICON_CATALOG[prizeId] : AVATAR_CATALOG[prizeId];
@@ -2155,8 +2191,8 @@ export default {
 
       await env.DB.prepare(
         `
-        INSERT INTO users (name, grade, password_hash, point, total_point)
-        VALUES (?, ?, ?, 0, 0)
+        INSERT INTO users (name, grade, password_hash, point, total_point, selected_avatar)
+        VALUES (?, ?, ?, 0, 0, 'initial_male')
         `,
       )
         .bind(body.name, body.grade, passwordHash)
@@ -2168,7 +2204,10 @@ export default {
       const acquiredAt = nowJstIso();
       await env.DB.batch([
         env.DB.prepare(
-          "INSERT OR IGNORE INTO user_avatars (user_id, avatar_id, acquired_at) VALUES (?, 'izumi', ?)",
+          "INSERT OR IGNORE INTO user_avatars (user_id, avatar_id, acquired_at) VALUES (?, 'initial_male', ?)",
+        ).bind(user.id, acquiredAt),
+        env.DB.prepare(
+          "INSERT OR IGNORE INTO user_avatars (user_id, avatar_id, acquired_at) VALUES (?, 'initial_female', ?)",
         ).bind(user.id, acquiredAt),
         env.DB.prepare(
           "INSERT OR IGNORE INTO user_icons (user_id, icon_id, acquired_at) VALUES (?, 'hero', ?)",

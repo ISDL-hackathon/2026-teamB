@@ -1,4 +1,4 @@
-import charaImg from "../assets/izumi.gif";
+import charaImg from "../assets/avatars/initial-male.gif";
 import wallImg from "../assets/room/wall.png";
 import wallLv1Img from "../assets/room/wall_lv1.png";
 import floorImg from "../assets/room/floor.png";
