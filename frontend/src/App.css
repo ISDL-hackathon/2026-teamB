@@ -68,9 +68,10 @@ input::placeholder {
 
 .appLogo {
   display: block;
-  width: 420px;      /* ← 具体的な幅を指定(お好みで調整) */
-  max-width: 80%;     /* ← 画面が狭いときはこちらが優先され、はみ出さない */
+  width: 420px;
+  max-width: 80%;
   height: auto;
+  margin: 0 auto;      /* ← 追加:左右の余白を自動にして中央寄せ */
   image-rendering: pixelated;
 }
 
