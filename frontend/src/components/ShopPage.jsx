@@ -16,7 +16,16 @@ const furnitureStyleFilters = [
   { id: "all", label: "すべて" },
   { id: "lab", label: "研究室家具" },
   { id: "western", label: "洋風家具" },
+  { id: "japanese", label: "和風家具" },
+  { id: "palace", label: "宮殿風家具" },
 ];
+
+const furnitureCategoryLabels = {
+  lab: "研究室家具",
+  western: "洋風家具",
+  japanese: "和風家具",
+  palace: "宮殿風家具",
+};
 
 const furnitureSurfaceFilters = [
   { id: "all", label: "すべて" },
@@ -75,10 +84,8 @@ function FurnitureShelf({ currentPoint, items, onPurchaseFurniture }) {
           : item.unlocked
             ? "購入"
             : "ロック中";
-        const categoryLabel =
-          (item.category ?? furniture?.category) === "lab"
-            ? "研究室家具"
-            : "洋風家具";
+        const category = item.category ?? furniture?.category;
+        const categoryLabel = furnitureCategoryLabels[category] ?? category;
         const surface = item.surface ?? furniture?.surface;
 
         return (
