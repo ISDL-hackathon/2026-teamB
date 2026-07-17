@@ -178,8 +178,8 @@ function App() {
         sessionStorage.setItem("isdlCurrentUser", JSON.stringify(data.user));
         setMessage(
           data.added_point > 0
-            ? `${data.user.name}でログインしました。本日初ログイン +${data.added_point}pt`
-            : `${data.user.name}でログインしました。本日はログイン済みです`,
+            ? { key: "auth.firstLogin", values: { name: data.user.name, points: data.added_point } }
+            : { key: "auth.alreadyLoggedIn", values: { name: data.user.name } },
         );
         if (data.user.village_slot_id) {
           setPage("home");
@@ -501,7 +501,11 @@ const fetchWeeklyActivity = () => {
         <SettingsPage currentUser={currentUser} onAvatarChanged={handleAvatarChanged} setPage={setPage} />
       )}
 
-      {message && <p className="message">{message}</p>}
+      {message && (
+        <p className="message" data-i18n-managed={typeof message === "object" ? "" : undefined}>
+          {typeof message === "object" ? t(message.key, message.values) : message}
+        </p>
+      )}
     </div>
   );
 }

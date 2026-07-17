@@ -1,3 +1,4 @@
+import { getAvatarImage } from "./avatarAssets";
 import PixelTown from "./PixelTown";
 
 function VillageSlotSelectPage({
@@ -25,6 +26,7 @@ function VillageSlotSelectPage({
             )}
 
             <PixelTown
+                centralAvatarSrc={getAvatarImage(currentUser.selected_avatar)}
                 level={village?.level ?? 1}
                 mode="select"
                 slots={villageSlots}

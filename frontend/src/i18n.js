@@ -10,6 +10,8 @@ const resources = {
         login: "Log in", register: "Create account", name: "Name", password: "Password",
         grade: "Grade", noAccount: "Don't have an account?", hasAccount: "Already have an account?",
         faculty: "Faculty",
+        firstLogin: "{{name}} logged in. First login today: +{{points}} pt",
+        alreadyLoggedIn: "{{name}} logged in. Already logged in today.",
       },
       home: {
         loggedIn: "Logged in", activityPoints: "Your activity points", logout: "Log out",
@@ -66,6 +68,8 @@ const resources = {
         login: "ログイン", register: "ユーザー登録", name: "名前", password: "パスワード",
         grade: "学年", noAccount: "アカウントがない場合", hasAccount: "すでにアカウントがある場合",
         faculty: "教員",
+        firstLogin: "{{name}}でログインしました。本日初ログイン +{{points}}pt",
+        alreadyLoggedIn: "{{name}}でログインしました。本日はログイン済みです。",
       },
       home: {
         loggedIn: "ログイン中", activityPoints: "あなたの活動ポイント", logout: "ログアウト",
