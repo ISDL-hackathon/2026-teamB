@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import magicStreetImg from "../assets/shop/magic-street.png";
 import robotImg from "../assets/shop/dopamine-robot.gif";
 import gachaCoinImg from "../assets/gacha/coin128.png";
@@ -63,6 +64,7 @@ function getFurnitureStatus(item, currentPoint) {
 }
 
 function FurnitureShelf({ currentPoint, items, onPurchaseFurniture }) {
+  const { t } = useTranslation();
   if (items.length === 0) {
     return (
       <div className="shopEmptyShelf">
@@ -85,7 +87,9 @@ function FurnitureShelf({ currentPoint, items, onPurchaseFurniture }) {
             ? "購入"
             : "ロック中";
         const category = item.category ?? furniture?.category;
-        const categoryLabel = furnitureCategoryLabels[category] ?? category;
+        const categoryLabel = t(`shop.categories.${category}`, {
+          defaultValue: furnitureCategoryLabels[category] ?? category,
+        });
         const surface = item.surface ?? furniture?.surface;
 
         return (
@@ -100,20 +104,20 @@ function FurnitureShelf({ currentPoint, items, onPurchaseFurniture }) {
                 <img alt="" className="furnitureShopImage" src={furniture.src} />
               )}
               {isFunctional && (
-                <span className="furnitureRecommendedBadge">{"\u63a8\u5968"}</span>
+                <span className="furnitureRecommendedBadge">{t("shop.recommended")}</span>
               )}
             </div>
 
             <div className="furnitureShopInfo">
               <div className="furnitureShopTitleRow">
-                <strong>{item.name}</strong>
+                <strong>{t(`shop.items.${item.id}`, { defaultValue: item.name })}</strong>
                 <span className="furnitureShopLevel">Lv.{item.min_level}</span>
               </div>
               <span className="furnitureShopMeta">
-                {categoryLabel} / {furnitureSurfaceLabels[surface] ?? surface}
+                {categoryLabel} / {t(`shop.surfaces.${surface}`, { defaultValue: furnitureSurfaceLabels[surface] ?? surface })}
               </span>
               {isFunctional && (
-                <span className="furnitureFeatureBadge">{"\u6a5f\u80fd\u89e3\u7981"}</span>
+                <span className="furnitureFeatureBadge">{t("shop.featureUnlocked")}</span>
               )}
               <span className="furnitureShopStatus">
                 {getFurnitureStatus(item, currentPoint)}
@@ -137,6 +141,7 @@ function FurnitureShelf({ currentPoint, items, onPurchaseFurniture }) {
 }
 
 function ThemeShelf({ currentPoint, items, onPurchaseFurniture }) {
+  const { t } = useTranslation();
   return (
     <div className="furnitureShopGrid themeShopGrid">
       {items.map((item) => {
@@ -159,7 +164,7 @@ function ThemeShelf({ currentPoint, items, onPurchaseFurniture }) {
             </div>
             <div className="furnitureShopInfo">
               <div className="furnitureShopTitleRow">
-                <strong>{item.name}</strong>
+                <strong>{t(`shop.items.${item.id}`, { defaultValue: item.name })}</strong>
                 <span className="furnitureShopLevel">Lv.{item.min_level}</span>
               </div>
               <span className="furnitureShopMeta">壁＋床セット</span>
@@ -201,6 +206,7 @@ function FilterGroup({ label, filters, value, onChange }) {
 }
 
 function ShopPage({ onPurchaseFurniture, onPurchaseGachaCoin, room, setPage }) {
+  const { t } = useTranslation();
   const [shopTab, setShopTab] = useState("furniture");
   const [styleFilter, setStyleFilter] = useState("all");
   const [surfaceFilter, setSurfaceFilter] = useState("all");
@@ -312,8 +318,8 @@ function ShopPage({ onPurchaseFurniture, onPurchaseGachaCoin, room, setPage }) {
             <div className="gachaCoinShopItem">
               <img alt="" className="gachaCoinIcon" src={gachaCoinImg} />
               <div>
-                <strong>{"\u30ac\u30c1\u30e3\u30b3\u30a4\u30f3"}</strong>
-                <p>{"\u30ac\u30c1\u30e3\u30921\u56de\u56de\u305b\u308b\u30b3\u30a4\u30f3"}</p>
+                <strong>{t("shop.gachaCoin")}</strong>
+                <p>{t("shop.gachaCoinDescription")}</p>
                 <span className="furnitureShopPrice">10 pt</span>
               </div>
               <div className="gachaCoinPurchaseControls">

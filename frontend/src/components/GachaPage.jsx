@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { requestJson } from "../api";
 import machineImage from "../assets/gacha/gatya512.png";
 import knobAnimation from "../assets/gacha/kaiten.gif";
@@ -8,6 +9,7 @@ import secretAnimation from "../assets/gacha/putyun.gif";
 import gachaCoinImage from "../assets/gacha/coin128.png";
 import { getAvatarImage } from "./avatarAssets";
 import { getIconImage } from "./iconAssets";
+import { translateLegacyText } from "../pageTranslations";
 
 const KNOB_ANIMATION_MS = 4700;
 const PRIZE_HOLD_MS = 2000;
@@ -17,21 +19,10 @@ const HIT_EFFECTS = {
   secret: { animation: secretAnimation, duration: 2170, prizeAt: 2170 },
 };
 
-const text = {
-  home: "\u2190 \u30db\u30fc\u30e0",
-  title: "\u30ac\u30c1\u30e3",
-  coins: "\u6240\u6301\u30b3\u30a4\u30f3",
-  buy: "\u30b3\u30a4\u30f3\u8cfc\u5165",
-  machine: "\u30ac\u30c1\u30e3\u30de\u30b7\u30f3",
-  spinning: "\u56de\u8ee2\u4e2d\u2026",
-  pull: "1\u30b3\u30a4\u30f3\u3067\u56de\u3059",
-  collection: "\u30a2\u30d0\u30bf\u30fc\u30b3\u30ec\u30af\u30b7\u30e7\u30f3",
-  owned: "\u7372\u5f97\u6e08\u307f",
-  locked: "\u672a\u7372\u5f97",
-  skip: "\u30af\u30ea\u30c3\u30af\u3067\u30b9\u30ad\u30c3\u30d7",
-};
+const RARITY_KEYS = { "ノーマル": "normal", "中当たり": "middle", "大当たり": "jackpot", "シークレット": "secret" };
 
 function GachaPage({ currentUser, setCurrentUser, setPage }) {
+  const { t, i18n } = useTranslation();
   const [status, setStatus] = useState(null);
   const [spinning, setSpinning] = useState(false);
   const [showingJackpot, setShowingJackpot] = useState(false);
@@ -44,6 +35,7 @@ function GachaPage({ currentUser, setCurrentUser, setPage }) {
   const timersRef = useRef([]);
   const pendingResultRef = useRef(null);
   const skipRequestedRef = useRef(false);
+  const localizeError = (message) => i18n.resolvedLanguage === "en" ? translateLegacyText(message) : message;
 
   const clearAnimationTimers = () => {
     timersRef.current.forEach((timerId) => window.clearTimeout(timerId));
@@ -59,9 +51,9 @@ function GachaPage({ currentUser, setCurrentUser, setPage }) {
     clearAnimationTimers();
     setStatus(data.status);
     setCurrentUser((current) => ({ ...current, ...data.user }));
-    setResult(data.duplicate
-      ? `${data.avatar.name}\u306f\u7372\u5f97\u6e08\u307f\uff01 5pt\u306b\u5909\u63db\u3057\u307e\u3057\u305f`
-      : `${data.avatar.rarity}\u300c${data.avatar.name}\u300d\u3092\u7372\u5f97\uff01`);
+    const name = t(`gacha.prizes.${data.avatar.id}`, { defaultValue: data.avatar.name });
+    const rarity = t(`gacha.rarity.${RARITY_KEYS[data.avatar.rarity] ?? "normal"}`);
+    setResult(data.duplicate ? t("gacha.duplicate", { name }) : t("gacha.acquired", { name, rarity }));
     setShowingJackpot(false);
     setShowingPrize(false);
     setSpinning(false);
@@ -107,7 +99,7 @@ function GachaPage({ currentUser, setCurrentUser, setPage }) {
   useEffect(() => {
     requestJson(`/gacha/status/${currentUser.id}`)
       .then(setStatus)
-      .catch((err) => setError(err.message));
+      .catch((err) => setError(localizeError(err.message)));
   }, [currentUser.id]);
 
   useEffect(() => () => clearAnimationTimers(), []);
@@ -161,7 +153,7 @@ function GachaPage({ currentUser, setCurrentUser, setPage }) {
         clearAnimationTimers();
         pendingResultRef.current = null;
         skipRequestedRef.current = false;
-        setError(err.message);
+        setError(localizeError(err.message));
         setShowingJackpot(false);
         setShowingPrize(false);
         setSpinning(false);
@@ -169,13 +161,13 @@ function GachaPage({ currentUser, setCurrentUser, setPage }) {
   };
 
   const buttonLabel = showingPrize
-    ? "GET!"
+    ? t("gacha.get")
     : showingJackpot
-      ? hitType === "secret" ? "SECRET!" : hitType === "middle" ? "\u4e2d\u5f53\u305f\u308a\uff01" : "\u5927\u5f53\u305f\u308a\uff01"
-      : spinning ? text.spinning : text.pull;
+      ? hitType === "secret" ? "SECRET!" : hitType === "middle" ? t("gacha.middleHit") : t("gacha.jackpot")
+      : spinning ? t("gacha.spinning") : t("gacha.pull");
 
   return (
-    <section className="gachaPage">
+    <section className="gachaPage" data-i18n-managed>
       {spinning && !(showingJackpot && hitType === "secret") && (
         <button
           className="gachaSkipOverlay"
@@ -183,24 +175,24 @@ function GachaPage({ currentUser, setCurrentUser, setPage }) {
           type="button"
         >
           {showingPrize
-            ? "\u30af\u30ea\u30c3\u30af\u3067\u7d50\u679c\u3078"
+            ? t("gacha.result")
             : showingJackpot
-              ? "\u30af\u30ea\u30c3\u30af\u3067\u5f53\u305f\u308a\u6f14\u51fa\u3092\u30b9\u30ad\u30c3\u30d7"
-              : "\u30af\u30ea\u30c3\u30af\u3067\u56de\u8ee2\u3092\u30b9\u30ad\u30c3\u30d7"}
+              ? t("gacha.skipEffect")
+              : t("gacha.skipSpin")}
         </button>
       )}
       <header className="gachaHeader">
-        <button className="secondaryButton" onClick={() => setPage("home")} type="button">{text.home}</button>
-        <div><h2>{text.title}</h2><p className="gachaCoinBalance"><img alt="" src={gachaCoinImage} />{text.coins}: {status?.coins ?? currentUser.gacha_coins ?? 0}</p></div>
-        <button className="secondaryButton" onClick={() => setPage("shop")} type="button">{text.buy}</button>
+        <button className="secondaryButton" onClick={() => setPage("home")} type="button">{t("gacha.home")}</button>
+        <div><h2>{t("gacha.title")}</h2><p className="gachaCoinBalance"><img alt="" src={gachaCoinImage} />{t("gacha.coins")}: {status?.coins ?? currentUser.gacha_coins ?? 0}</p></div>
+        <button className="secondaryButton" onClick={() => setPage("shop")} type="button">{t("gacha.buyCoins")}</button>
       </header>
       <div className="gachaMachine">
-        <img alt={text.machine} className="gachaMachineBase" src={machineImage} />
+        <img alt={t("gacha.machine")} className="gachaMachineBase" src={machineImage} />
         {spinning && !showingJackpot && !showingPrize && <img alt="" className="gachaKnobAnimation" key={`spin-${spinKey}`} src={`${knobAnimation}?run=${spinKey}`} />}
         {showingJackpot && hitType !== "secret" && <img alt="" className="gachaJackpotAnimation" key={`${hitType}-${spinKey}`} src={`${HIT_EFFECTS[hitType].animation}?run=${spinKey}`} />}
         {showingJackpot && hitType === "secret" && <img alt="" className="gachaSecretAnimation" key={`secret-${spinKey}`} src={`${HIT_EFFECTS.secret.animation}?run=${spinKey}`} />}
         {showingPrize && prizeAvatar && (
-          <img alt={prizeAvatar.name} className="gachaPrizeCharacter" key={`prize-${spinKey}`} src={`${getPrizeImage(prizeAvatar)}?run=${spinKey}`} />
+          <img alt={t(`gacha.prizes.${prizeAvatar.id}`, { defaultValue: prizeAvatar.name })} className="gachaPrizeCharacter" key={`prize-${spinKey}`} src={`${getPrizeImage(prizeAvatar)}?run=${spinKey}`} />
         )}
       </div>
       <button className="gachaPullButton" disabled={spinning || (status?.coins ?? 0) < 1} onClick={pull} type="button">
@@ -209,25 +201,25 @@ function GachaPage({ currentUser, setCurrentUser, setPage }) {
       {result && <p className="gachaResult">{result}</p>}
       {error && <p className="gachaError">{error}</p>}
       <div className="avatarCollection">
-        <h3>{text.collection}</h3>
+        <h3>{t("gacha.avatarCollection")}</h3>
         <div className="avatarCollectionGrid">
           {(status?.avatars ?? []).map((avatar) => (
             <article className={!avatar.owned ? "avatarPrize avatarPrizeLocked" : "avatarPrize"} key={avatar.id}>
-              <img alt={avatar.name} src={getAvatarImage(avatar.id)} />
-              <strong>{avatar.owned ? avatar.name : "???"}</strong>
-              <span>{avatar.owned ? text.owned : text.locked}</span>
+              <img alt={t(`gacha.prizes.${avatar.id}`, { defaultValue: avatar.name })} src={getAvatarImage(avatar.id)} />
+              <strong>{avatar.owned ? t(`gacha.prizes.${avatar.id}`, { defaultValue: avatar.name }) : "???"}</strong>
+              <span>{avatar.owned ? t("gacha.owned") : t("gacha.locked")}</span>
             </article>
           ))}
         </div>
       </div>
       <div className="avatarCollection">
-        <h3>アイコンコレクション</h3>
+        <h3>{t("gacha.iconCollection")}</h3>
         <div className="avatarCollectionGrid">
           {(status?.icons ?? []).map((icon) => (
             <article className={!icon.owned ? "avatarPrize avatarPrizeLocked" : "avatarPrize"} key={icon.id}>
-              <img alt={icon.name} src={getIconImage(icon.id)} />
-              <strong>{icon.owned ? icon.name : "???"}</strong>
-              <span>{icon.owned ? text.owned : text.locked}</span>
+              <img alt={t(`gacha.prizes.${icon.id}`, { defaultValue: icon.name })} src={getIconImage(icon.id)} />
+              <strong>{icon.owned ? t(`gacha.prizes.${icon.id}`, { defaultValue: icon.name }) : "???"}</strong>
+              <span>{icon.owned ? t("gacha.owned") : t("gacha.locked")}</span>
             </article>
           ))}
         </div>

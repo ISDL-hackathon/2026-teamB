@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { requestJson } from "./api";
 import HomePage from "./components/HomePage";
 import BulletinBoardPage from "./components/BulletinBoardPage";
@@ -24,6 +25,7 @@ import labTitleImg from "./assets/labtitle.png";
 import "./App.css";
 
 function App() {
+  const { t } = useTranslation();
   const [mode, setMode] = useState("login");
   const [page, setPage] = useState("home");
 
@@ -359,9 +361,9 @@ const fetchWeeklyActivity = () => {
 
   return (
     <div className={`app${!currentUser ? " login-mode" : ""}`}>
-      <header className="appHeader">
-        <img src={labTitleImg} alt="DopaLab" className="appLogo" />
-        <p>研究室活動ポイント</p>
+      <header className="appHeader" data-i18n-managed>
+        <img src={labTitleImg} alt={t("app.title")} className="appLogo" />
+        <p>{t("app.subtitle")}</p>
       </header>
 
       {!currentUser && (
