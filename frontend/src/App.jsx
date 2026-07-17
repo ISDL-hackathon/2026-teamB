@@ -21,6 +21,7 @@ import LunchQuestPage from "./components/LunchQuestPage";
 import PhotoQuestPage from "./components/PhotoQuestPage";
 import VillagePage from "./components/VillagePage";
 import VillageSlotSelectPage from "./components/VillageSlotSelectPage";
+import labTitleImg from "./assets/labtitle.png";
 import "./App.css";
 
 function App() {
@@ -361,7 +362,7 @@ const fetchWeeklyActivity = () => {
   return (
     <div className={`app${!currentUser ? " login-mode" : ""}`}>
       <header className="appHeader" data-i18n-managed>
-        <h1>{t("app.title")}</h1>
+        <img src={labTitleImg} alt={t("app.title")} className="appLogo" />
         <p>{t("app.subtitle")}</p>
       </header>
 

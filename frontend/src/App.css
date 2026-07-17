@@ -1,6 +1,6 @@
 body {
   margin: 0;
-  background: #12141b;
+  background: #000000;
   color: #e8edf5;
   font-family: "DotGothic16", monospace;
 }
@@ -35,10 +35,21 @@ select {
   box-sizing: border-box;
   margin: 12px 0;
   padding: 12px;
-  color: #edf2fb;
-  background: #181d29;
-  border: 1px solid #3a4357;
+  color: #1a2230;
+  background: #ffffff;
+  border: 1px solid #c7cfdd;
   border-radius: 8px;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: #2f7d68;
+  box-shadow: 0 0 0 3px rgba(47, 125, 104, 0.18);
+}
+
+input::placeholder {
+  color: #9aa3b5;
 }
 
 .app {
@@ -49,32 +60,32 @@ select {
 }
 
 .appHeader {
-  max-width: 960px;
   margin: 0 auto 24px;
   text-align: left;
+  background: #ffffff;
+  padding: 0;
 }
 
-.appHeader h1 {
-  margin: 0 0 6px;
-  color: #ffffff;
-  font-size: clamp(32px, 5vw, 56px);
-  line-height: 1.05;
-  letter-spacing: 0;
+.appLogo {
+  display: block;
+  width: 420px;      /* ← 具体的な幅を指定(お好みで調整) */
+  max-width: 80%;     /* ← 画面が狭いときはこちらが優先され、はみ出さない */
+  height: auto;
+  image-rendering: pixelated;
 }
 
 .appHeader p {
-  color: #b8c0d4;
-  font-size: 18px;
+  display: none;
 }
 
 .card {
   max-width: 640px;
   margin: 20px auto;
   padding: 24px;
-  background: rgba(22, 27, 38, 0.92);
-  border: 1px solid #343c4f;
+  background: #f7f9fc;
+  border: 1px solid #d8deea;
   border-radius: 8px;
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 18px 45px rgba(20, 30, 50, 0.14);
   box-sizing: border-box;
 }
 
@@ -85,27 +96,29 @@ select {
 .card h2,
 .rankingSection h2 {
   margin: 0 0 16px;
-  color: #ffffff;
+  color: #1a2230;
   font-size: 24px;
 }
 
 .card h3 {
   margin: 18px 0 8px;
-  color: #ffffff;
+  color: #1a2230;
   font-size: 20px;
 }
 
 .card p {
-  color: #cbd5e1;
+  color: #1a2230;
   line-height: 1.7;
 }
 
 .secondaryButton {
-  background: #2e3546;
+  color: #1a2230;
+  background: #e7ecf4;
+  border-color: #cfd9e6;
 }
 
 .secondaryButton:hover {
-  background: #3b455b;
+  background: #dbe3ee;
 }
 
 .compactButton {
@@ -119,7 +132,7 @@ select {
   min-height: 0;
   padding: 0;
   margin: 0;
-  color: #7dd3fc;
+  color: #2f7d68;
   background: none;
   border: none;
   text-decoration: underline;
@@ -127,16 +140,16 @@ select {
 
 .linkButton:hover {
   background: none;
-  color: #bae6fd;
+  color: #256254;
 }
 
 .message {
   max-width: 640px;
   margin: 18px auto 0;
   padding: 12px 16px;
-  color: #dff7ec;
-  background: rgba(47, 125, 104, 0.22);
-  border: 1px solid rgba(87, 190, 159, 0.4);
+  color: #1f5c4c;
+  background: rgba(47, 125, 104, 0.12);
+  border: 1px solid rgba(47, 125, 104, 0.35);
   border-radius: 8px;
   font-weight: 700;
 }
@@ -245,8 +258,9 @@ select {
 
 .homeUserInfo p {
   margin: 4px 0 2px;
-  color: #ffffff;
+  color: #1a2230;
   font-size: 20px;
+  font-weight: 700;
 }
 
 .homeUserInfo strong {
@@ -321,21 +335,22 @@ table {
   width: 100%;
   border-collapse: collapse;
   overflow: hidden;
-  background: rgba(18, 22, 32, 0.94);
-  border: 1px solid #343c4f;
+  background: #ffffff;
+  border: 1px solid #d8deea;
   border-radius: 8px;
 }
 
 th,
 td {
   padding: 14px;
-  border-bottom: 1px solid #30384b;
+  border-bottom: 1px solid #eef2f8;
   text-align: left;
+  color: #26303f;
 }
 
 th {
-  color: #dbeafe;
-  background: #202838;
+  color: #4a5568;
+  background: #eef2f8;
 }
 
 tr:last-child td {
@@ -393,21 +408,21 @@ tr:last-child td {
 .statusGrid div {
   min-width: 0;
   padding: 16px;
-  background: #111827;
-  border: 1px solid #2d3649;
+  background: #eef2f8;
+  border: 1px solid #dce3ee;
   border-radius: 8px;
 }
 
 .statusGrid span {
   display: block;
-  color: #9ca8bd;
+  color: #6b7688;
   font-size: 14px;
 }
 
 .statusGrid strong {
   display: block;
   margin-top: 8px;
-  color: #ffffff;
+  color: #1a2230;
   font-size: 20px;
   overflow-wrap: anywhere;
 }
@@ -955,10 +970,6 @@ tr:last-child td {
 }
 
 /* ヘッダーの文字色(明るい背景で読めるように濃く) */
-.login-mode .appHeader h1 {
-  color: #1a2230;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
-}
 .login-mode .appHeader p {
   color: #3d4658;
 }
@@ -1012,22 +1023,21 @@ tr:last-child td {
 /* 全カード共通の下地(質感アップ) */
 .homeWeather .card,
 .homeWeather .rankingSection {
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid #d8deea;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.06)),
-    rgba(22, 27, 38, 0.94);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0)),
+    #f7f9fc;
+  box-shadow: 0 14px 34px rgba(20, 30, 50, 0.16);
 }
 
 /* --- 主役:ユーザーカード --- */
 .homeWeather .homeUserCard {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(47, 125, 104, 0.4);
+  border: 1px solid rgba(47, 125, 104, 0.35);
   background:
-    radial-gradient(140% 120% at 0% 0%, rgba(47, 125, 104, 0.22), transparent 55%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.10)),
-    rgba(20, 26, 37, 0.96);
+    radial-gradient(140% 120% at 0% 0%, rgba(47, 125, 104, 0.12), transparent 55%),
+    #f7f9fc;
 }
 /* 左端のアクセントバー */
 .homeWeather .homeUserCard::before {
@@ -1047,9 +1057,14 @@ tr:last-child td {
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: 0.5px;
+  text-shadow:
+    -1.5px -1.5px 0 #1a2230,
+     1.5px -1.5px 0 #1a2230,
+    -1.5px  1.5px 0 #1a2230,
+     1.5px  1.5px 0 #1a2230;
 }
 .homeWeather .eyebrow {
-  color: #8bd3c0;
+  color: #2f7d68;
   font-size: 12px;
   letter-spacing: 1px;
 }
@@ -1081,16 +1096,16 @@ tr:last-child td {
   gap: 4px;
   padding: 14px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: #eef2f8;
+  border: 1px solid #dce3ee;
 }
 .statLabel {
-  color: #9fb0c8;
+  color: #6b7688;
   font-size: 12px;
   letter-spacing: 0.5px;
 }
 .statValue {
-  color: #ffffff;
+  color: #1a2230;
   font-size: 24px;
   font-weight: 800;
   line-height: 1.15;
@@ -1098,11 +1113,11 @@ tr:last-child td {
 .statValue small {
   font-size: 14px;
   font-weight: 600;
-  color: #c6d0e0;
+  color: #55617a;
   margin-left: 2px;
 }
 .statSub {
-  color: #aeb9cc;
+  color: #6b7688;
   font-size: 12px;
 }
 
@@ -1185,11 +1200,11 @@ tr:last-child td {
 /* 共有街カード(主役)＋説明カード 共通の下地 */
 .villageCard,
 .villageCard + .card {
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(216, 222, 234, 0.85);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.06)),
-    rgba(22, 27, 38, 0.94);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.35)),
+    rgba(247, 249, 252, 0.55);   /* 白ベース・半透明(背景が透ける) */
+  box-shadow: 0 14px 34px rgba(20, 30, 50, 0.16);
 }
 
 /* 見出しに緑のアクセントバー(ホームと統一) */
@@ -1212,7 +1227,7 @@ tr:last-child td {
 .villageCard h3 {
   margin: 18px 0 6px;
   font-size: 20px;
-  color: #ffffff;
+  color: #1a2230;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1226,7 +1241,7 @@ tr:last-child td {
   background: linear-gradient(90deg, rgba(55,149,124,0.6), transparent);
 }
 .villageCard > p {
-  color: #b9c4d6;
+  color: #4a5568;
   line-height: 1.7;
 }
 
@@ -1243,16 +1258,16 @@ tr:last-child td {
   gap: 6px;
   padding: 14px 16px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: #eef2f8;
+  border: 1px solid #dce3ee;
 }
 .statusGrid > div span {
-  color: #9fb0c8;
+  color: #6b7688;
   font-size: 12px;
   letter-spacing: 0.5px;
 }
 .statusGrid > div strong {
-  color: #ffffff;
+  color: #1a2230;
   font-size: 22px;
   font-weight: 800;
   line-height: 1.1;
@@ -1269,7 +1284,7 @@ tr:last-child td {
 }
 .pageHeader .secondaryButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 18px rgba(20, 30, 50, 0.18);
 }
 
 /* スマホでは統計を縦積み */
@@ -1320,7 +1335,7 @@ tr:last-child td {
 .levelBar {
   height: 10px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.10);
+  background: #e3e8f0;
   overflow: hidden;
 }
 .levelBarFill {
@@ -1605,9 +1620,13 @@ tr:last-child td {
 .roomLevelSummary {
   margin: 14px 0 6px;
   padding: 12px 14px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 215, 106, 0.28);
+  background: #fdf6e6;
+  border: 1px solid rgba(215, 155, 43, 0.35);
   border-radius: 8px;
+}
+
+.roomLevelSummary strong {
+  color: #1a2230;
 }
 
 .roomLevelSummary .levelProgressHead > span:first-child {
@@ -1616,7 +1635,7 @@ tr:last-child td {
 }
 
 .roomLevelSummary small {
-  color: #aeb9cc;
+  color: #7a6a3f;
 }
 
 .roomLevelBarFill {
@@ -1715,7 +1734,7 @@ tr:last-child td {
   object-fit: contain;
 }
 .weeklyTreeLabel {
-  color: #b9c4d6;
+  color: #6b7688;
   font-size: 12px;
   font-weight: 700;
 }
@@ -1726,4 +1745,13 @@ tr:last-child td {
 @media (max-width: 560px) {
   .weeklyTreeRow { gap: 4px; }
   .weeklyTreeImageWrap { height: 60px; }
+}
+
+
+.statusGrid .pointValue {
+  text-shadow:
+    -1.5px -1.5px 0 #1a2230,
+     1.5px -1.5px 0 #1a2230,
+    -1.5px  1.5px 0 #1a2230,
+     1.5px  1.5px 0 #1a2230;
 }
