@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { requestJson } from "./api";
 import HomePage from "./components/HomePage";
 import BulletinBoardPage from "./components/BulletinBoardPage";
@@ -23,6 +24,7 @@ import VillageSlotSelectPage from "./components/VillageSlotSelectPage";
 import "./App.css";
 
 function App() {
+  const { t } = useTranslation();
   const [mode, setMode] = useState("login");
   const [page, setPage] = useState("home");
 
@@ -358,9 +360,9 @@ const fetchWeeklyActivity = () => {
 
   return (
     <div className={`app${!currentUser ? " login-mode" : ""}`}>
-      <header className="appHeader">
-        <h1>ISDL ハッカソン</h1>
-        <p>研究室活動ポイント</p>
+      <header className="appHeader" data-i18n-managed>
+        <h1>{t("app.title")}</h1>
+        <p>{t("app.subtitle")}</p>
       </header>
 
       {!currentUser && (

@@ -152,6 +152,31 @@ select {
   box-sizing: border-box;
 }
 
+.languageSwitcher {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.45rem;
+  margin-bottom: 0.75rem;
+}
+
+.languageSwitcher span { font-size: 0.85rem; font-weight: 700; }
+
+.languageSwitcher button {
+  width: auto;
+  min-width: 5.25rem;
+  padding: 0.45rem 0.7rem;
+  background: rgba(255, 255, 255, 0.86);
+  color: #25354a;
+  border: 2px solid transparent;
+}
+
+.languageSwitcher button.active {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #fff;
+}
+
 .homeUserCard {
   max-width: 720px;
 }
