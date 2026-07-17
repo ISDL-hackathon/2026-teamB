@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { requestJson } from "../api";
 import { getAvatarImage } from "./avatarAssets";
 import { getIconImage } from "./iconAssets";
@@ -18,6 +19,7 @@ const text = {
 };
 
 function SettingsPage({ currentUser, onAvatarChanged, setPage }) {
+  const { t } = useTranslation();
   const [status, setStatus] = useState(null);
   const [message, setMessage] = useState("");
 
@@ -66,8 +68,8 @@ function SettingsPage({ currentUser, onAvatarChanged, setPage }) {
       <div className="avatarCollectionGrid">
         {(status?.avatars ?? []).filter((avatar) => avatar.owned).map((avatar) => (
           <article className="avatarPrize" key={avatar.id}>
-            <img alt={avatar.name} src={getAvatarImage(avatar.id)} />
-            <strong>{avatar.name}</strong>
+            <img alt={t(`gacha.prizes.${avatar.id}`, { defaultValue: avatar.name })} src={getAvatarImage(avatar.id)} />
+            <strong>{t(`gacha.prizes.${avatar.id}`, { defaultValue: avatar.name })}</strong>
             <button disabled={status.selected_avatar === avatar.id} onClick={() => selectAvatar(avatar.id)} type="button">
               {status.selected_avatar === avatar.id ? text.active : text.select}
             </button>
@@ -79,8 +81,8 @@ function SettingsPage({ currentUser, onAvatarChanged, setPage }) {
       <div className="avatarCollectionGrid">
         {(status?.icons ?? []).filter((icon) => icon.owned).map((icon) => (
           <article className="avatarPrize" key={icon.id}>
-            <img alt={icon.name} src={getIconImage(icon.id)} />
-            <strong>{icon.name}</strong>
+            <img alt={t(`gacha.prizes.${icon.id}`, { defaultValue: icon.name })} src={getIconImage(icon.id)} />
+            <strong>{t(`gacha.prizes.${icon.id}`, { defaultValue: icon.name })}</strong>
             <button disabled={status.selected_icon === icon.id} onClick={() => selectIcon(icon.id)} type="button">
               {status.selected_icon === icon.id ? text.active : text.iconSelect}
             </button>

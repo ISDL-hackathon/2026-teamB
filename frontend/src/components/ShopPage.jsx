@@ -87,7 +87,9 @@ function FurnitureShelf({ currentPoint, items, onPurchaseFurniture }) {
             ? "購入"
             : "ロック中";
         const category = item.category ?? furniture?.category;
-        const categoryLabel = furnitureCategoryLabels[category] ?? category;
+        const categoryLabel = t(`shop.categories.${category}`, {
+          defaultValue: furnitureCategoryLabels[category] ?? category,
+        });
         const surface = item.surface ?? furniture?.surface;
 
         return (
@@ -108,11 +110,11 @@ function FurnitureShelf({ currentPoint, items, onPurchaseFurniture }) {
 
             <div className="furnitureShopInfo">
               <div className="furnitureShopTitleRow">
-                <strong>{item.name}</strong>
+                <strong>{t(`shop.items.${item.id}`, { defaultValue: item.name })}</strong>
                 <span className="furnitureShopLevel">Lv.{item.min_level}</span>
               </div>
               <span className="furnitureShopMeta">
-                {categoryLabel} / {furnitureSurfaceLabels[surface] ?? surface}
+                {categoryLabel} / {t(`shop.surfaces.${surface}`, { defaultValue: furnitureSurfaceLabels[surface] ?? surface })}
               </span>
               {isFunctional && (
                 <span className="furnitureFeatureBadge">{t("shop.featureUnlocked")}</span>
@@ -139,6 +141,7 @@ function FurnitureShelf({ currentPoint, items, onPurchaseFurniture }) {
 }
 
 function ThemeShelf({ currentPoint, items, onPurchaseFurniture }) {
+  const { t } = useTranslation();
   return (
     <div className="furnitureShopGrid themeShopGrid">
       {items.map((item) => {
@@ -161,7 +164,7 @@ function ThemeShelf({ currentPoint, items, onPurchaseFurniture }) {
             </div>
             <div className="furnitureShopInfo">
               <div className="furnitureShopTitleRow">
-                <strong>{item.name}</strong>
+                <strong>{t(`shop.items.${item.id}`, { defaultValue: item.name })}</strong>
                 <span className="furnitureShopLevel">Lv.{item.min_level}</span>
               </div>
               <span className="furnitureShopMeta">壁＋床セット</span>
