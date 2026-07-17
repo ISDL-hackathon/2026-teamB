@@ -46,11 +46,14 @@ const resources = {
         result: "Click to see the result", skipEffect: "Click to skip the prize animation",
         skipSpin: "Click to skip spinning", duplicate: "{{name}} was already owned and was converted into 5 pt!",
         acquired: "Acquired {{rarity}} “{{name}}”!",
-        rarity: { normal: "Normal", middle: "Rare", jackpot: "Super Rare", secret: "Secret" },
+        rarity: { initial: "Starter", normal: "Normal", middle: "Rare", jackpot: "Super Rare", secret: "Secret", guaranteed: "Guaranteed" },
         prizes: {
-          izumi: "Izumi", nagano: "Nagano", abe: "Abe", daiki: "Daiki", maie: "Maie",
+          initial_male: "Default Male Character", initial_female: "Default Female Character",
+          izumi: "Izumi", nari: "Nari", nakazono: "Nakazono", golden_dopamine: "Dopa-kun",
+          nagano: "Nagano", abe: "Abe", daiki: "Daiki", maie: "Maie",
           giant_robot: "White Machine", hero: "Hero", icon1: "Rooftop Mouse",
           icon2: "White Cat", icon3: "Eevee", icon4: "Fluffy", icon5: "Kappa",
+          icon6: "Izumi", creator_icon: "Creator",
         },
       },
       villageTitle: {
@@ -104,11 +107,14 @@ const resources = {
         result: "クリックで結果へ", skipEffect: "クリックで当たり演出をスキップ",
         skipSpin: "クリックで回転をスキップ", duplicate: "{{name}}は獲得済み！ 5ptに変換しました",
         acquired: "{{rarity}}「{{name}}」を獲得！",
-        rarity: { normal: "ノーマル", middle: "中当たり", jackpot: "大当たり", secret: "シークレット" },
+        rarity: { initial: "初期", normal: "ノーマル", middle: "中当たり", jackpot: "大当たり", secret: "シークレット", guaranteed: "確定" },
         prizes: {
-          izumi: "いずみ", nagano: "ながの", abe: "あべ", daiki: "だいき", maie: "まいえ",
+          initial_male: "初期男性", initial_female: "初期女性",
+          izumi: "いずみ", nari: "なり", nakazono: "なかぞの", golden_dopamine: "どーぱくん",
+          nagano: "ながの", abe: "あべ", daiki: "だいき", maie: "まいえ",
           giant_robot: "白い機体", hero: "勇者", icon1: "屋根のねずみ",
           icon2: "白猫アイコン", icon3: "イービィ", icon4: "もふもふ", icon5: "かっぱ",
+          icon6: "いずみ", creator_icon: "制作者",
         },
       },
       villageTitle: {

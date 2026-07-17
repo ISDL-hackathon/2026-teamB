@@ -28,7 +28,14 @@ const PROMOTION_STAGES = [
   { animation: promotionAnimation3, duration: 2800 },
 ];
 
-const RARITY_KEYS = { "ノーマル": "normal", "中当たり": "middle", "大当たり": "jackpot", "シークレット": "secret" };
+const RARITY_KEYS = {
+  "初期": "initial",
+  "ノーマル": "normal",
+  "中当たり": "middle",
+  "大当たり": "jackpot",
+  "シークレット": "secret",
+  "確定": "guaranteed",
+};
 
 function GachaPage({ currentUser, setCurrentUser, setPage }) {
   const { t, i18n } = useTranslation();
