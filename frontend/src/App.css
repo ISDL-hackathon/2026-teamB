@@ -1032,6 +1032,11 @@ tr:last-child td {
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: 0.5px;
+  text-shadow:
+    -1.5px -1.5px 0 #1a2230,
+     1.5px -1.5px 0 #1a2230,
+    -1.5px  1.5px 0 #1a2230,
+     1.5px  1.5px 0 #1a2230;
 }
 .homeWeather .eyebrow {
   color: #2f7d68;
@@ -1715,4 +1720,13 @@ tr:last-child td {
 @media (max-width: 560px) {
   .weeklyTreeRow { gap: 4px; }
   .weeklyTreeImageWrap { height: 60px; }
+}
+
+
+.statusGrid .pointValue {
+  text-shadow:
+    -1.5px -1.5px 0 #1a2230,
+     1.5px -1.5px 0 #1a2230,
+    -1.5px  1.5px 0 #1a2230,
+     1.5px  1.5px 0 #1a2230;
 }
