@@ -20,6 +20,7 @@ import LunchQuestPage from "./components/LunchQuestPage";
 import PhotoQuestPage from "./components/PhotoQuestPage";
 import VillagePage from "./components/VillagePage";
 import VillageSlotSelectPage from "./components/VillageSlotSelectPage";
+import labTitleImg from "./assets/labtitle.png";
 import "./App.css";
 
 function App() {
@@ -359,7 +360,7 @@ const fetchWeeklyActivity = () => {
   return (
     <div className={`app${!currentUser ? " login-mode" : ""}`}>
       <header className="appHeader">
-        <h1>ISDL ハッカソン</h1>
+        <img src={labTitleImg} alt="DopaLab" className="appLogo" />
         <p>研究室活動ポイント</p>
       </header>
 
