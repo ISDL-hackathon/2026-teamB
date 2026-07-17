@@ -109,6 +109,7 @@ function PixelTown({
   level = 1,
   mode = "view",
   slots = [],
+  centralAvatarSrc = charaImg,
   onSlotSelect,
   onPcClick,
 }) {
@@ -281,7 +282,7 @@ function PixelTown({
 
           {/* キャラクター */}
           <img
-            src={charaImg}
+            src={centralAvatarSrc}
             className="townChara"
             alt="街のキャラクター"
             style={{

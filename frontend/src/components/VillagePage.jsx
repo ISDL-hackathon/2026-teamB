@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { requestJson } from "../api";
+import { getAvatarImage } from "./avatarAssets";
 import PixelTown from "./PixelTown";
 
 const weatherClassNames = {
@@ -68,6 +69,7 @@ function VillagePage({ currentUser, setCurrentUser, setPage, village, villageSlo
         {village ? (
           <>
             <PixelTown
+              centralAvatarSrc={getAvatarImage(currentUser.selected_avatar)}
               weather={weatherClassNames[village.weather] || "weatherStorm"}
               level={village.level}
               mode="view"
